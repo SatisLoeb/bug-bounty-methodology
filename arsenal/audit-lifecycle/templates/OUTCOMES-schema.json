@@ -1,0 +1,80 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OUTCOMES.jsonl entry schema — audit lifecycle v1",
+  "description": "Each line in OUTCOMES.jsonl represents one finding outcome. Populated by on-submit.sh or on-hold.sh. Extended schema for diagnostic phase measurement.",
+  "type": "object",
+  "properties": {
+    "id":                 {"type": "string", "description": "Finding ID, e.g. PROTOCOL-001"},
+    "protocol":           {"type": "string"},
+    "finding":            {"type": "string", "description": "One-line finding description"},
+    "class":              {
+      "type": "string",
+      "enum": ["auth-bypass", "fund-theft", "access-control", "info-disclosure",
+               "signature-forge", "DoS", "business-logic", "IDOR", "JWT-token",
+               "session-hijack", "password-reset", "account-binding", "hardcoded-credential",
+               "reentrancy", "oracle-manipulation", "cross-chain-replay", "other"]
+    },
+    "severity":           {"type": "string", "enum": ["Critical", "High", "Medium", "Low", "Informational"]},
+    "severity_committed": {"type": "string", "description": "Severity committed in SEVERITY-COMMIT (may differ from claimed if adjusted post-gate)"},
+    "evidence_tier":      {"type": "string", "enum": ["L1", "L2", "L3", "L4"]},
+    "chain_tier":         {"type": "string", "enum": ["unverified", "partial", "full_ethical"]},
+    "impact_tier":        {"type": "string", "enum": ["narrative", "computed_W1", "W5_anchored", "both_W1_W5"]},
+    "drafted_at":         {"type": "string", "format": "date-time"},
+    "gates_run_at":       {"type": "string", "format": "date-time"},
+    "submitted_at":       {"type": "string", "format": "date-time"},
+    "result_at":          {"type": "string", "format": "date-time"},
+    "held_at":            {"type": "string", "format": "date-time"},
+    "outcome":            {
+      "type": "string",
+      "enum": ["acknowledged", "fixed", "bounty_paid", "ignored", "disputed", "published",
+              "dismissed", "duplicate", "informative", "held", "submitted", "pending"]
+    },
+    "reward":             {"type": "number", "description": "Dollar amount if paid, 0 otherwise"},
+    "p_bounty":           {"type": "number", "minimum": 0, "maximum": 1},
+    "ev_usd":             {"type": "number"},
+    "days_to_response":   {"type": "integer", "minimum": 0},
+    "days_to_fix":        {"type": "integer", "minimum": 0},
+    "contact_method":     {"type": "string"},
+    "report_path":        {"type": "string"},
+    "dismissal_vectors_hit": {"type": "array", "items": {"type": "string"}},
+    "preflight_run":      {"type": "boolean", "description": "Was preflight-mechanical.sh executed before submit?"},
+    "rejected_by_gate":   {
+      "type": "array",
+      "items": {"type": "string", "enum": ["kill-gate", "D0-build", "D7-chain-proof", "D8a-weight-anchor", "D8b-live-conditions", "D9-triager-tone", "D10-compliance-citation", "D11-self-red-team", "hygiene"]},
+      "description": "Gates that blocked this finding before submit (empty array if submitted or none)"
+    },
+    "held_reason":        {
+      "type": "string",
+      "enum": ["rep_gate", "deposit_pending", "geo_block", "awaiting_validation",
+               "gate_failed_unresolved", "self_uncertainty", "framing_unclear", "n/a"],
+      "description": "Populated at moment of hold, not retroactively. self_uncertainty + framing_unclear > 25% = gates over-regulating."
+    },
+    "uncertainty_source": {
+      "type": "string",
+      "enum": ["technical_doubt", "severity_doubt", "scope_doubt", "n/a"],
+      "description": "Required when held_reason = self_uncertainty"
+    },
+    "retroactive":        {"type": "boolean", "description": "True if entry backfilled from memory rather than populated live"},
+
+    "hours_invested":     {"type": "number", "minimum": 0, "description": "Total hours on this finding: recon + drafting + gates + submission + response handling. For time-to-value metric per surface."},
+    "surface":            {
+      "type": "string",
+      "enum": ["sc-solidity", "sc-solana", "sc-rust", "sc-move", "sc-cairo", "sc-clarity",
+               "web", "api", "graphql", "websocket", "auth-oauth", "auth-jwt", "auth-saml",
+               "infra-cdn", "infra-dns", "infra-cloud", "infra-kubernetes",
+               "bridge", "crosschain-messaging", "relayer",
+               "supply-chain", "dependency", "sdk",
+               "mobile-android", "mobile-ios", "desktop",
+               "ai-llm", "other"],
+      "description": "Attack surface classification. Used for per-surface $/hour analysis."
+    },
+    "platform":           {
+      "type": "string",
+      "enum": ["hackerone", "cantina", "c4", "sherlock", "hackenproof", "immunefi",
+               "intigriti", "bugcrowd", "codehawks", "direct", "ghsa", "cve", "other"],
+      "description": "Disclosure platform. Different platforms have different ROI profiles."
+    },
+    "bounty_program":     {"type": "string", "description": "Program name/URL — separate from protocol for programs that cover multiple protocols"}
+  },
+  "required": ["id", "protocol", "outcome"]
+}

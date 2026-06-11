@@ -1,0 +1,26 @@
+# gRPC/Protobuf field injection
+# Chain: base64 → protobuf_raw → field number navigation
+# Protobuf uses integer field numbers, not names
+
+name: grpc-protobuf
+description: "Inject into protobuf field 2 (string) via base64 wrapper"
+
+target:
+  method: POST
+  url: "https://api.example.com/grpc/UserService/GetUser"
+  headers:
+    Content-Type: "application/grpc-web+proto"
+    Authorization: "Bearer {{TOKEN}}"
+  body_template: "{{INJECT_POINT}}"
+
+chain:
+  - layer: base64
+  - layer: protobuf_raw
+    field: "2"
+
+# Protobuf: field 1 = varint(1), field 2 = string("admin")
+template_hex: "CAECA0561646d696e"
+
+proxy:
+  listen: "127.0.0.1:9090"
+  param: p

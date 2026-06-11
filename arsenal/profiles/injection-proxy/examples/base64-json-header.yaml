@@ -1,0 +1,24 @@
+# Base64-encoded JSON in a header
+# Common pattern: API gateway passes context as base64 JSON header
+# Chain: base64 → json → field extraction
+
+name: base64-json-header
+description: "Base64-encoded JSON in X-Context header"
+
+target:
+  method: GET
+  url: "https://api.example.com/data"
+  headers:
+    Authorization: "Bearer {{TOKEN}}"
+    X-Context: "{{INJECT_POINT}}"
+
+chain:
+  - layer: base64
+  - layer: json
+    field: user_id
+
+template: "eyJ1c2VyX2lkIjogIjEyMyIsICJyb2xlIjogInVzZXIifQ=="
+
+proxy:
+  listen: "127.0.0.1:9090"
+  param: p

@@ -1,0 +1,24 @@
+# CBOR-encoded WebAuthn attestation injection
+# Chain: base64url → cbor → field extraction
+# For testing WebAuthn registration endpoints
+
+name: cbor-webauthn
+description: "Inject into CBOR attestation object (base64url-encoded)"
+
+target:
+  method: POST
+  url: "https://auth.example.com/webauthn/register"
+  headers:
+    Content-Type: "application/json"
+  body_template: '{"id": "test-cred", "rawId": "dGVzdC1jcmVk", "response": {"attestationObject": "{{INJECT_POINT}}", "clientDataJSON": "eyJ0eXBlIjoid2ViYXV0aG4uY3JlYXRlIn0"}, "type": "public-key"}'
+
+chain:
+  - layer: base64url
+  - layer: cbor
+    field: fmt
+
+template_hex: "a363666d74646e6f6e656761747453746d74a068617574684461746158c4"
+
+proxy:
+  listen: "127.0.0.1:9090"
+  param: p

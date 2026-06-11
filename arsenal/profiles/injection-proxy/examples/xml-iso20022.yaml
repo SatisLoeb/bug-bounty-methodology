@@ -1,0 +1,36 @@
+# ISO 20022 XML payment message injection
+# Inject into XML fields of financial messages (pain.001, pacs.008, etc.)
+# Chain: xml → xpath field extraction
+
+name: xml-iso20022-payment
+description: "Inject into ISO 20022 pain.001 creditor name field"
+
+target:
+  method: POST
+  url: "https://api.example-bank.com/payments/sepa"
+  headers:
+    Content-Type: "application/xml"
+    Authorization: "Bearer {{TOKEN}}"
+  body_template: "{{INJECT_POINT}}"
+
+chain:
+  - layer: xml
+    field: "//Cdtr/Nm"
+
+template: |
+  <?xml version="1.0" encoding="UTF-8"?>
+  <Document xmlns="urn:iso:std:iso:20022:tech:xsd:pain.001.001.03">
+    <CstmrCdtTrfInitn>
+      <PmtInf>
+        <CdtTrfTxInf>
+          <Amt><InstdAmt Ccy="EUR">100.00</InstdAmt></Amt>
+          <Cdtr><Nm>John Doe</Nm></Cdtr>
+          <CdtrAcct><Id><IBAN>DE89370400440532013000</IBAN></Id></CdtrAcct>
+        </CdtTrfTxInf>
+      </PmtInf>
+    </CstmrCdtTrfInitn>
+  </Document>
+
+proxy:
+  listen: "127.0.0.1:9090"
+  param: p
