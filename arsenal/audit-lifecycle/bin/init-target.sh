@@ -76,6 +76,15 @@ fi
 # Run target-router.sh with merged hints, emit ROUTING.md
 TARGET_HINTS="$MERGED_HINTS" bash "$LIB/target-router.sh" "$TARGET" > "$WORKSPACE/ROUTING.md"
 
+# Initialize SURFACE-INVENTORY.md stub (Phase-0 auto-sweep fills it before the first hunt).
+# Living memory of EVERY surface (in-scope + adjacent), hunt-independent. See
+# ~/.claude/skills/SURFACE-INVENTORY-PLAYBOOK.md. Twin of the end-of-engagement COVERAGE-LEDGER.
+if [ ! -f "$WORKSPACE/SURFACE-INVENTORY.md" ] && [ -f "$TEMPLATES/SURFACE-INVENTORY.md" ]; then
+  sed -e "s/{TARGET}/$TARGET/g" -e "s/{DATE}/$(date -u +%Y-%m-%d)/g" \
+    "$TEMPLATES/SURFACE-INVENTORY.md" > "$WORKSPACE/SURFACE-INVENTORY.md"
+  echo "  SURFACE-INVENTORY.md stub written — run the Phase-0 auto-sweep before the first hunt"
+fi
+
 # Run timebox-check.sh if source code is already present (e.g., git-cloned in workspace)
 # Picks up LOC + subsystem count and advises STANDARD_8H or L1_EXCEPTION
 TIMEBOX_FILE="$WORKSPACE/.timebox-verdict"

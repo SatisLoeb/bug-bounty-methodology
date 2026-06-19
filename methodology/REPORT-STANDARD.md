@@ -418,6 +418,32 @@ This is not [second limitation]. [Why it's not at risk -- specific technical rea
 
 ---
 
+### Severity Lock — Bridge Halt / Fund-Freeze (MANDATORY when the impact is funds-inaccessible, not funds-stolen)
+
+<!--
+Two distinct downgrade vectors hit freeze/halt findings. Both are triager escape hatches that turn a High into a Low/N/A. Close them in the INITIAL report, never in appeal (severity rarely reopens — e.g. C4 PJQA is 48h post-prelim-judging only). Encodes feedback_bridge_freeze_label_vs_substance.md (Injective Peggy S-23 Low+$0 despite exact-rec silent-patch; Ripio #3753469 N/A "queueing not freezing").
+
+VECTOR A — VALUE-IN-TRANSIT freeze recharacterized as "normal cross-chain queueing, funds will arrive."
+VECTOR B — INFRASTRUCTURE halt (checkpoint/DoS bricks the whole mechanism) recharacterized as "repairable via chain upgrade / admin action, so not real loss."
+
+Do NOT argue the label "freeze." Argue SUBSTANCE: user holds no accessible representation of value, for material duration, with no user-side recourse. That is binary and PoC-resolvable; the label is a definitional dispute the triager wins by fiat.
+-->
+
+**Severity rationale (state explicitly, lock the boundary before the triager reads it):**
+
+This is a [High/Critical] under [program schedule clause]. Funds are inaccessible to the user for [duration] with [no recovery path / recovery only via X]. The schedule places [recovery-exists + material-duration → High] / [no-recovery → Critical]; this finding sits at [boundary] because [reason]. The existence of an [admin/governance/chain-upgrade] recovery path does not move this below High — the High class explicitly presupposes recovery exists; treating its existence as a downgrade collapses two boundaries the schedule keeps separate.
+
+**Mandatory lines in Impact (both vectors):**
+- **User-side recourse: none.** [PoC enumerates every user-callable function on the affected component and proves none reverses the freeze for the depositor/user.]
+- **User-side inaccessibility.** During the window the user holds no accessible representation of value: [source balance = 0 / destination = 0 / mechanism bricked]. Not "in transit somewhere" — [destroyed / unreachable] on chain.
+- **Frozen value × duration as the headline.** [$X TVL] inaccessible for [realistic minimum duration]. Lead with the realistic minimum (ordinary user, normal conditions, e.g. hours-to-UTC-rollover or the upgrade-coordination window), NOT the full-supply ceiling — the ceiling reads theoretical and gets dismissed.
+
+**Vector-A extra (value-in-transit):** historical event evidence proving the precondition (another user already at high % of cap) is production behavior — block number + recipient. "No attacker required" cuts FOR you: a condition firing under honest routine use is more likely to harm users, not less.
+
+**Vector-B extra (infra-halt):** spell out that recovery is NOT cheap/fast/user-accessible — "[no pause, no governance override, no circuit breaker; recovery requires a coordinated chain binary upgrade, multi-day, all validators, bridge frozen the entire window]." Recovery-exists ≠ recovery-is-fast. If the same protection exists for a SIBLING code path (e.g. a spoofing test on an adjacent claim/function), cite it (`file:line`): the team already classified this class as a real attack vector one function over (internal-consistency, Rule 8) — that argues against a Low.
+
+---
+
 ## Chain-of-Custody Comment (posted immediately after submission, Critical/High with PoC only)
 
 <!--

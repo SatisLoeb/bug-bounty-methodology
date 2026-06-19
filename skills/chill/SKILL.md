@@ -275,6 +275,15 @@ A correction is a clarification, not a fault. Real fatigue shows in effort trace
 
 **Scope of F11**: this pattern applies to initial-report prose. For triager-response comments (post-submission), the consolidated rule lives in `report-nerve § Triager response discipline` which covers self-flagellation, unsolicited severity concession, and unverified-path mentions as one checklist. F11 here is the initial-report subcase.
 
+### F12: Body placeholders (`{...}`, `200 {…}`, "returns the usual fields") on an evidence claim
+
+When you cite a response as proof ("it returns 200 with the victim's record", "both sessions are identical"), paste the FULL body. A summarized `{...}` or `{address, createdAt, ...}` or "returns the usual fields" is the single strongest tell that the evidence is asserted, not shown — and a triager who already asked for bodies reads `{...}` as "you still don't have it." A tired human pasting a curl output pastes the whole output; the `{...}` is a model compressing. This is a VOICE tell on top of the evidence problem (the evidence side is `report-nerve § Triager response Rule 4`). Two cases:
+
+- **Empirical proof** (the body IS the evidence — killshot, retraction, equivalence pair, "this endpoint returns X"): paste it entire, verbatim, no ellipsis. If it's long, paste it long.
+- **Passing mention** (a body referenced in prose, not load-bearing): you can describe it ("the profile route just hands back the address"), no need to paste — but then don't dress the description up as a quote with `{...}`.
+
+The grep tell: `{...}`, `{…}`, `200 {[^}]*\.\.\.`, "the usual", "returns the standard". On an evidence sentence, any of these = paste the real body or downgrade the sentence to an honest description. Reference: Helix #134 (2026-06-11) — "6/6 identical" written with `200 {...}` both sides was the same `{...}` the triager had already rejected on the first report; deploying one full body-pair fixed it.
+
 ## Required patterns (human signals)
 
 ### P1: Open with concession or context
@@ -358,6 +367,14 @@ End with something short and unornamented:
 - `Available for a call if it helps.`
 
 Avoid "Looking forward to your response" or any formula. Just stop.
+
+### P9: Accept-and-plant close (when a valid finding is downgraded and the window to formally contest is shut)
+
+When a finding is confirmed valid but downgraded (and the formal severity-dispute window is closed — e.g. C4 PJQA is 48h, severity rarely reopens post-award), do NOT relitigate frontally. That reads as the frustrated warden and burns reputation capital. Instead: accept sincerely + plant ONE subtle severity seed framed as thinking-out-loud, then stop. If it's going to be revisited it'll be their initiative, not your demand.
+
+Shape: (1) genuine thanks + "knowing it landed as valid is enough for me, i can let the rest go" — disarm explicitly. (2) ONE observation on the severity, prefixed "not pushing on it, just thinking out loud" + the single hardest impact fact (e.g. permanent freeze, no recovery short of chain upgrade, $X frozen) stated flat, not argued. (3) "but the judges call it, i'm not relitigating it" — close the loop yourself so they don't have to defend. (4) warm sign-off.
+
+Let the FACT do the work, not the argument — state the irreversibility/scale once and stop. Worked on Injective Peggy S-23 (2026-06-11): a $188M bridge-halt downgraded to Low, closed with accept-and-plant → the C4 moderator responded with empathy ("I very much wish we could open up the findings for transparency") and did NOT defend the Low. A frontal severity fight would have burned both sides. Reference: feedback_bridge_freeze_label_vs_substance.md (disclosure-arc lesson). The severity ARGUMENT itself (irreversibility framing, schedule-boundary lock) belongs in the INITIAL report via report-nerve W3b — by the time you're at P9 the argument should already have been made; P9 is damage-limitation voice, not a second bite at the argument.
 
 ## Examples: before and after
 
@@ -448,6 +465,8 @@ Before considering a draft ready, walk through this list. Each item should pass.
 18. **Read-aloud test**: read the draft aloud. Sentences that sound "too well constructed" when spoken are the ones to roughen.
 
 19. **No self-flagellation (F11)**: grep the draft for `sorry`, `apolog`, `my fault`, `my bad`, `careless`, `I was wrong`. All hits cut or rephrased as clarifications. For triager-response comments specifically, walk `report-nerve § Triager response discipline` instead — the three failure modes are consolidated there.
+
+20. **No body placeholder on an evidence claim (F12)**: grep the draft for `\{\.\.\.\}`, `\{…\}`, `200 \{[^}]*\.\.\.`, `the usual`, `returns the standard`. For each hit, check the sentence it sits in: if that sentence cites the body AS PROOF (killshot, retraction, equivalence pair, "this returns X"), the full body must be pasted verbatim — replace the placeholder with the real output. If it's a passing mention, rewrite as an honest description without the quote-shaped `{...}`. This and item 19 together are the closing grep on the voice side; `report-nerve § Triager response Rule 4 + Closing gate` is the evidence side. Run both before the draft is final.
 
 ## Edge cases and exceptions
 

@@ -454,6 +454,17 @@ LPs / treasury / retail / third-party integrators / KYC victims — with on-chai
 | Circuit breaker | [Y/N] | [function enumeration] | [Y/N] |
 ```
 
+### W3b — Freeze/halt severity-lock (MANDATORY when impact is funds-INACCESSIBLE, not funds-stolen)
+
+Freeze/halt findings get downgraded High→Low/N/A via two triager escape hatches. Close both in the INITIAL report — severity rarely reopens (C4 PJQA = 48h post-prelim-judging only). Do NOT argue the label "freeze"; argue substance (user holds no accessible value, material duration, no user-side recourse — binary and PoC-resolvable).
+
+- **Vector A — value-in-transit** recharacterized as "normal queueing, funds will arrive." Counter: source balance = 0 (burned), destination = 0 (mint reverted) → value destroyed on A, not existing on B. Historical event evidence proving the precondition (another user at high % of cap) is production behavior (block + recipient). "No attacker required" cuts FOR you.
+- **Vector B — infrastructure halt** (checkpoint/DoS bricks the whole mechanism) recharacterized as "repairable via chain upgrade/admin, so not real loss." Counter: recovery-exists ≠ recovery-is-fast/user-accessible — spell out "[no pause, no governance override, no circuit breaker; recovery requires coordinated chain binary upgrade, multi-day, all validators, frozen throughout]." The High class presupposes recovery exists; treating its existence as a downgrade collapses two schedule boundaries.
+
+Three mandatory Impact lines (both vectors): **User-side recourse: none** (PoC enumerates every user-callable fn, proves none reverses the freeze) · **User-side inaccessibility** (no accessible representation of value during window) · **frozen-$ × realistic-MINIMUM duration as the headline** (not the full-supply ceiling — ceiling reads theoretical). Sibling-protection cite (a spoofing/guard test on an adjacent fn, `file:line`) = internal-consistency argument against Low.
+
+Reference: feedback_bridge_freeze_label_vs_substance.md (Injective Peggy S-23 Low+$0 despite exact-rec silent-patch; Ripio #3753469 N/A).
+
 ### W4 — Live conditions proof (MANDATORY if finding claims TVL-at-risk; dashboard otherwise)
 
 ```
@@ -643,6 +654,19 @@ Unverified paths stay in `hunt-notes.md` (or the workspace equivalent), never in
 
 Reference incident: dYdX F-T233 (2026-05-19) — funding multi-perpetual was mentioned as a candidate path in a first-draft response before any test. Subsequent code read killed it at `subaccount.go:703-707`. The mention was cut before sending and the kill was recorded in private notes; that is the correct location.
 
+### Rule 4: Every capability/sensitivity claim cites a SHOWN response body, never a route name or structure
+
+This is the rule that would have caught the Helix #134 overclaims before submission. A claim of the form "X exposes Y" / "the session reads sensitive data" / "this endpoint serves KYC" / "the attacker can write" is **load-bearing**, and it must point to a **pasted response body that shows it**, not to a route name, a bundle route-map entry, or the structure of the thing. Inferring a capability from structure ("the endpoint is named `/onramp` so it exposes KYC") is the exact same epistemic error as inferring exploitability from a code pattern ("it's a read-path so it's exploitable") — structure is a hypothesis, the observed artifact is the conclusion. If you can't paste the body that proves the capability, the claim is an overclaim: cut it, or mark it explicitly as un-demonstrated.
+
+Helix #134 shipped with **four** capability claims inferred-from-structure, never observed, all collapsed when the body was actually pulled under triager pressure: (1) "KYC-onramp linkage" — came from the `/onramp/*` route name; real bodies serve no PII. (2) "reads and writes both" — inferred from PATCH routes existing; the PATCH returned 400-device-gated, never shown mutating. (3) "sensitive trading-position config" — the fallback; real body was system defaults on a fresh account. (4) the route-map listing treated as a capability map.
+
+**When the sensitive body is empty (test account) or un-gettable (would need a real user):**
+- SHOW the empty body verbatim (don't hide it, don't summarize it to `{...}` — the `{...}` is the exact tell the triager already rejected). Frame impact on the proven MECHANISM, name the weak spot explicitly ("I can't demonstrate the sensitive contents without touching a real user"), hand the triager the mechanism + the empty reads to weight.
+- Prove the ATO/impact by **EQUIVALENCE, not by faking content**: mint two sessions for the SAME victim — one the LEGIT way (a credential the victim granted, signing the victim's own challenge = the victim's real session) and one the ATTACKER way (a fresh attacker credential). Hit the same routes with each. Byte-identical responses prove the attacker holds a functionally identical copy of the victim's session, independent of account contents (empty → both empty; full → both full). This beats filling the test account: you don't fabricate impact, you prove impact TRACKS the real account whatever it holds. Helix #134: 6/6 routes byte-identical, `/user/me` identical to the millisecond.
+- The equivalence claim is ITSELF load-bearing — don't write "6/6 identical" with `200 {...}` both sides. Deploy at least one FULL body-pair on a non-trivial data route (both bodies entire, side by side) so "identical" is SHOWN, not asserted.
+
+**Retracting your own overclaim on shown evidence BUYS triager trust** — it converts a contested report into a credible one. A researcher who pulls the real body, sees it doesn't support the claim, and retracts it spontaneously is trusted on what remains. Do NOT re-assert the capability a 2nd/3rd time, do NOT hide the empty body, do NOT claim a level the shown bodies don't support. Reference: Helix #134 (2026-06-11), four overclaims retracted on re-capture, replaced with the session-equivalence proof.
+
 ### Closing gate — mandatory before draft is considered complete
 
 Run these three greps on the draft. All three must return clean before the draft is rendered or sent. This is the closing condition referenced in the section header — not an optional review.
@@ -656,9 +680,14 @@ grep -iE 'I think this is (lower|medium|low)|probably (medium|low)|recalibrate d
 
 # Rule 3 — unverified path mention
 grep -iE 'candidate path|might also be reachable|I suspect|may be a sibling|worth checking if' <draft>
+
+# Rule 4 — capability claim without a shown body: any 200/exposes/reads/writes/sensitive/identical
+#   near a {...} placeholder = a load-bearing claim that's summarized instead of shown. Manual check:
+#   for each "X exposes Y / session reads Z / N/N identical", confirm the FULL body is pasted, not {...}.
+grep -nE '\{\.\.\.\}|200 \{[^}]*\.\.\.|exposes|reads (and|both)|sensitive|[0-9]+/[0-9]+ identical' <draft>
 ```
 
-Any hit on Rule 1 or Rule 2: remove the phrase. Any hit on Rule 3: either prove the path first and re-add as a verified claim, or cut it.
+Any hit on Rule 1 or Rule 2: remove the phrase. Any hit on Rule 3: either prove the path first and re-add as a verified claim, or cut it. Any hit on Rule 4: confirm the capability/sensitivity/equivalence claim points to a pasted full body (not `{...}`, not a route name); if the body isn't shown, paste it or cut the claim.
 
 ---
 
