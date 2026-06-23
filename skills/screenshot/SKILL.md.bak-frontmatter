@@ -1,7 +1,6 @@
 ---
 name: screenshot
-description: >-
-  Generate a step-by-step screenshot capture guide that the researcher can execute manually in their terminal to produce visual evidence artifacts for a bug bounty submission. Output is a workspace-local Markdown file with numbered screenshots, each containing a suggested filename, what the screenshot proves, the exact command to copy-paste, and the expected output. Use after a PoC is finalized and the report is drafted, BEFORE submitting to the bounty platform. Triggers: "prepare screenshots for [target]", "generate screenshot guide", "give me commands to screenshot", "I want to attach proof images". Composes with report-nerve (adds the visual evidence layer) and chill (the screenshots themselves are a strong human-authenticity signal against anti-AI screening).
+description: Generate a step-by-step screenshot capture guide that the researcher can execute manually in their terminal to produce visual evidence artifacts for a bug bounty submission. Output is a workspace-local Markdown file with numbered screenshots, each containing a suggested filename, what the screenshot proves, the exact command to copy-paste, and the expected output. Use after a PoC is finalized and the report is drafted, BEFORE submitting to the bounty platform. Triggers: "prepare screenshots for [target]", "generate screenshot guide", "give me commands to screenshot", "I want to attach proof images". Composes with report-nerve (adds the visual evidence layer) and chill (the screenshots themselves are a strong human-authenticity signal against anti-AI screening).
 ---
 
 # screenshot
@@ -14,8 +13,6 @@ Screenshots from a real terminal serve three distinct purposes that no other art
 
 1. **Independent verification** — triagers can re-run the same commands and see the same output. Cast call returns and tx hashes are bound to mainnet state the researcher does not control.
 2. **Anti-AI signal** — a real terminal screenshot (with prompt, syntax highlighting, line wrap, occasional typo) is one of the strongest human-authenticity signals available. Anti-AI classifiers on HackerOne, Cantina, and HackenProof have no way to flag a `.png` of a working terminal.
-
-   > **SS-1 caveat (darkside-on-screenshot 2026-06-23): the 'can't flag a .png' assumption is NOT permanent.** The robust value of a screenshot is purposes 1 + 3 (independent verification of mainnet state + effort signal) — those hold regardless of AI detection. The anti-AI-evasion value (purpose 2) rests on an outdated premise: 2026 multimodal triage CAN OCR the image and run the same text-classifier on the extracted output, and a CONSISTENT terminal prompt/theme/font/window across many submissions is itself a cross-report fingerprint (the chill C-1 problem, in pixels). So: lean on verification + effort as the load-bearing value; treat anti-AI-evasion as a bonus, not a guarantee; and vary the terminal surface (prompt, theme) across submissions so the screenshots don't become their own signature.
 3. **Effort signal** — the visible footprint of "this person actually ran the commands" raises perceived diligence. Triagers reward demonstrable effort with faster engagement and more generous severity calibration.
 
 The skill itself does not take screenshots. It produces the **guide** the operator follows to take them, with the discipline necessary to make each screenshot load-bearing rather than decorative.
@@ -289,7 +286,7 @@ Location: `~/Desktop/BUGS/ripio-audit/submissions/SCREENSHOTS-GUIDE.md`
 
 - **report-nerve**: produces the report draft this guide supports
 - **chill**: voice layer for the report; this skill provides the visual layer
-- **immunefi-submit**: if the target is Immunefi (boycott LIFTED 2026-06-01 — now a live channel like HackerOne/Cantina; SS-2 fix), the screenshot guide format adapts to Immunefi's submission UI
+- **immunefi-submit**: if the target is Immunefi (rare per user's boycott rule), the screenshot guide format adapts to Immunefi's submission UI
 - **security-disclosure**: for direct vendor disclosure, screenshots become inline `cid:` attachments rather than zip files
 
 ## Skill metadata

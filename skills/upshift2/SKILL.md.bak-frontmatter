@@ -1,7 +1,6 @@
 ---
 name: upshift2
-description: >-
-  Generalized seam-hunting methodology -- the upshift mentality applied to ANY high-value surface, not just DeFi off-chain orchestration. Encodes the cognitive machine that produced the Upshift Finance engagement (48 findings, 24h ack, 30h patches) and re-targets it at web2/SaaS, infra/cloud/supply-chain, crypto-libs/protocols, and ML/AI systems. The thesis: every high-value system has a SEAM between two disciplines, each audited to death on its own side, where ownership of the seam itself belongs to no one -- and the bug lives in the seam. Use for any deep engagement on a non-DeFi-SC target where the real attack surface is the boundary between teams/layers/languages. Vector packs are pluggable per surface; the 4-pass discipline, immortal mode, anti-inflation gate, and disclosure arc are universal. Upshift is the gold-standard reference instance.
+description: Generalized seam-hunting methodology -- the upshift mentality applied to ANY high-value surface, not just DeFi off-chain orchestration. Encodes the cognitive machine that produced the Upshift Finance engagement (48 findings, 24h ack, 30h patches) and re-targets it at web2/SaaS, infra/cloud/supply-chain, crypto-libs/protocols, and ML/AI systems. The thesis: every high-value system has a SEAM between two disciplines, each audited to death on its own side, where ownership of the seam itself belongs to no one -- and the bug lives in the seam. Use for any deep engagement on a non-DeFi-SC target where the real attack surface is the boundary between teams/layers/languages. Vector packs are pluggable per surface; the 4-pass discipline, immortal mode, anti-inflation gate, and disclosure arc are universal. Upshift is the gold-standard reference instance.
 ---
 
 # upshift2 -- Seam Hunting (the upshift mentality, generalized to any surface)
@@ -136,9 +135,7 @@ Re-run each finding's detection kit against live state immediately before drafti
 | `/chill` | Phase 5 -- voice pass, human-triager channels only (skip for GHSA-upstream / IACR / private-firm) |
 | `/disclose`, `/immunefi-submit`, `/security-disclosure` | Phase 6 -- channel-specific formatting |
 
-`upshift2` reads these as references and invokes them at the named phase. It does not duplicate their work and does not auto-orchestrate them mid-hunt. **The Phase-6 disclosure channels (/disclose, /immunefi-submit, /security-disclosure) are OPERATOR-GATED (U2-1 fix): the operator explicitly authorizes each send; never auto-spawn a disclosure — it is outward-facing and hard to reverse (firmaudit no-auto-orchestration rule).**
-
-> **Tool-existence guard (U2-2 fix).** The companion files (SEAM-THESIS/HUNT-METHODOLOGY/IMMORTAL-MODE/ANTI-INFLATION/...), the `vectors/*` packs, and the gates below are HARDCODED paths. Before reading/running one: `ls <path> 2>/dev/null` — if MISSING (fresh install / machine-2 not synced / moved), NOTE "resource X unavailable, phase Y degraded" and CONTINUE; never crash, never silently skip the phase.
+`upshift2` reads these as references and invokes them at the named phase. It does not duplicate their work and does not auto-orchestrate them mid-hunt.
 
 ## External gates (per finding, not duplicated here)
 

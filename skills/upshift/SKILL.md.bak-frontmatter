@@ -1,7 +1,6 @@
 ---
 name: upshift
-description: >-
-  End-to-end methodology for engaging DeFi protocols with off-chain orchestration (delta-neutral stables, RWA tokenized accounts, yield aggregators with keepers, LRTs, perp DEXes, vault curators). Codifies the Upshift Finance engagement that produced 48 findings, ack in 24h, and patches in 30h. Use when target has the profile: backend that signs on-chain transactions in response to off-chain events, executor/operator wallet pattern, contracts audited by a known firm but API/infra/frontend treated as a normal web project. Coordinates /gravedigger and /mrrobbot as reference cadence; /disclose stays OPERATOR-GATED (never auto-spawned -- a disclosure is an outward-facing, hard-to-reverse action). Includes immortal-mode discipline and live re-verification monitor for active disclosures.
+description: End-to-end methodology for engaging DeFi protocols with off-chain orchestration (delta-neutral stables, RWA tokenized accounts, yield aggregators with keepers, LRTs, perp DEXes, vault curators). Codifies the Upshift Finance engagement that produced 48 findings, ack in 24h, and patches in 30h. Use when target has the profile: backend that signs on-chain transactions in response to off-chain events, executor/operator wallet pattern, contracts audited by a known firm but API/infra/frontend treated as a normal web project. Auto-orchestrates /gravedigger, /mrrobbot, /disclose. Includes immortal-mode discipline and live re-verification monitor for active disclosures.
 ---
 
 # Upshift -- DeFi Off-chain Orchestration Hunt + Disclose + Harden
@@ -41,8 +40,6 @@ Read companion files per phase. SKILL.md is the entry point and the only file yo
 | `WORKSPACE-TEMPLATE.md` | Directory structure init for an Upshift-class engagement | Phase -1 -- workspace bootstrap |
 | `MEMORY-PROTOCOL.md` | Per-engagement memory file conventions + cross-engagement queue maintenance | Phase 0, Phase 6, Phase 7 -- memory updates |
 
-> **Tool-existence guard (U-2 fix).** The companion files + external playbooks + gates below are HARDCODED paths. Before reading/running one: `ls <path> 2>/dev/null` — if MISSING (fresh install / machine-2 not synced / moved), NOTE "resource X unavailable, phase Y degraded" and CONTINUE; never crash, never silently skip a phase.
-
 External gates (referenced per finding, not duplicated here):
 
 | File | Purpose | When |
@@ -64,13 +61,11 @@ External playbooks (referenced for their coverage, not duplicated):
 
 Skill orchestration (invoke when the phase says so, do not duplicate their work):
 
-> **Reconciliation with firmaudit (U-1 fix).** When this cadence runs UNDER firmaudit (Path B), firmaudit's no-auto-orchestration rule GOVERNS — read upshift/gravedigger/mrrobbot as REFERENCE, the operator hand-orchestrates between phases. Standalone `/upshift` (the operator explicitly invoked it) coordinates the cadence below, but STILL gates /disclose to an explicit operator OK and NEVER auto-spawns the disclosure flow. No skill fires another from a passive signal.
-
 | Skill | When to invoke |
 |-------|---------------|
 | `/gravedigger` | Phase 1 -- recon (phases 0-2 of gravedigger). Pass target hints `upshift-class defi-orchestration executor-wallet` |
 | `/mrrobbot` | Phase 3 -- if smart contracts are in scope, drill into the SC layer |
-| `/disclose` | Phase 5 -- per-finding report formatting. **OPERATOR-GATED: never auto-spawned; the operator explicitly authorizes each disclosure (firmaudit no-auto-orchestration rule — a disclosure is outward-facing).** |
+| `/disclose` | Phase 5 -- per-finding report formatting |
 | `/expand-surface` | Phase 3 stall -- if hunt produces fewer than 10 findings after pass 2, check for a novel surface (AA, ZK, MPC) |
 
 ## Phase Flow
@@ -184,14 +179,14 @@ If the sponsor accepts the fortress framing in their reply to Stage 4, deliver t
 
 This phase is where the engagement becomes ex-gratia-worthy in scale (typically $50K-$250K range for well-engaged Upshift-class targets).
 
-## Activation suggestions (SUGGEST, never auto-fire -- U-1 fix, 2026-06-23)
+## Auto-activation triggers
 
-Beyond explicit `/upshift` invocation, when the signals below appear, **SUGGEST** to the operator "this looks upshift-class -- run `/upshift --triage`?" and WAIT for explicit confirmation. NEVER auto-fire the engagement yourself: auto-firing a multi-skill flow (gravedigger + mrrobbot + the /disclose disclosure) from a passive signal violates firmaudit's NON-NEGOTIABLE no-auto-orchestration rule and risks an unauthorized outward-facing disclosure cascade. Signals:
+Beyond explicit `/upshift` invocation, this skill auto-activates when:
 - `/gravedigger` Phase 0 detects: FastAPI/Express backend AND Solidity contracts in scope AND executor/keeper/operator wallet pattern (any role granted with `MINTER`, `MANAGER`, `KEEPER`, `OPERATOR`, `EXECUTOR` semantics, EOA-typed)
 - `/mrrobbot` Phase 0 detects same
 - User mentions in conversation: "DeFi protocol with backend", "executor wallet", "operator EOA controlling vault", "off-chain orchestration", "delta-neutral hedge with backend", "RWA tokenized account with operator"
 
-On EXPLICIT operator confirmation, route to `/upshift --triage <target>` first to confirm the profile. (U-1 fix: SUGGEST, never auto-fire; the operator stays in the loop.)
+When auto-activated, route to `/upshift --triage <target>` first to confirm the candidate matches the profile.
 
 ## Memory integration
 

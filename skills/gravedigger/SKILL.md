@@ -5,6 +5,16 @@ description: Systematic deep security research methodology. Use when conducting 
 
 # GraveDigger — Systematic Deep Security Research
 
+## PATTERN BANK — H1-HUNTING-PATTERNS (web/API), NOT the SC corpus (G-4 fix, 2026-06-23)
+
+gravedigger is a WEB/API skill; its pattern bank is the H1 hacktivity corpus, not the SC class-density corpus.
+
+    ~/arsenal/tools/precedent-scan.sh "<class>"   # IDOR | SSRF | "auth bypass" | race ... → W5 precedent table
+    # + H1-HUNTING-PATTERNS.md (60+ web patterns, 13 categories) auto-activates Phase 2 §2.20 + Phase 4 §4.13
+
+The SC `corpus-query <shape>` tool (amm/lending/bridge class-density) is for the SC skills firmaudit/mrrobbot — it has NO web/api shape, so it does NOT apply here. Use H1-HUNTING + precedent-scan as the web pattern bank.
+
+
 You are a systematic security researcher executing the GraveDigger methodology. This methodology was extracted from campaigns that produced 40+ findings, 3 mainnet-proven, 7 attack chains, and $332M TVL exposed. Follow it mechanically — the results come from the process, not improvisation.
 
 ## Skill Resources
@@ -36,6 +46,8 @@ Read the relevant companion files BEFORE executing each phase:
 | `~/arsenal/methodology/H1-HUNTING-PATTERNS.md` | **HackerOne hacktivity patterns** — 60+ patterns: IDOR, SSRF, RCE, race conditions, auth bypass, business logic, API, cache, AI/LLM. 13 categories with grep detection + chain potential. | For ANY web/API target (auto-activate in Phase 2) |
 | `~/arsenal/methodology/H1-STATISTICS.md` | Bounty ROI analysis, payout distribution by vuln type, target selection heuristics, industry patterns | Phase 0.5 deep mode decision + target prioritization |
 
+> **Tool-existence guard (G-2 fix, 2026-06-23) — before any 'MANDATORY — CLAUDE AUTO-EXECUTES' block.** The auto-execute tools (injection-proxy, redis-recon-scanner, jwt-arsenal, reverse-lookup.py, the playbooks) are HARDCODED paths. Before auto-running one: `ls <path> 2>/dev/null` — if MISSING (fresh install / machine-2 not synced / tool moved), NOTE "tool X unavailable, surface Y uncovered" in the workspace and CONTINUE the phase. Never crash, never silently skip. "Never ask" authorizes running an EXISTING tool without prompting; it does NOT authorize crashing on a missing one.
+
 **Integration with other skills:**
 - `/disclose` — Format findings for direct disclosure to protocol teams
 - `/immunefi-submit` — Format findings for Immunefi submission
@@ -47,7 +59,7 @@ Read the relevant companion files BEFORE executing each phase:
 ```
 /gravedigger <target>              # Start new investigation
 /gravedigger <target> --resume     # Resume existing investigation
-/gravedigger <target> --phase N    # Jump to specific phase
+/gravedigger <target> --phase N    # Jump to specific phase (exec order: -1,0,0.5,1,1.5,2,3,4,5,9,7,6 — 9/7/6 run LATE)
 /gravedigger <target> --cross-ref  # Run cross-reference matrix on existing findings
 /gravedigger <target> --promote    # Attempt evidence promotion on all findings
 /gravedigger <target> --status     # Show investigation status
@@ -57,7 +69,7 @@ Read the relevant companion files BEFORE executing each phase:
 |----------|-------------|
 | `<target>` | Protocol name, domain, or contract address |
 | `--resume` | Load existing `{target}-recon/` workspace and continue |
-| `--phase N` | Start at phase N (1-6), skipping earlier phases |
+| `--phase N` | Start at phase N. EXECUTION ORDER is -1,0,0.5,1,1.5,2,3,4,5,9,7,6 — phases 9/7/6 are numbered HISTORICALLY, not by run order (9=chain-composition, 7=multi-report, 6=preflight all run LATE). `--phase 6` = preflight (the LAST phase), not 'sixth'. (G-3 fix) |
 | `--cross-ref` | Run §5.1 cross-reference matrix on all findings in workspace |
 | `--promote` | Run §5.3 evidence promotion on all findings |
 | `--status` | Display investigation status tracker from workspace |
@@ -204,6 +216,24 @@ Some targets justify 50-100h instead of the standard 15-25h. Evaluate BEFORE sta
 ```
 
 **Output:** `{protocol}-recon/RECON.md`
+
+### Phase 1.5: Web Seam Thesis (NEW — G-1 fix — name the boundary nobody owns BEFORE the catalogue sweep)
+
+> **Why (the darkside/firmaudit lesson, ported to web).** Phase 2's H1 11-step scan + JWT/OAuth/Container arsenals are CATALOGUE-mode — they find what the kit is tuned for, which on a hardened/audited web target the auditors already swept (refuted noise). The wins on a hardened web target are in the SEAM — the boundary nobody owns — that has NO H1 category. Helix #134 (off-chain ATO via authz-grant-as-identity) was a SEAM, not any P-H1-* pattern. Name the seam FIRST, aim Phase 2-4 depth at it; the H1 catalogue is the completeness backstop, not the aim.
+
+**The web seam catalogue (name the boundary, aim depth there):**
+| Seam | Unowned assumption | Where it breaks |
+|---|---|---|
+| authn ↔ authz | "a valid token = the owner of this resource" | gate proves a token is needed, never that THIS token OWNS THIS id → IDOR/BFLA (R19/R34) |
+| session-layer ↔ HMAC/API-key layer | "both layers gate the same op identically" | a route is session-only / key-only; a 401 on the wrong layer ≠ secure (R33) |
+| web ↔ mobile / REST ↔ WS ↔ GraphQL | "all interfaces enforce the same auth" | M-H1-001 inconsistent auth across interfaces |
+| on-chain ↔ off-chain backend (BFF/keeper) | "the backend only signs/authorizes validated events" | BFF treats an on-chain artifact (authz grant, NFT, balance) as identity proof → Helix #134 |
+| frontend bundle ↔ backend | "the client enforces what the server assumes" | client-side gate, server trusts a client-provided value (M-H1-005) |
+| spec MUST ↔ implementation | "the impl follows the RFC/OAuth/SIWE spec" | a MUST silently downgraded (SIWE field, OAuth state/PKCE) |
+
+**Procedure (15 min, before Phase 2):** for each adjacent pair on the target, name the trust-handoff and score its unowned-ness (is either side reviewed? does either review cover the HANDOFF?). A seam is a HYPOTHESIS, not a finding — verify the untrusted-reachable leg FIRST (harness+suspend). Phase 2 then runs pointed at the seam paths first; the H1 catalogue is the completeness backstop. **For the deep seam-discovery (the no-CWE composition bug), invoke `/darkside` (Door C): gravedigger is the catalogue/completeness engine, darkside is the discovery engine — run BOTH.**
+
+**Output:** `recon/SEAM-THESIS.md` → biases Phase 2-4 depth.
 
 ### Phase 2: Surface Mapping (90 min max)
 

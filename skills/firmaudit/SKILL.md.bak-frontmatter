@@ -1,33 +1,9 @@
 ---
 name: firmaudit
-description: >-
-  Firm-grade deep security audit in immortal mode — no time limit, no token limit, audit-firm quality, zero LLM garbage. Runs Phase 0 Target Intelligence (scripted via phase0-intel.sh) → Phase S Seam Thesis (name the boundary nobody owns: audited-code↔deployed-config / contract↔Safe-topology / on-chain↔off-chain-operator / spec↔impl / lang-A↔lang-B binding — the region where vulns accumulate because no review covers the handoff; biases triage) → Phase T top-down Triage (threat-model → path graph → reachability → recevability scope/dup/edge-fit/loss=$X → T6d FORTRESS GATE → GO/NO-GO; kills unwinnable targets day-1) → Phase A Audit-Conditions Extraction (read audit PDFs as a map of accepted conditions, fuse threshold, on-chain⇒cast_call) → Phase R Active-Recon Execution (RUN every probe, never note) → adaptive plan executed as the 4-PASS fan-out (Pass 1 primary on seam paths → Pass 2 expansion authority-chain/secrets/shadow-surface → Pass 3 mirror-invariant V_in-vs-V_out [the Critical-forming pass] → Pass 4 chain construction) with dig→adversarial-verify→operator-hand-verify per pass. The single skill for any new high-value target/contest (Cantina/C4/Sherlock/HackerOne/HackenProof/direct). Use when the user wants a deep professional engagement and does NOT want a fast pass — and ALSO whenever the question is "is this target worth my time / where do I start / which surface first". Reads exploit-primitive-mindset + gravedigger + mrrobbot + upshift/upshift2 as REFERENCE; does NOT auto-orchestrate them. Trigger on "/firmaudit", "firm-grade audit", "audit digne des grandes firms", "mode immortel", "vaut le coup / par où commencer / quelle surface", or when the user pastes the FIRM-AUDIT-PROMPT.
+description: Firm-grade deep security audit in immortal mode — no time limit, no token limit, audit-firm quality, zero LLM garbage. Runs Phase 0 Target Intelligence (scripted via phase0-intel.sh) → Phase S Seam Thesis (name the boundary nobody owns: audited-code↔deployed-config / contract↔Safe-topology / on-chain↔off-chain-operator / spec↔impl / lang-A↔lang-B binding — the region where vulns accumulate because no review covers the handoff; biases triage) → Phase T top-down Triage (threat-model → path graph → reachability → recevability scope/dup/edge-fit/loss=$X → T6d FORTRESS GATE → GO/NO-GO; kills unwinnable targets day-1) → Phase A Audit-Conditions Extraction (read audit PDFs as a map of accepted conditions, fuse threshold, on-chain⇒cast_call) → Phase R Active-Recon Execution (RUN every probe, never note) → adaptive plan executed as the 4-PASS fan-out (Pass 1 primary on seam paths → Pass 2 expansion authority-chain/secrets/shadow-surface → Pass 3 mirror-invariant V_in-vs-V_out [the Critical-forming pass] → Pass 4 chain construction) with dig→adversarial-verify→operator-hand-verify per pass. The single skill for any new high-value target/contest (Cantina/C4/Sherlock/HackerOne/HackenProof/direct). Use when the user wants a deep professional engagement and does NOT want a fast pass — and ALSO whenever the question is "is this target worth my time / where do I start / which surface first". Reads exploit-primitive-mindset + gravedigger + mrrobbot + upshift/upshift2 as REFERENCE; does NOT auto-orchestrate them. Trigger on "/firmaudit", "firm-grade audit", "audit digne des grandes firms", "mode immortel", "vaut le coup / par où commencer / quelle surface", or when the user pastes the FIRM-AUDIT-PROMPT.
 ---
 
 # /firmaudit — Firm-Grade Deep Audit, Immortal Mode
-
-## 🦴 SPINE — the load-bearing skeleton (obey this even when the 500 lines below truncate under context pressure)
-
-The flow, each phase's OUTPUT ARTIFACT (mechanically checkable), the one-line why:
-
-```
-Phase 0  → PHASE0-INTEL.md + SURFACE-INVENTORY.md  | right code? fresh delta? full surface mapped?
-Phase S  → recon/SEAM-STATEMENT.md                 | name the boundary nobody owns — the wins live HERE, not in the catalogue
-Phase T  → TRIAGE-CARD.md (GO/NO-GO)               | is it WINNABLE? kill unwinnable day-1 (the #1 ROI of this skill)
-Phase A  → analysis/AUDIT-CONDITIONS.md            | audits = a map of accepted conditions to cast-call, NOT a saturation thermometer
-Phase R  → analysis/RECON-PROBES.md                | RUN every probe you can name — a noted probe is not a run probe
-4-PASS   → analysis/INVENTORY-PASS-{1,2,3,4}.md    | 1 primary · 2 expansion · 3 mirror-invariant (Criticals form here) · 4 chain. One pass ≠ an engagement.
-Door C   → (the darkside skill, by hand)           | the no-CWE composition bug a catalogue-mode pass structurally cannot see
-ledger   → analysis/COVERAGE-LEDGER.md             | enumerate EVERY in-scope file; 0 uncovered before any fortress/NO-GO
-```
-
-Two invariants the rest of this file ELABORATES but you must not lose:
-1. **No null / NO-GO / submission until `~/arsenal/tools/firmaudit-spine.sh <workspace>` is run and EVERY `MISSING` artifact has a written allowed-reason.** Prose-"MANDATORY" ≠ done — the spine check is the mechanical proof the phases actually ran (the lifecycle scripts gate only the per-finding submission layer D0/D8b/D9, NOT these process phases; this is the gap that gate closes).
-2. **Encoded ≠ applied (§0.5.4).** This skill is long; the spine is what you obey when attention truncates. Do the spine and you did the load-bearing 20%. Adding a rule below does NOT raise coverage if it pushes the spine out of attention — the spine is the floor that survives.
-
-
-> **Catalogue/corpus is a Pass-2 COMPLETENESS tool, NOT a Phase-0 primer (F-3 fix, 2026-06-23).** `~/arsenal/tools/corpus-query.sh <shape>` (class-density + named P-XXX patterns) runs in **Pass 2 (Expansion)**, AFTER Phase S (seam) and Door C have decided where depth goes. Putting the catalogue FIRST primes the vector-first failure Phase S exists to forbid — the wins are in the un-catalogued seam, not the class-density list. The corpus backstops completeness; it never aims the hunt.
-
 
 You are running an audit at the standard of a top-tier audit firm (Trail of Bits / Spearbit / Cantina lead level). The deliverable is firm-grade. **Not LLM garbage.** The operator (#1 Transak leaderboard) deploys this consciously when a target deserves depth — not for a fast pass.
 
@@ -458,11 +434,6 @@ const handVerify = results.flatMap(r => r.verdicts)
 **General transition rule for all passes:** trigger Pass N→N+1 only when Pass N's output artifact is COUNT-complete against its input set — P1: INVENTORY-PASS-1 vs TRIAGE-CARD P0/P1 paths; P2: INVENTORY-PASS-2 has a row for each of the 5 sub-passes (2A-2E) per relevant actor/surface; P3: every Pass-1+2 primitive has a MIRROR-AUDIT V_in-vs-V_out line; P4: every primitive pair/triplet in PRIMITIVES-MAP has a chain-or-no-chain verdict. No transition on "feels long / feels enough."
 
 **Pass 2 — Expansion (the pack's blind spots — ~1/3 of yield).** Five mandatory sub-passes, each a fan-out cluster:
-
-**2F (completeness backstop) — corpus class-density.** Run `~/arsenal/tools/corpus-query.sh <shape>` (`--list` for shapes): the highest-pay-density classes for this protocol shape + their detection_tells + named P-XXX patterns (ORACLE-enriched). Cross-check that Pass-1's seam dig did not SKIP a class that pays on this shape. This is a completeness check on the catalogue, NOT a re-aim — Phase S/Door C already chose the depth target; 2F only catches a catalogued class the seam-first dig structurally walked past.
-
-**2G (method bank) — `corpus-query --methods <class>`.** Beyond the detection_tell (WHAT to grep), the corpus carries `discovery_how` — the investigative METHOD that found each bug (trace-units / hand-simulate-loop / expand-formula-symbolically / enumerate-all-writers / compare-sibling). Pull the per-class method bank to import the HOW-TO-FIND, not just the what: `~/arsenal/tools/corpus-query.sh --methods <class>`. This is the discovery-technique layer — the closest the catalogue gets to a Door-A method, distinct from Door-C surprise.
-
 - **2A Authority/governance chain** — for EVERY privileged role / admin / upgrade authority / trust anchor from Pass 1, trace the FULL chain to its root (EOA→Safe→Timelock→ProxyAdmin→Impl on EVM; session→role→tenant-admin→platform-admin on web; IAM→assume-role→trust-policy→root on infra; key→KDF→trust-root on crypto). Look for single-point-of-failure at root + **naming deception** (a "multisig"/"timelock"/"MPC" that is actually one key — this is A20/A34, recurrent everywhere).
 - **2B Secret/credential hygiene** — forensic sweep for any credential that crossed a build-time→run-time or internal→external boundary (deployed bundles, image layers, CI logs, config dumps). A9/A13 class.
 - **2C Privileged-actor under stress** — per privileged actor: what if compromised / rotated / out of resources? Is there pause / recovery / override / timelock? How long static (exposure window)?
@@ -502,8 +473,6 @@ The map also catches the inverse error: two findings you THOUGHT were one (diffe
 ## §7 — Legal stop conditions (immortal mode)
 
 Stop a phase ONLY when, and log the measurement:
-
-**0. (MECHANICAL, before the three below) — run `~/arsenal/tools/firmaudit-spine.sh <workspace>`, paste its output, and give every `MISSING` process artifact a written allowed-reason. A stop/NO-GO with an un-accounted MISSING = a skipped MANDATORY phase (the F-1 gap: the lifecycle scripts gate only the per-finding D0/D8b/D9 submission layer, NOT these process phases). This is the SPINE check enforced at the stop.**
 1. forge-lint / cargo-clippy green (no compile/lint debt), AND
 2. internal-consistency scan = 100% (every guard on path X verified present on its mirror path), AND
 3. mirror-coverage exhaustive (every V_in / V_out pair enumerated and compared in writing).
@@ -528,7 +497,7 @@ A null result on a right-profile target → `_negative-results.md` with the spec
 ## First action every invocation
 1. Confirm immortal mode + no-auto-orchestration to the operator in one line.
 2. Run `~/arsenal/audit-lifecycle/bin/init-target.sh` if a workspace isn't initialized (Rule 38).
-3. Run `~/arsenal/tools/firmaudit-spine.sh` once at intake to see the process-artifact coverage you must fill (it starts all-MISSING; each phase fills its row). Then run `phase0-intel.sh` → Phase 0. Then **Phase S (seam thesis) → Phase T triage → GO/NO-GO BEFORE any deep plan**. Phase S names the boundary nobody owns and BIASES Phase T's path scoring; Phase T is the absorbed top-down gate. Do not skip to a plan. **If Phase T = NO-GO, stop and report the card** — entering deep audit on a NO-GO target is the exact failure this skill exists to prevent.
+3. Run `phase0-intel.sh` → Phase 0. Then **Phase S (seam thesis) → Phase T triage → GO/NO-GO BEFORE any deep plan**. Phase S names the boundary nobody owns and BIASES Phase T's path scoring; Phase T is the absorbed top-down gate. Do not skip to a plan. **If Phase T = NO-GO, stop and report the card** — entering deep audit on a NO-GO target is the exact failure this skill exists to prevent.
 4. On GO: Phase A (audit-conditions) → Phase R (execute probes) → then the deep plan executes the **4-PASS fan-out** (Pass 1 primary on the seam paths → Pass 2 expansion → Pass 3 mirror-invariant → Pass 4 chain), each pass an operator-hand-verified Workflow. A stop after Pass 1 = the vector-first failure this skill now explicitly forbids.
 
 **The full flow:** Phase 0 (intel) → **Phase S (seam)** → Phase T (GO/NO-GO) → Phase A (audit-conditions) → Phase R (execute recon) → Adaptive Plan executed as **4-PASS fan-out** → §7 stop (all 4 passes + mirror-coverage + seam swept) → gates (kill-gate/severity-commit/D7-D9/preflight).

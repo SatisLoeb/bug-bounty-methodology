@@ -1,7 +1,6 @@
 ---
 name: report-nerve
-description: >-
-  Production-grade structural framework for bug bounty reports, security advisories, vulnerability disclosures, and post-dismissal appeals. Provides the rigor scaffolding: killshot opening for Critical/High with PoC, chain-of-custody comment template, chain acceptance verification block, weight accounting pre-submission gate, enforcement matrix tables, anti-pattern naming discipline, negative space articulation, and baseline+contrast evidence structure. Use whenever drafting a serious external security report destined for HackerOne, Cantina, HackenProof, Code4rena, Sherlock, Immunefi (when applicable), or upstream GHSA. Invoke chill skill as a styling pass when the target program uses human triagers prone to anti-AI screening (HackerOne, public Cantina contests, HackenProof). Skip chill when the target is a formal Cantina private audit, IACR academic submission, or pure upstream OSS GHSA.
+description: Production-grade structural framework for bug bounty reports, security advisories, vulnerability disclosures, and post-dismissal appeals. Provides the rigor scaffolding: killshot opening for Critical/High with PoC, chain-of-custody comment template, chain acceptance verification block, weight accounting pre-submission gate, enforcement matrix tables, anti-pattern naming discipline, negative space articulation, and baseline+contrast evidence structure. Use whenever drafting a serious external security report destined for HackerOne, Cantina, HackenProof, Code4rena, Sherlock, Immunefi (when applicable), or upstream GHSA. Invoke chill skill as a styling pass when the target program uses human triagers prone to anti-AI screening (HackerOne, public Cantina contests, HackenProof). Skip chill when the target is a formal Cantina private audit, IACR academic submission, or pure upstream OSS GHSA.
 ---
 
 # report-nerve
@@ -671,8 +670,6 @@ Helix #134 shipped with **four** capability claims inferred-from-structure, neve
 ### Closing gate — mandatory before draft is considered complete
 
 Run these three greps on the draft. All three must return clean before the draft is rendered or sent. This is the closing condition referenced in the section header — not an optional review.
-
-> **RN-1 hardening (darkside-on-report-nerve, 2026-06-23): grep-clean is NECESSARY, not SUFFICIENT.** A syntactic grep catches only the LISTED phrasings; the same self-flagellation / severity-concession / unverified-path / overclaim survives in UNLISTED wording ("I should have caught this" misses the Rule-1 grep; a hedged concession misses Rule-2). The real gates are the SEMANTIC Rule 1-4 read above + the D9 adversarial-rebuttal pass (CLAUDE.md Rule 42 — the layer that caught the 6 semantic flaws the syntactic D0-D8 missed on Superform). The grep is the mechanical BACKSTOP, never the proof the draft is clean. Treat a clean grep as 'no known tell remains', then still do the semantic read.
 
 ```bash
 # Rule 1 — self-flagellation

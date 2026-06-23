@@ -5,9 +5,16 @@ description: Adaptive security audit framework for smart contracts and web targe
 
 # MrRobbot — Adaptive Security Audit Framework
 
+## PATTERN BANK — corpus/pattern-scan = candidate SURFACER, the CHECK MATRIX is the AIM (M-2 fix, 2026-06-23)
+
+This skill's core principle is "NOT in surface patterns" — so the catalogue must not be the aim. `corpus-query <shape>` (SC class-density, domain-matched) and `pattern-scan.sh` (Phase 0) SURFACE candidates cheaply; the **CHECK MATRIX + MIRROR INVARIANT (Phase 1)** are the discovery technique that actually finds the 14-audit-survivor bug. Surface with the catalogue, AIM with the matrix — never let the catalogue replace it. `~/arsenal/tools/corpus-query.sh <shape>` (patterns) + `corpus-query --methods <class>` (the discovery METHODS / `discovery_how` — HOW each bug was found: trace/simulate/diff/enumerate, not just what to grep). The method bank imports the investigative technique, the closest the catalogue gets to the check-matrix's discovery mindset.
+
+
 You are executing the MrRobbot methodology — an adaptive security audit framework that adjusts its depth based on what you find. This replaces surface scanning with parallel agents. The framework was battle-tested on Reserve Protocol ($10M bounty, 14+ audits, produced 1 confirmed Medium via check matrix technique).
 
 **Core principle:** Go deep on one target for weeks. The bugs that survive 14 audits live in UNAUDITED code, cross-module state transitions, and function-level check inconsistencies — not in surface patterns.
+
+**Door A vs Door C (M-1 fix — the discovery doors).** The check matrix (Phase 1) and the mirror invariant are **Door A** — they find the SIBLING that differs / the guard that is absent (both need a pair to compare). They do NOT find the no-CWE COMPOSITION bug where the whole design is the bug and there is no sibling (F-STALE-NAV class: hand-posted NAV + park-not-burn queue, four audits missed it). On a 14-audit survivor — exactly this skill's target — that composition bug is where the remaining win lives. **Invoke `/darkside` (Door C) in PARALLEL with the check matrix: mrrobbot = catalogue + inconsistency completeness; darkside = the un-catalogued composition discovery. Run BOTH — the SC>$50K cadence without Door C is the vector-first failure firmaudit named.**
 
 ## Arguments
 
@@ -35,6 +42,8 @@ You are executing the MrRobbot methodology — an adaptive security audit framew
 
 ## Automated Tools (MANDATORY — run these, don't do manually what tools can do)
 
+> **Tool-existence guard (M-3 fix) — before any 'MANDATORY run these' tool.** The tools below are HARDCODED paths. `ls <path> 2>/dev/null` first; if MISSING (fresh install / machine-2 not synced / moved), NOTE "tool X unavailable, surface Y uncovered" and CONTINUE — never crash, never silently skip. 'MANDATORY' = run an EXISTING tool, not crash on a missing one.
+
 | Tool | Command | When |
 |------|---------|------|
 | `~/arsenal/tools/pattern-scan.sh` | `./pattern-scan.sh <dir> --type vault\|dex\|bridge\|lending\|staking --lang sol\|rs\|go` | Phase 0 — first thing after cloning. Run BEFORE manual review. |
@@ -51,8 +60,9 @@ You are executing the MrRobbot methodology — an adaptive security audit framew
 
 | File | Content | Count |
 |------|---------|-------|
-| `~/arsenal/methodology/C4-HUNTING-PATTERNS.md` | Solidity vulnerability patterns from C4 reports | 128 patterns |
+| `~/arsenal/methodology/C4-HUNTING-PATTERNS.md` | Solidity patterns from C4 (older sibling — SUPERSEDED by the 163-corpus below, same lineage; kept for the inline grep tells) | 128 patterns |
 | `~/arsenal/methodology/MULTI-LANG-PATTERNS.md` | Rust (R-001 to R-010), Go (G-001 to G-008), Cairo (C-001 to C-005), Move (M-001 to M-003) | 28 patterns |
+| `~/arsenal/tools/corpus-query.sh <shape>` (c4-corpus + solodit) | Shape-prioritized class-density + detection_tells + named P-XXX patterns (ORACLE-enriched) | 1484 findings / 163 patterns |
 | `~/arsenal/methodology/H1-HUNTING-PATTERNS.md` | HackerOne hacktivity patterns: IDOR, SSRF, RCE, race conditions, auth bypass, business logic, API, cache, AI/LLM | 60+ patterns |
 | `~/arsenal/methodology/H1-STATISTICS.md` | Bounty ROI analysis, payout distribution, target selection heuristics, industry patterns | Data-driven |
 
