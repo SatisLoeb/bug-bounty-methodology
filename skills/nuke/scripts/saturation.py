@@ -1,26 +1,36 @@
 #!/usr/bin/env python3
 """
-NUKE saturation filter (v2, two-column) — the FINE de-prioritization read, hardened against the three
-ways a corpus intersection lies to its operator:
+NUKE saturation filter (v3, vein-granular) — the FINE de-prioritization read.
 
-  (1) VEIN-DISTANCE. A corpus hit does NOT declare "same money-path" — it declares a finding on a path
-      that resembles yours at an abstraction level you didn't fix. Too-tight matching → you declare a vein
-      VIERGE that has a finding phrased under another class → you dig a DUP (the costly reject-after-work).
-      FIX: broaden the collision net (class OR keyword/ident overlap) and default toward COVERAGE-FP —
-      output COLLISION CANDIDATES to REFUTE BY HAND, never a "taken/not-taken" verdict. A candidate is
-      LABOURÉE only after you read it and confirm the SAME broken invariant.
-  (2) TWO CAUSES OF EMPTINESS. Zero hits = "nobody looked" (the signal) OR "looked, judged non-exploitable,
-      nothing published". The findings corpus holds only POSITIVES → mined-empty veins leave no trace. FIX:
-      a SECOND column — the target's own audit-report SCOPE/COVERAGE (`--coverage <file>`, the PDF's
-      "we reviewed X,Y,Z", NOT Solodit). A vein IN declared scope with no finding = MINÉ-VIDE? (a possible
-      graveyard, not virgin). VIERGE-RÉEL = the intersection of both voids: no finding AND outside all
-      declared scope.
-  (3) EMERGENT VEINS. The negative space encodes YOUR system model, not the protocol's. It enumerates the
-      fork-source's canonical money-paths → excellent at "which KNOWN vein is free", structurally BLIND to
-      the integration-seam vein absent from the canonical fork. FIX: the output SAYS SO — it de-prioritizes
-      the KNOWN, it is not a map of the territory; the 13th vein lives in /darkside Door-C / the upshift seam.
+v2 made COLLISION a retriever (candidates to refute by hand, not a verdict) — correct. But the three
+matchers AROUND it still consumed the CLASS WORD, never the VEIN itself, so the "fine" filter went
+class-coarse exactly where it had to be fine. v3 closes that single root, four ways:
 
-Importable: `compute_saturation(sig, forks, shape, corpus, coverage_text="")` -> (rows, corpus_ok).
+  (1) COLLISION was class-granular: kw_net used label-tokens + EXPAND[class], never the vein's mechanism.
+      Two veins of one class (stale-oracle vs spot-manip) shared the same net → one oracle finding put
+      ALL oracle veins in SUSPECT; and EXPAND on dense classes (accounting→balance,fee,mint,share…) hit a
+      huge slice of the corpus → discriminating power INVERTED (blind where the corpus is dense, i.e. where
+      the repo looks class-guarded and hides virgin veins). FIX: feed the vein's own mechanism tokens
+      (from `money`+`tell`, the grep-level idents like get_price_no_older_than / total_shares /
+      SubMsg::reply) into the net, and SCALE the collision threshold with corpus density — a DENSE class
+      demands a match on a SPECIFIC vein token, a RARE class keeps the broad OR. Where the negative-space
+      is class-only (EVM silent_classes carry no money/tell), a dense-class collision is kept but flagged
+      `resolution: class-only` — labeled-unresolved, never silently promoted to precise SUSPECT nor
+      silently dropped to false-VIERGE.
+  (2) COVERAGE (column 2) had the same defect AND it EXCLUDES (worse): class-word-in-prose → "we reviewed
+      the vault accounting" nuked every accounting vein to MINÉ-VIDE?, dropping real virgins out of the
+      dig-list. FIX: coverage matches CODE-LOCATION, not the class word — extract only code-shaped tokens
+      (file paths, Contract names, fn idents) from the audit scope and match the vein's OWN code idents
+      against them. Prose-only scope → module matching is inert (and said so), never an exclusion.
+  (3) SILENT FALSE-VIERGE: fork_findings fills by substring; a mis-named/niche fork matches ZERO findings →
+      every vein VIERGE, visually identical to a real virgin target. FIX: count fork matches, warn LOUD
+      when a fork matched 0 ("probably a fork name absent from the corpus, NOT a virgin target").
+  (4) RESIDUAL CLASSIFIERS demoted inside VIERGE: `payable` (VIERGE(low-pay)) and map_class→["other"]
+      (novel label) both re-buried the emergent-seam vein the CAVEAT says is absent. FIX: keep them at
+      VIERGE rank and ANNOTATE ("hors pay-class du shape" / "label novel → couture émergente"); the novel
+      seam sorts FIRST inside VIERGE, never below.
+
+Importable: `compute_saturation(sig, forks, shape, corpus, coverage_text="")` -> (rows, info).
 """
 import argparse
 import json
@@ -48,7 +58,8 @@ KW_TO_CORPUS = [
     ("govern", "governance"), ("vote", "governance"), ("dos", "DoS"), ("griefing", "DoS"), ("gas", "DoS"),
     ("mev", "MEV-sandwich"), ("sandwich", "MEV-sandwich"), ("front", "MEV-sandwich"), ("slippage", "MEV-sandwich"),
 ]
-# per-class keyword expansion for the BROAD collision net (catches findings phrased under another class).
+# per-class BROAD net (the class-coarse arm — only decisive for RARE classes; on dense classes it is the
+# noise the vein-net must override).
 EXPAND = {
     "oracle": ["oracle", "price", "slot0", "latestanswer", "latestrounddata", "twap", "spot", "staleness", "chainlink", "pyth"],
     "reentrancy": ["reentran", "callback", "before", "after", "cei", "checks-effects"],
@@ -61,7 +72,17 @@ EXPAND = {
     "liquidation": ["liquidat", "health", "seiz", "bad-debt"], "DoS": ["dos", "griefing", "unbounded", "gas", "revert"],
     "governance": ["govern", "vote", "proposal", "timelock", "quorum"],
 }
-_TOKEN = re.compile(r"[a-z0-9]+")
+_WORD = re.compile(r"[a-z0-9_]+")
+_IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}(?:\(\))?")
+_PATH = re.compile(r"[A-Za-z0-9_./-]+\.(?:sol|rs|go|move|cairo|vy|ts)\b")
+# generic DeFi/class prose — present in a huge fraction of findings, so USELESS as a vein discriminator.
+GENERIC = set("""oracle price prices fee fees share shares balance balances mint mints burn amount amounts
+account accounts accounting reward rewards debt collateral asset assets token tokens vault vaults value
+values check checks state states user users owner owners admin config configs update updates set sets get
+gets with without before after when then that this from into over under call calls send sends transfer
+transfers withdraw withdraws deposit deposits redeem redeems borrow borrows repay repays swap swaps pool
+pools fund funds pay pays paid could should would will must does missing wrong incorrect return returns
+function functions contract contracts module modules address addresses caller sender receiver protocol""".split())
 
 
 def _load(p):
@@ -79,18 +100,44 @@ def map_class(label):
     return list(dict.fromkeys(hits)) or ["other"]
 
 
-def kw_net(label, ccls):
-    kws = set(w for w in _TOKEN.findall((label or "").lower()) if len(w) >= 4)
-    for c in ccls:
-        kws.update(EXPAND.get(c, [c]))
-    return kws
+def code_tokens(text):
+    """STRICT code-location tokens ONLY: file paths, snake_case, CamelCase idents, `::` paths. NO prose
+    words. Used for the coverage column (column 2) and for the vein's location side, so a MINÉ-VIDE? verdict
+    means the scope NAMED the vein's code location — never that a class word appeared in an English sentence."""
+    t = text or ""
+    out = set()
+    for m in _PATH.findall(t):
+        low = m.lower()
+        out.add(low)
+        out.add(low.rsplit("/", 1)[-1])
+    for m in _IDENT.findall(t):
+        if ("_" in m) or ("::" in m) or (re.search(r"[a-z][A-Z]", m) is not None):
+            out.add(m.rstrip("()").lower())
+    return out
+
+
+def mech_tokens(text):
+    """Vein-DISCRIMINATING tokens for the collision net (column 1): strict code idents PLUS distinctive
+    long words (staleness, discriminator, reentrancy…). Looser than code_tokens because collision recall
+    matters more there; generic class prose is still dropped — it cannot discriminate veins."""
+    t = text or ""
+    out = set(code_tokens(t))
+    for m in _IDENT.findall(t):
+        w = m.rstrip("()").lower()
+        if len(w) >= 6 and w not in GENERIC:
+            out.add(w)
+    return out
 
 
 def veins_of(sig):
+    """Each vein carries its class label AND, when the negative space is curated (non-EVM), the mechanism
+    fields money/tell that make it VEIN-granular. EVM silent_classes are plain class strings (money/tell
+    empty) → the filter labels their dense-class collisions `class-only`, never fakes precision."""
     sd = sig.get("silent_detail") or []
     if sd:
-        return [(c.get("class", "?"), c.get("vein", "")) for c in sd]
-    return [(c, "") for c in (sig.get("silent_classes") or [])]
+        return [{"label": c.get("class", "?"), "vein": c.get("vein", ""),
+                 "money": c.get("money", ""), "tell": c.get("tell", "")} for c in sd]
+    return [{"label": c, "vein": "", "money": "", "tell": ""} for c in (sig.get("silent_classes") or [])]
 
 
 def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
@@ -99,9 +146,17 @@ def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
     pti = _load(os.path.join(corpus_dir, "protocol-type-index.json")) or {}
     findings_path = os.path.join(corpus_dir, "findings.jsonl")
     corpus_ok = os.path.isfile(findings_path)
-    cover_tokens = set(w for w in _TOKEN.findall((coverage_text or "").lower()) if len(w) >= 4)
 
-    # COLUMN 1 — collect the (small) set of corpus findings on THIS target/fork; keep full text for the net.
+    # density cut: a class at/above the MEDIAN class-total is "dense" — there, a bare class-word collision
+    # is near-meaningless, so we demand a specific vein token. Self-calibrates as the corpus grows.
+    totals = sorted((v or {}).get("total", 0) for v in cmap.values() if isinstance(v, dict))
+    dense_cut = totals[len(totals) // 2] if totals else 300
+
+    # coverage column 2 = STRICT CODE-LOCATION tokens only (file paths / Contract / fn idents), NOT prose.
+    cover_code = code_tokens(coverage_text)
+    cover_prose_only = bool((coverage_text or "").strip()) and not cover_code
+
+    # COLUMN 1 — the (small) set of corpus findings on THIS target/fork; keep full text for the net.
     fork_findings = []
     if corpus_ok and forks:
         with open(findings_path, encoding="utf-8", errors="replace") as fh:
@@ -119,6 +174,7 @@ def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
                 fork_findings.append({"classes": set(d.get("classes") or []), "text": text,
                                       "protocol": d.get("protocol", "?"), "title": (d.get("title", "") or "")[:80],
                                       "link": d.get("link", "")})
+    n_fork = len(fork_findings)
 
     shape_top = set()
     if shape:
@@ -127,33 +183,89 @@ def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
         shape_top = set(e.get("class") if isinstance(e, dict) else e for e in tc)
 
     rows = []
-    for label, vein in veins_of(sig):
+    for v in veins_of(sig):
+        label = v["label"]
         ccls = map_class(label)
-        kws = kw_net(label, ccls)
-        # BROAD collision: class-overlap OR keyword/ident overlap (catches other-phrasing dups)
-        collisions = [f for f in fork_findings
-                      if (f["classes"] & set(ccls)) or any(k in f["text"] for k in kws)]
         global_total = sum((cmap.get(c, {}) or {}).get("total", 0) for c in ccls)
-        payable = bool(shape_top & set(ccls)) if shape_top else (global_total > 0)
-        tell = next(((cmap.get(c, {}) or {}).get("detection_tell") for c in ccls if (cmap.get(c, {}) or {}).get("detection_tell")), "")
-        # COLUMN 2 — declared audit coverage (the "looked, nothing published" signal)
-        in_scope = bool(cover_tokens) and (any(k in cover_tokens for k in kws) or any(c.lower() in cover_tokens for c in ccls))
+        dense = global_total >= dense_cut
 
-        if not forks and not cover_tokens:
+        # two nets: class-coarse (broad synonyms) and vein-specific (REAL mechanism idents from money+tell).
+        # The label is NOT a mechanism source — its only distinctive token is the class word itself, too
+        # literal to appear in a finding merely TAGGED that class (that was the v3.0 false-VIERGE bug). So
+        # `mech` comes strictly from the curated money/tell; a coarse vein (EVM silent_classes) has none and
+        # is resolved at CLASS level, flagged, never force-tightened into a false-VIERGE.
+        class_net = set()
+        for c in ccls:
+            # "other" is the map_class fallback for a novel label — it has no meaningful synonyms and the
+            # literal token "other" spuriously matches "another"/"other" in prose. Never seed the net with it
+            # (that would give the emergent-seam vein a phantom collision and re-bury it — defeats fix #4).
+            if c and c != "other":
+                class_net.update(EXPAND.get(c, [c]))
+        mech = mech_tokens((v.get("money", "") + " " + v.get("tell", "")))
+        has_mech = bool(mech)
+
+        collisions = []
+        for f in fork_findings:
+            class_hit = bool(f["classes"] & set(ccls)) or any(k in f["text"] for k in class_net)
+            vein_hit = any(k in f["text"] for k in mech) if has_mech else False
+            if dense:
+                # dense class: a bare class-word collision is near-meaningless. If we HAVE mechanism tokens,
+                # demand a SPECIFIC match (restores vein resolution). If we DON'T (coarse vein), keep the
+                # class-level collision but flag it `class-only` — labeled-unresolved, never false-VIERGE.
+                hit = vein_hit or (class_hit and not has_mech)
+            else:
+                hit = class_hit or vein_hit
+            if hit:
+                collisions.append(f)
+        resolution = "class-only" if (dense and not has_mech) else "specific"
+
+        payable = bool(shape_top & set(ccls)) if shape_top else (global_total > 0)
+        tell = v.get("tell") or next(((cmap.get(c, {}) or {}).get("detection_tell")
+                                      for c in ccls if (cmap.get(c, {}) or {}).get("detection_tell")), "")
+
+        # COLUMN 2 — CODE-LOCATION overlap (not class prose): does one of the vein's own STRICT code idents
+        # appear in the audit scope's code-shaped tokens? EVM veins with no idents → never wrongly excluded.
+        vein_loc = code_tokens((v.get("money", "") + " " + v.get("tell", "")))
+        in_scope = bool(cover_code) and bool(vein_loc & cover_code)
+
+        if not forks and not cover_code:
             verdict = "?"
         elif collisions:
-            verdict = "SUSPECT"        # ≥1 collision candidate → REFUTE by reading before deprioritizing
+            verdict = "SUSPECT"        # collision candidates → REFUTE by reading before deprioritizing
         elif in_scope:
-            verdict = "MINÉ-VIDE?"     # in declared scope, no finding → possible graveyard, not virgin
+            verdict = "MINÉ-VIDE?"     # vein's code location IS in declared scope, no finding → graveyard?
         else:
-            verdict = "VIERGE" if payable else "VIERGE(low-pay)"
-        rows.append({"label": label, "vein": vein, "corpus_classes": ccls, "n_collision": len(collisions),
-                     "global_total": global_total, "payable": payable, "in_scope": in_scope,
-                     "verdict": verdict, "tell": tell,
+            verdict = "VIERGE"         # both voids: no collision AND code-location not in declared scope
+
+        notes = []
+        if verdict == "VIERGE":
+            if ccls == ["other"]:
+                notes.append("label novel → couture émergente ? (la 13ᵉ veine — /darkside Door-C)")
+            elif not payable:
+                notes.append("hors pay-class typique du shape")
+        if verdict == "SUSPECT" and resolution == "class-only":
+            notes.append("collision CLASSE-seule (negative-space grossier, pas de token-veine) — désambiguïse à la main")
+
+        rows.append({"label": label, "vein": v.get("vein", ""), "corpus_classes": ccls,
+                     "n_collision": len(collisions), "global_total": global_total, "dense": dense,
+                     "payable": payable, "in_scope": in_scope, "resolution": resolution,
+                     "verdict": verdict, "tell": tell, "notes": notes,
                      "candidates": [(f["protocol"], f["title"], f["link"]) for f in collisions[:3]]})
-    order = {"VIERGE": 0, "VIERGE(low-pay)": 1, "MINÉ-VIDE?": 2, "?": 3, "SUSPECT": 4}
-    rows.sort(key=lambda r: (order.get(r["verdict"], 3), r["n_collision"], -r["global_total"]))
-    return rows, corpus_ok
+
+    def _sort_key(r):
+        vorder = {"VIERGE": 0, "MINÉ-VIDE?": 1, "?": 2, "SUSPECT": 3}
+        sub = 0
+        if r["verdict"] == "VIERGE":
+            if r["corpus_classes"] == ["other"]:
+                sub = -1                      # emergent seam first
+            elif not r["payable"]:
+                sub = 1                       # low-pay last within VIERGE (annotated, NOT a separate rank)
+        return (vorder.get(r["verdict"], 2), sub, r["n_collision"], -r["global_total"])
+
+    rows.sort(key=_sort_key)
+    info = {"corpus_ok": corpus_ok, "n_fork": n_fork, "has_coverage": bool(cover_code),
+            "cover_prose_only": cover_prose_only, "dense_cut": dense_cut, "n_forks": len(forks)}
+    return rows, info
 
 
 CAVEAT = ("> ⚠ **Ce filtre dé-priorise le CONNU, il n'est pas une carte du territoire.** Il énumère les "
@@ -163,30 +275,47 @@ CAVEAT = ("> ⚠ **Ce filtre dé-priorise le CONNU, il n'est pas une carte du te
           "jamais « inexploré ».")
 
 
-def render_md(rows, forks, shape, corpus_ok, has_coverage):
+def _fork0_warn(info):
+    return (info["n_forks"] > 0 and info["n_fork"] == 0 and info["corpus_ok"])
+
+
+def render_md(rows, forks, shape, info):
     fk = ",".join(forks) if forks else "(non précisé)"
-    md = [f"# NUKE saturation (2 colonnes) — quelle VEINE est vierge ?  · fork: `{fk}`" +
+    md = [f"# NUKE saturation (v3, vein-granulaire) — quelle VEINE est vierge ?  · fork: `{fk}`" +
           (f" · shape: `{shape}`" if shape else ""),
-          "> Le corpus ne dit pas « pris / pas pris » — il donne des **candidats de collision à réfuter à la "
-          "main**. **SUSPECT** = un finding ressemble → LIS-le, ne déprioris QUE si l'invariant cassé DIFFÈRE. "
-          "**MINÉ-VIDE?** = dans le scope d'audit déclaré mais aucun finding → cimetière probable, pas vierge. "
-          "**VIERGE** = ni collision ni scope déclaré = les deux vides = la vraie brèche non-surveillée.\n",
+          "> Le corpus donne des **candidats de collision à réfuter**, pas un verdict. **SUSPECT** = un "
+          "finding ressemble → LIS-le, ne déprioris QUE si l'invariant cassé DIFFÈRE. **MINÉ-VIDE?** = la "
+          "LOCALISATION CODE de la veine est dans le scope d'audit déclaré, aucun finding → cimetière "
+          "probable. **VIERGE** = ni collision ni localisation-in-scope = les deux vides = la vraie brèche.\n",
           CAVEAT + "\n"]
-    if not corpus_ok:
+    if _fork0_warn(info):
+        md.append(f"> 🛑 **FORK MATCH = 0** — `{fk}` ne matche AUCUN finding du corpus. Le tout-VIERGE "
+                  "ci-dessous est **du bruit, pas un signal** : nom de fork probablement absent/mal orthographié "
+                  "dans le corpus, PAS une cible vierge. Corrige le nom (ou accepte que le corpus ignore ce "
+                  "fork) avant de faire confiance à quoi que ce soit ici.\n")
+    if not info["corpus_ok"]:
         md.append("> ⚠ corpus introuvable — colonne 1 (findings) indisponible.\n")
-    if not has_coverage:
-        md.append("> ⚠ colonne 2 absente : passe `--coverage <fichier>` (la section scope/coverage du RAPPORT "
-                  "d'audit de la cible, pas Solodit) pour distinguer VIERGE-réel de MINÉ-VIDE. Sans elle, un "
-                  "« VIERGE » peut être un cimetière non écrit.\n")
+    if not info["has_coverage"]:
+        if info["cover_prose_only"]:
+            md.append("> ⚠ colonne 2 (coverage) fournie mais **prose seule** — aucun token code-localisé "
+                      "(fichier/Contrat/fn). Le matching module est INACTIF : impossible de distinguer "
+                      "MINÉ-VIDE de VIERGE. Donne un scope qui NOMME les modules/fichiers revus.\n")
+        else:
+            md.append("> ⚠ colonne 2 absente : passe `--coverage <fichier>` (section scope du RAPPORT d'audit "
+                      "de la cible, pas Solodit). Sans elle, un « VIERGE » peut être un cimetière non écrit.\n")
     cur = None
     for r in rows:
         if r["verdict"] != cur:
             md.append(f"\n## {r['verdict']}\n"); cur = r["verdict"]
         line = f"- [ ] **{r['label']}**" + (f"  → `{r['vein']}`" if r["vein"] else "")
-        line += f"  · {r['n_collision']} collision(s) fork · {r['global_total']} global" + (" · in-scope" if r["in_scope"] else "")
+        dens = "dense" if r["dense"] else "rare"
+        line += f"  · {r['n_collision']} collision(s) fork · {r['global_total']} global ({dens})"
+        line += (" · loc∈scope" if r["in_scope"] else "")
         md.append(line)
-        if r["verdict"].startswith("VIERGE") and r["tell"]:
-            md.append(f"    - 🔎 *tell (le HOW) :* {r['tell']}")
+        for n in r["notes"]:
+            md.append(f"    - ⚑ {n}")
+        if r["verdict"] == "VIERGE" and r["tell"]:
+            md.append(f"    - 🔎 *tell (le HOW) :* {r['tell'][:300]}")
         if r["verdict"] == "SUSPECT":
             for p, t, link in r["candidates"]:
                 md.append(f"    - 🚧 réfute: [{p}] {t}" + (f"  {link}" if link else ""))
@@ -213,12 +342,18 @@ def main():
     if args.coverage and os.path.isfile(args.coverage):
         cov_text = open(args.coverage, encoding="utf-8", errors="replace").read()
     forks = [f.strip() for f in args.fork.split(",") if f.strip()]
-    rows, corpus_ok = compute_saturation(sig, forks, args.shape, args.corpus, cov_text)
+    rows, info = compute_saturation(sig, forks, args.shape, args.corpus, cov_text)
     out = args.out or os.path.join(os.path.dirname(args.signals), "saturation.md")
-    open(out, "w", encoding="utf-8").write(render_md(rows, forks, args.shape, corpus_ok, bool(cov_text)))
+    open(out, "w", encoding="utf-8").write(render_md(rows, forks, args.shape, info))
     c = {}
     for r in rows:
         c[r["verdict"]] = c.get(r["verdict"], 0) + 1
+    if _fork0_warn(info):
+        print(f"[saturation] 🛑 fork '{args.fork}' → 0 finding corpus matché — tout-VIERGE = BRUIT, "
+              "pas signal (nom de fork absent du corpus ?).", file=sys.stderr)
+    else:
+        print(f"[saturation] fork '{args.fork or '(aucun)'}' → {info['n_fork']} findings corpus matchés "
+              f"· dense-cut={info['dense_cut']}", file=sys.stderr)
     print(f"[saturation] {len(rows)} veines · " + " · ".join(f"{k}:{v}" for k, v in sorted(c.items())) + f" → {out}")
 
 

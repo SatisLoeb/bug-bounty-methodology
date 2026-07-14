@@ -124,27 +124,35 @@ def main():
             if args.coverage and os.path.isfile(args.coverage):
                 _cov = open(args.coverage, encoding="utf-8", errors="replace").read()
             _forks = [x.strip() for x in args.fork.split(",") if x.strip()]
-            _rows, _ = _sat.compute_saturation(d, _forks, args.shape, args.corpus, _cov)
-            _vierge = [r for r in _rows if r["verdict"].startswith("VIERGE")]
+            _rows, _info = _sat.compute_saturation(d, _forks, args.shape, args.corpus, _cov)
+            _vierge = [r for r in _rows if r["verdict"] == "VIERGE"]
             _mined = [r for r in _rows if r["verdict"] == "MINÉ-VIDE?"]
             _susp = [r for r in _rows if r["verdict"] == "SUSPECT"]
-            md.append("## 🎯 VEINES VIERGES (corpus 2-colonnes) — creuse ici, le HOW inclus\n")
+            md.append("## 🎯 VEINES VIERGES (corpus 2-colonnes, vein-granulaire) — creuse ici, le HOW inclus\n")
             md.append(f"> Croisé avec le corpus sur `{args.fork}`" + (f" (shape `{args.shape}`)" if args.shape else "")
-                      + (" + coverage d'audit" if _cov else " · ⚠ colonne coverage absente (`--coverage <scope>`) → un VIERGE peut être un cimetière")
+                      + (" + coverage code-localisée" if _info.get("has_coverage") else
+                         (" · ⚠ coverage prose-seule → matching module INACTIF" if _info.get("cover_prose_only")
+                          else " · ⚠ colonne coverage absente (`--coverage <scope>`) → un VIERGE peut être un cimetière"))
                       + ". **Le corpus donne des candidats à réfuter, pas un verdict.** Dé-priorise le CONNU — la 13ᵉ veine (couture d'intégration) n'est PAS ici → `/darkside` Door-C / `/upshift`.\n")
+            if _sat._fork0_warn(_info):
+                md.append(f"> 🛑 **FORK MATCH = 0** : `{args.fork}` ne matche aucun finding du corpus → le tout-VIERGE "
+                          "ci-dessous est du BRUIT (nom de fork absent/mal orthographié), PAS une cible vierge. Corrige avant de creuser.\n")
             if _vierge:
                 for r in _vierge:
                     md.append(f"- [ ] **{r['label']}**" + (f"  → `{r['vein']}`" if r.get("vein") else "") +
-                              f"  ({r['n_collision']} collision / {r['global_total']} global)")
+                              f"  ({r['n_collision']} collision / {r['global_total']} global"
+                              + (", dense" if r.get("dense") else "") + ")")
+                    for n in r.get("notes", []):
+                        md.append(f"    - ⚑ {n}")
                     if r.get("tell"):
-                        md.append(f"    - 🔎 {r['tell']}")
+                        md.append(f"    - 🔎 {r['tell'][:280]}")
             else:
                 md.append("- _(aucune veine des deux-vides — tout le barrage a une collision ou est dans le scope déclaré)_")
             if _susp:
                 md.append("\n> 🚧 **SUSPECT — réfute AVANT de déprioriser** (un finding ressemble ; ne déprioris que si l'invariant cassé DIFFÈRE) : "
-                          + ", ".join(f"`{r['label']}`×{r['n_collision']}" for r in _susp))
+                          + ", ".join(f"`{r['label']}`×{r['n_collision']}" + ("⟨classe-seule⟩" if r.get("resolution") == "class-only" else "") for r in _susp))
             if _mined:
-                md.append("> ⚰ **MINÉ-VIDE?** (dans le scope d'audit, aucun finding → cimetière probable) : "
+                md.append("> ⚰ **MINÉ-VIDE?** (localisation-code dans le scope d'audit, aucun finding → cimetière probable) : "
                           + ", ".join(f"`{r['label']}`" for r in _mined))
             md.append("")
         except Exception as _e:
