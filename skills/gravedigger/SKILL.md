@@ -5,14 +5,37 @@ description: Systematic deep security research methodology. Use when conducting 
 
 # GraveDigger — Systematic Deep Security Research
 
-## PATTERN BANK — H1-HUNTING-PATTERNS (web/API), NOT the SC corpus (G-4 fix, 2026-06-23)
+## PATTERN BANK — the WEB CORPUS + H1-HUNTING-PATTERNS (web/API), NOT the SC corpus (G-4 fix 2026-06-23; web-corpus added 2026-06-27)
 
-gravedigger is a WEB/API skill; its pattern bank is the H1 hacktivity corpus, not the SC class-density corpus.
+gravedigger is a WEB/API skill; its pattern bank is now the **web corpus** (the Solodit-for-web, 15.7K disclosed
+findings / 292 probe recipes, VRT-anchored) + the 60 hand-written H1-HUNTING-PATTERNS it cross-links — NOT the SC corpus.
 
-    ~/arsenal/tools/precedent-scan.sh "<class>"   # IDOR | SSRF | "auth bypass" | race ... → W5 precedent table
-    # + H1-HUNTING-PATTERNS.md (60+ web patterns, 13 categories) auto-activates Phase 2 §2.20 + Phase 4 §4.13
+    ~/arsenal/tools/web-corpus-query.sh <shape>       # AIM: top classes by PAYOUT-density for the surface
+    ~/arsenal/tools/web-corpus-query.sh --methods <c> # the discovery_how PROBE RECIPES — LEAD HERE (the killer mode)
+    ~/arsenal/tools/web-corpus-query.sh --route <c>   # detection_tell + the named P-H1-* patterns + the vein
+    ~/arsenal/tools/web-corpus-query.sh --class <c>   # precedent: 2-axis ($ + high_density) + exemplar links
+    ~/arsenal/tools/precedent-scan.sh "<class>"       # the operator's OWN W5 track record (pairs with --class)
+    # H1-HUNTING-PATTERNS.md (60 P-H1-* patterns) is now cross-linked FROM `--route` and still auto-activates Phase 2 §2.20 + Phase 4 §4.13
 
-The SC `corpus-query <shape>` tool (amm/lending/bridge class-density) is for the SC skills firmaudit/mrrobbot — it has NO web/api shape, so it does NOT apply here. Use H1-HUNTING + precedent-scan as the web pattern bank.
+Map the target to a web shape (REST-API/GraphQL/OAuth-SSO/SaaS-multi-tenant/payment-fintech/file-upload/SSRF-cloud/
+JWT-session/webhook/admin-panel/mobile-API/AI-LLM-app), pull `<shape>` for the AIM, then **lead with `--methods` on the
+top-2 classes** — the probe recipes are what convert on a live black-box. Calibration: rank by PAYOUT-density, NOT count
+(a count-sorted web map buries the high earners — ATO/SQLi/RCE — under XSS). The SC `corpus-query <shape>` (amm/lending)
+is for firmaudit/mrrobbot and still does NOT apply here.
+
+> **🚦 CORPUS-COVERAGE GATE — MANDATORY, the encoded≠applied fix (2026-06-27, Injective-web: had the corpus, improvised, missed the #1 class).**
+> A prose "lead with --methods" loses to attention pressure + the false productivity of live black-box access. So it is now a
+> mechanical hard-block, same pattern as `firmaudit-spine.sh`:
+>
+>     # FIRST action of Phase 2 on any web/API target — BEFORE any bundle/black-box improvisation:
+>     ~/arsenal/audit-lifecycle/bin/corpus-coverage-check.sh --emit <shape[,shape2]> <workspace>   # writes CORPUS-COVERAGE.md
+>     # then for EVERY [ ] row: web-corpus-query.sh --methods <class>  -> run the recipe on the target -> log result+artifact
+>     # gate the close (no NO-GO / no submission until it PASSes):
+>     ~/arsenal/audit-lifecycle/bin/corpus-coverage-check.sh --check <workspace>   # exit!=0 if any class unrun
+>
+> A `[ ]` row left at close = a corpus class you never ran = the exact miss this gate exists to stop. Improvising from the
+> bundle is allowed AFTER `--methods` on the top-2 classes, never instead of it. `preflight-mechanical.sh` re-runs `--check`
+> on web targets (D-corpus gate) and refuses PASS if it fails.
 
 
 You are a systematic security researcher executing the GraveDigger methodology. This methodology was extracted from campaigns that produced 40+ findings, 3 mainnet-proven, 7 attack chains, and $332M TVL exposed. Follow it mechanically — the results come from the process, not improvisation.

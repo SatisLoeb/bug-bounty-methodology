@@ -6,7 +6,7 @@ description: >-
   (class-density -> detection tell -> named pattern -> discovery method -> the VEIN/skill to
   activate), and SUGGESTS the right hunting skill ranked with reasoning. It NEVER auto-invokes the
   chosen skill (no-auto-orchestration, the U-1 rule) — it proposes, the operator confirms and
-  launches. Composes the existing classifiers (target-router.sh, fortress-score.sh, timebox-check.sh,
+  launches. Composes the existing classifiers (target-router.sh, saturation-score.sh, timebox-check.sh,
   phase0-intel.sh) and the corpus (corpus-query --route). Use FIRST on any new target, before
   picking a hunting skill. Trigger on "/intake", "nouvelle cible", "par ou commencer sur X",
   "quel skill pour X", "brief moi sur cette cible", "on regarde X".
@@ -30,16 +30,33 @@ NOT invoking it.
 A repo path, a scope URL, a package name, or just a protocol name + "audited? / TVL?". Read-only:
 you classify and brief; you don't clone-and-hunt here.
 
+## Phase 0 — NUKE hook (if the code was already barraged)
+If the target has been run through `/nuke` (a `nuke-digest.md` sits next to a `.nuke/<ts>/signals.json`,
+or run `nuke digest <target>` to (re)generate it), **READ that digest FIRST**. It grounds the routing
+in what the code ACTUALLY contains:
+- its **detected/corroborated classes** (with `file:line`, `★` tool-agreement) are concrete LEADS →
+  fold into **Phase 1 Classification** and **Corpus ROUTE** (sharpen which class per vein);
+- its **negative space** (silent classes) are the highest-value MANUAL-hunt directions → weight them
+  up in **Phase 3 RECOMMENDED SKILL(S)**;
+- the digest already ranks veins (`/extract /power /darkside /upshift …`) — treat that as a prior to
+  refine with the corpus, NOT a replacement. Corpus = industry precedent; digest = this code's reality.
+- **if the digest opens with a `🎯 VEINES VIERGES (corpus-vérifié)` section** (operator ran `nuke digest
+  <t> --fork <name> --shape <s>`), those are the corpus-cross-checked UNPLOUGHED veins — payable class,
+  ~0 finding on this target/fork-source — each carrying a `detection_tell` (the HOW). **Lead the dossier
+  with these** over the raw negative space; the demoted `🚧 LABOURÉES` are already-taken → deprioritize.
+Still U-1: the digest SUGGESTS; you brief and name the skill; the operator launches. If no digest
+exists (target not yet cloned/barraged), skip to Phase 1 unchanged.
+
 ## Phase 1 — Classify (COMPOSE the existing brains; never re-implement them)
 The classification machinery already exists. Run it, read its verdicts — don't duplicate the logic.
 
 ```bash
-# canonical bootstrap (Rule 38) — emits ROUTING.md + fortress + timebox in one shot, IF you have a workspace/clone:
+# canonical bootstrap (Rule 38) — emits ROUTING.md + saturation + timebox in one shot, IF you have a workspace/clone:
 TARGET_HINTS="<keywords>" ~/arsenal/audit-lifecycle/bin/init-target.sh <target-name>
 
 # or run the classifiers directly for a lighter triage:
 TARGET_HINTS="<keywords>" ~/arsenal/audit-lifecycle/lib/target-router.sh <name>   # -> domain + checklists + gate-stack
-~/arsenal/audit-lifecycle/bin/fortress-score.sh --workspace <path>                # -> fortress score (audit_count × top-tier × delta)
+~/arsenal/audit-lifecycle/bin/saturation-score.sh --workspace <path>              # -> saturation score (audit_count × top-tier × delta); HIGH → RE-SOURCE to a payable surface
 ~/arsenal/audit-lifecycle/bin/timebox-check.sh <target-dir>                        # -> STANDARD_8H vs L1_EXCEPTION
 ~/arsenal/audit-lifecycle/bin/phase0-intel.sh <repo> [owner/repo] [audit-base-commit]  # -> repo recon + audit-count + post-audit delta
 ```
@@ -50,7 +67,7 @@ combine; additive playbooks (web2-on-SC, crypto-lib, infra-adjacent) fire on top
 
 Then **map the domain → a corpus SHAPE** (for SC): lending / AMM/DEX / vault/yield / bridge /
 perp/derivatives / staking/LST / stablecoin / governance / NFT. (`corpus-query --list` for the set.)
-Non-SC (web/off-chain) shapes have no corpus entry — that's expected (route to gravedigger/upshift).
+WEB/API shapes now have their own corpus (`web-corpus-query.sh`, see Phase 2); pure off-chain shapes have no corpus (route to gravedigger/upshift).
 
 **Override two STALE bits emitted by target-router.sh** (verified 2026-06-23, flag them in the dossier):
 - It says *"Immunefi PERMANENT boycott → OUT OF SCOPE"* — **WRONG**: the boycott was LIFTED 2026-06-01.
@@ -89,14 +106,25 @@ PY
 The corpus `--class` is the load-bearing precedent (industry-validated across 4670 findings); the OUTCOMES
 filter only adds YOUR own paid hit if one exists on this shape. If it prints nothing → say "no prior
 operator finding on this shape; corpus anchor carries it" — do NOT pad it with rejected rows.
-For a non-SC target, the corpus does not apply; use `H1-HUNTING-PATTERNS` + `precedent-scan.sh` (gravedigger's bank).
+For a WEB/API target there is now a parallel corpus — the **Solodit-for-web** (15.7K disclosed findings / 292 probe
+recipes, VRT-anchored). Pull the same 4 layers via its mirror tool:
+```bash
+~/arsenal/tools/web-corpus-query.sh <shape>       # AIM   : top classes by PAYOUT-density (NOT count — web payouts vary 100x)
+~/arsenal/tools/web-corpus-query.sh --route <c>   # ROUTE : detection_tell + the named P-H1-* patterns + the vein
+~/arsenal/tools/web-corpus-query.sh --methods <c> # HOW   : the discovery_how PROBE RECIPES (the web killer mode — lead here)
+~/arsenal/tools/web-corpus-query.sh --class <c>   # precedent: 2-axis ($ + high_density) + exemplar links
+```
+Web shapes: REST-API · GraphQL · OAuth-SSO · SaaS-multi-tenant · payment-fintech · file-upload · SSRF-cloud ·
+JWT-session · webhook · admin-panel · mobile-API · AI-LLM-app. The web-corpus calibration: **rank by payout-density,
+NOT count** (a count-sorted web map ranks XSS#1@low-pay and buries the high earners — ATO/SQLi/RCE). Still pair with
+`precedent-scan.sh` for the operator's own track record. For pure off-chain/infra with no web surface, the corpus does not apply.
 
 ## Phase 3 — Route to the skill (the decision matrix → SUGGEST, then STOP)
-Compose the fortress-score (Phase 1) + the shape's top-class→vein (`--route`) + firmaudit's Path A/B/C/D:
+Compose the saturation-score (Phase 1) + the shape's top-class→vein (`--route`) + firmaudit's Path A/B/C/D:
 
 | Target profile | Suggest |
 |---|---|
-| Audited / **fortress** (fortress-score HIGH) | `/darkside` (Door C — the no-CWE composition bug the audits missed) [+ `/firmaudit` for a full engagement] |
+| Audited / **saturated** (saturation-score HIGH) | **Prefer RE-SOURCE to a payable surface (web/API/off-chain/fresh) — the theft that survived the audits lives there, not deeper in the picked-clean core.** Only if a fresh/web/off-chain sub-surface exists on this target: `/darkside` (Door C — the no-CWE composition bug the audits missed) [+ `/firmaudit` for a full engagement] |
 | SC fresh / moderate (0-5 audits on scope) | `/exploit-primitive-mindset` (class-select) → then `/mrrobbot` or `/gravedigger` |
 | Off-chain DeFi orchestration (executor / keeper / backend signs on-chain) | `/upshift` |
 | Web / API | `/gravedigger` |
@@ -109,19 +137,25 @@ Compose the fortress-score (Phase 1) + the shape's top-class→vein (`--route`) 
 accounting → the engine runs mrrobbot's check-matrix; rounding → `/extract`; oracle → `/invfuzz`;
 access-control → `/power`. The vein is the *technique*; the skill above is the *engine*.
 
-Output: **1-2 skills ranked + the WHY** (fortress-score, shape, top-class→vein, precedent) + the
+Output: **1-2 skills ranked + the WHY** (saturation-score, shape, top-class→vein, precedent) + the
 dossier path. Close with *"confirme et je lance, ou tu lances."* **Do not invoke. Stop here.**
 
 ## Phase 4 — Write `TARGET-DOSSIER.md` (the brief the chosen skill READS)
 Instantiate this in the target's workspace (survives context compression — the firmaudit Phase-0 /
-PROGRESS.md pattern). The chosen skill reads it FIRST and starts pre-loaded:
+PROGRESS.md pattern). The chosen skill reads it FIRST and starts pre-loaded.
+
+**WRITE it automatically — NEVER ask permission to write the dossier.** Producing the brief file IS
+the skill's job (Phase 4 runs silently). The ONLY thing you ever confirm is Phase 3 (whether to
+LAUNCH a suggested skill). A dossier is not an outward-facing action; it needs no sign-off. (If the
+operator imposed a blind/no-peek constraint on an already-audited target, write to a FRESH workspace
+path — never read or overwrite the existing one.) Template:
 
 ```markdown
 # TARGET DOSSIER — <target>   (intake <date>)
 
 ## Classification
 - Domain: <SC/web/off-chain/...>   Shape: <lending/...>   Chains: <...>
-- Fortress score: <LOW/MED/HIGH>  (audits: <n>, auditors: <...>, post-audit delta: <y/n>)
+- Saturation score: <LOW/MED/HIGH>  (audits: <n>, auditors: <...>, post-audit delta: <y/n>)  [HIGH → RE-SOURCE to a payable surface unless a fresh/web/off-chain sub-surface exists]
 - Time-box: <STANDARD_8H / L1_EXCEPTION>   EV gate: <STRONG GO/GO/WEAK GO/SKIP>
 - Scope/exclusions: <fund-theft only? frontrunning excluded? KYC? vault balance $X>
 - Stale-bit overrides applied: Immunefi NOT boycotted (lifted 2026-06-01); use corpus-163 not C4-128.
@@ -140,7 +174,7 @@ PROGRESS.md pattern). The chosen skill reads it FIRST and starts pre-loaded:
 - Operator's own (OUTCOMES, paid/fixed/acked only — drop rejected): <"<class> paid $X on <protocol>" | "none on this shape">
 
 ## RECOMMENDED SKILL(S)
-1. /<skill> — <why: fortress/shape/vein/precedent>
+1. /<skill> — <why: saturation/shape/vein/precedent>
 2. /<alt>   — <why>
 (SUGGESTION ONLY — operator confirms before launch.)
 ```
@@ -160,6 +194,6 @@ PROGRESS.md pattern). The chosen skill reads it FIRST and starts pre-loaded:
 
 ## What this skill does NOT do
 - It does not hunt (the chosen skill hunts) · does not write a finding · does not launch a skill.
-- On a non-SC target it routes by domain (gravedigger/upshift/wide) and notes the corpus does not apply.
+- On a WEB/API target it pulls the web-corpus (`web-corpus-query.sh`); on pure off-chain/infra it routes by domain (gravedigger/upshift/wide), corpus n/a.
 - It is a 5-10 min front door, not an engagement. The EV gate can return **SKIP** (dormant vault,
   saturated fortress with no unsaturated surface) — say so plainly and route to a different target.

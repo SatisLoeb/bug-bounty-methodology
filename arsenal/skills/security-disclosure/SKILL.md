@@ -517,6 +517,7 @@ testImpact_Consequence()            — proves real-world impact
 18. **Document everything** — Timestamps, email hashes, git commits. If the team patches silently without credit, you need proof of prior disclosure.
 19. **Check if team has a preferred disclosure channel** — Some teams hate email, prefer HackerOne/Immunefi intake even without a bounty.
 20. **Multi-chain = multiple contacts sometimes** — A bridge vulnerability may need disclosure to teams on both chains.
+21. **Triager response discipline (post-submission)** — Before replying to any triager comment, walk `report-nerve § Triager response discipline`. Covers self-flagellation, unsolicited severity concession, and unverified-path mention. Single point of read for all three.
 
 ## Outcome Tracking (Feedback Loop)
 
@@ -530,10 +531,10 @@ Valid outcomes: `acknowledged | fixed | bounty_paid | ignored | disputed | publi
 
 **When invoked with `--log-outcome`:**
 
-1. Append to `/home/malix/Desktop/BUGS/OUTCOMES.jsonl`:
+1. Append to `/home/malix/Desktop/BUGS/OUTCOMES.jsonl` (DIS-1 fix 2026-06-23 — MANDATORY per SKILL-SELF-ATTRIBUTION: every row carries `composition_skills_applied` incl. `"disclose"`, and a KILL/NO-GO close writes a row too, not only a send):
 
 ```json
-{"id":"ens-oob-001","date":"2026-02-21","protocol":"ens","severity":"high","cvss":7.5,"outcome":"fixed","reason":"Patched in v0.4.2","reward":"$25000","days_to_response":3,"days_to_fix":14,"contact_method":"security@","dismissal_vectors_hit":[],"channel":"direct_email"}
+{"id":"ens-oob-001","date":"2026-02-21","protocol":"ens","severity":"high","cvss":7.5,"outcome":"fixed","reason":"Patched in v0.4.2","reward":"$25000","days_to_response":3,"days_to_fix":14,"contact_method":"security@","dismissal_vectors_hit":[],"channel":"direct_email","composition_skills_applied":["disclose"]}
 ```
 
 2. Print cumulative stats:
@@ -607,6 +608,8 @@ Read `OUTCOMES.jsonl` and print the stats summary without adding a new entry.
 ```
 
 ## Phase 4.5: Pre-Flight Check — 24-Point Quality Gate (MANDATORY)
+
+> **DIS-2 note (2026-06-23): this 24-pt PREFLIGHT and the 22-pt rubric above overlap ~90%.** The 24-pt `PREFLIGHT-CHECK.md` is the PIPELINE-CANONICAL gate (CLAUDE.md); the 22-pt above is disclose-specific. If short on time, run the canonical 24-pt PREFLIGHT as the authority and treat the 22-pt as the disclose-flavored subset (CVSS-vector + timeline checks are its only non-overlapping adds) — don't double-score the same criteria.
 
 **After writing the report, BEFORE sending, run the Pre-Flight Check from `~/Desktop/BUGS/PREFLIGHT-CHECK.md`.**
 

@@ -117,7 +117,8 @@ When user describes a target, map to surfaces that apply:
 - `/gravedigger <target>` — once surface selected and target identified, gravedigger does recon+audit
 - `/mrrobbot <target>` — for high-bounty single-target deep dives
 - `/disclose` — for direct responsible disclosure of findings
-- `/immunefi-submit` — BOYCOTTED, never use (CLAUDE.md user_immunefi_boycott.md)
+- `/immunefi-submit` — PERMITTED (boycott LIFTED 2026-06-01, total override). Valid submission channel like Cantina/HackerOne/HackenProof. Apply Immunefi-specific adds (vault/scope/exclusion FATAL scan, VSC severity, flatten tables to prose, fork-based PoC). Flag silent-patch history per program.
+- `/firmaudit <target>` — firm-grade deep audit, immortal mode, Phase 0 intel → adaptive multi-week plan. Use for high-value targets deserving depth (no fast pass). Reads methodology skills as reference, does NOT auto-orchestrate.
 
 ## Cadence decision tree
 
@@ -171,11 +172,16 @@ Every surface in this skill exists because it's UNDER-EXPLORED, meaning the filt
 
 Tool Phase B work is lazy — build when the surface is being actively hunted, not preemptively.
 
+## Mirror invariant audit reminder (CLAUDE.md rule #41)
+
+For any surface involving in/out or paired state operations (bridges, vaults, escrow, lock/unlock, mint/burn), the audit phase is not "find a bug" but "compare the validation sets V_in vs V_out for every pair". Every novel-surface playbook in this skill has in/out structure somewhere (AA-4337 UserOp validation vs execution, DA layer blob post vs reconstruct, LRT slashing deposit vs withdraw, cross-chain messaging send vs receive). Apply the mirror check by default, not on-demand.
+
 ## References
 
 - CLAUDE.md rule #38 — lifecycle init mandatory first action
 - CLAUDE.md rule #39 — SEVERITY-COMMIT artifact-required before draft
 - CLAUDE.md rule #40 — no filter-by-difficulty on surface recommendations
+- CLAUDE.md rule #41 — mirror invariant audit for in/out protocols before declaring clean
 - CLAUDE.md rules #33, #34 — existing surface references (lock contention, H1 patterns)
 - `~/arsenal/methodology/*.md` — all playbooks live here
 - `~/arsenal/audit-lifecycle/bin/*.sh` — lifecycle scripts

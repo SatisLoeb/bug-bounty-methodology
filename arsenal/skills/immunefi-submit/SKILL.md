@@ -631,14 +631,14 @@ Also print:
 
 **When invoked with `--log-outcome`:**
 
-1. Append to `/home/malix/Desktop/BUGS/SKL/outcomes.jsonl` (canonical location):
+1. Append to `/home/malix/Desktop/BUGS/OUTCOMES.jsonl` (IMM-1 fix 2026-06-23 — the PIPELINE-CANONICAL outcomes file, NOT a skill-local silo. The old `BUGS/SKL/outcomes.jsonl` was a divorced silo invisible to `grep OUTCOMES.jsonl`; this is the file CLAUDE.md Pipeline-Tracking + SKILL-SELF-ATTRIBUTION govern. MANDATORY: every row carries `composition_skills_applied` incl. `"immunefi-submit"`, and a NO-GO/FATAL-gate close writes a row too, not only an accept):
 
 ```json
-{"id":"ethena-blacklist-001","date":"2026-02-15","program":"ethena","severity":"critical","outcome":"accepted","reason":"Fixed in next release","payout":"$12496","days_to_response":5,"rejection_vectors_hit":[]}
+{"id":"ethena-blacklist-001","date":"2026-02-15","protocol":"ethena","severity":"critical","outcome":"accepted","reason":"Fixed in next release","reward":"$12496","days_to_response":5,"channel":"immunefi","dismissal_vectors_hit":[],"composition_skills_applied":["immunefi-submit"]}
 ```
 
 ```json
-{"id":"serai-promote-001","date":"2026-02-14","program":"serai","severity":"medium","outcome":"rejected","reason":"Out of scope - promote/ not under dkg/src","payout":"$0","days_to_response":2,"rejection_vectors_hit":["scope"]}
+{"id":"serai-promote-001","date":"2026-02-14","protocol":"serai","severity":"medium","outcome":"rejected","reason":"Out of scope - promote/ not under dkg/src","reward":"$0","days_to_response":2,"channel":"immunefi","dismissal_vectors_hit":["scope"],"composition_skills_applied":["immunefi-submit"]}
 ```
 
 2. Print cumulative stats:
@@ -662,11 +662,11 @@ Review scope-pitfalls.md and consider stricter scope validation before submittin
 ```
 
 **When invoked with `--stats`:**
-Read `outcomes.jsonl` and print the stats summary without adding a new entry.
+Read `OUTCOMES.jsonl` and print the stats summary without adding a new entry.
 
 **Why this matters:** After 10-15 logged outcomes, patterns emerge. If scope rejections dominate, tighten scope validation. If severity downgrades dominate, adopt more conservative classification. Rules evolve from data, not memory.
 
-## Phase 4: Pre-Submission Quality Gate (21-Point Rubric)
+## Phase 4: Pre-Submission Quality Gate (22-Point Rubric)
 
 **Every submission MUST pass the quality gate BEFORE pasting on Immunefi.** Minimum score: 20/22.
 

@@ -125,7 +125,14 @@ if echo "$hints_lower" | grep -qE 'web|api|rest|graphql|websocket|frontend'; the
 
 MANDATORY:
 - /home/malix/Desktop/BUGS/DEFI-FULLSTACK-CHECKLIST.md (F1-F6)
-- /home/malix/arsenal/methodology/H1-HUNTING-PATTERNS.md (detection priority matrix, 60+ patterns)
+- WEB CORPUS (the Solodit-for-web, 15.7K findings / 292 probe recipes — the enriched H1 bank):
+    ~/arsenal/tools/web-corpus-query.sh <shape>          # AIM: top classes by PAYOUT-density for the surface
+    ~/arsenal/tools/web-corpus-query.sh --class <c>       # precedent: 2-axis (\$ + high_density) + exemplars
+    ~/arsenal/tools/web-corpus-query.sh --route <c>       # tell + the named P-H1-* patterns + the vein
+    ~/arsenal/tools/web-corpus-query.sh --methods <c>     # the discovery_how PROBE RECIPES (the killer mode)
+  Map the target to a shape (REST-API/GraphQL/OAuth-SSO/SaaS-multi-tenant/payment-fintech/file-upload/
+  SSRF-cloud/JWT-session/webhook/admin-panel/mobile-API/AI-LLM-app) then lead with --methods on the top-2 classes.
+- /home/malix/arsenal/methodology/H1-HUNTING-PATTERNS.md (the 60 P-H1-* patterns; now cross-linked from --route)
 - CLAUDE.md rule #26 (RPC namespace hunt — 5 min on every DeFi web target)
 - CLAUDE.md rule #29 (authenticated session testing — WAF 403 = requires auth, not blocked)
 - CLAUDE.md rule #30 (authorization consistency matrix — MFA vs baseline ops)

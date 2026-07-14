@@ -42,6 +42,24 @@ if ! grep -q "^init:" "$WORKSPACE/.lifecycle-status" 2>/dev/null; then
   FAIL=$((FAIL + 1))
 fi
 
+# D-corpus — web/API targets must complete the corpus-coverage ledger before submission.
+# encoded!=applied fix (Injective-web 2026-06-27: had the web corpus, improvised, missed info-disclosure #1 class).
+# Conditional: fires ONLY on web targets (ROUTING.md WEB-CORPUS section, written by target-router on web hints,
+# OR an existing CORPUS-COVERAGE.md) — never on SC/other. Tool-existence guarded (G-2).
+CORPUS_GATE="$LIFECYCLE_DIR/bin/corpus-coverage-check.sh"
+if grep -qiE 'WEB CORPUS|web-corpus-query' "$WORKSPACE/ROUTING.md" 2>/dev/null || [ -f "$WORKSPACE/CORPUS-COVERAGE.md" ]; then
+  if [ -x "$CORPUS_GATE" ]; then
+    if ! "$CORPUS_GATE" --check "$WORKSPACE" >/dev/null 2>&1; then
+      LOG="$LOG\n[D-corpus] FAIL: web target — corpus-coverage-check.sh --check failed (unrun corpus class or missing CORPUS-COVERAGE.md)"
+      LOG="$LOG\n           run: $CORPUS_GATE --emit <shape> $WORKSPACE  then web-corpus-query.sh --methods per [ ] row"
+      FAIL=$((FAIL + 1))
+    fi
+  else
+    LOG="$LOG\n[D-corpus] WARN: corpus-coverage-check.sh missing ($CORPUS_GATE) — web coverage UNVERIFIED"
+    WARN=$((WARN + 1))
+  fi
+fi
+
 # D0-scope — scope-check PASS marker present for this finding ID
 # Enforces rule #27 (scope before draft). scope-check.md must exist AND validate PROCEED.
 SCOPE_FILE="$WORKSPACE/findings/${FINDING_ID}-scope-check.md"

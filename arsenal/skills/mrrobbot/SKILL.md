@@ -5,9 +5,16 @@ description: Adaptive security audit framework for smart contracts and web targe
 
 # MrRobbot — Adaptive Security Audit Framework
 
+## PATTERN BANK — corpus/pattern-scan = candidate SURFACER, the CHECK MATRIX is the AIM (M-2 fix, 2026-06-23)
+
+This skill's core principle is "NOT in surface patterns" — so the catalogue must not be the aim. `corpus-query <shape>` (SC class-density, domain-matched) and `pattern-scan.sh` (Phase 0) SURFACE candidates cheaply; the **CHECK MATRIX + MIRROR INVARIANT (Phase 1)** are the discovery technique that actually finds the 14-audit-survivor bug. Surface with the catalogue, AIM with the matrix — never let the catalogue replace it. `~/arsenal/tools/corpus-query.sh <shape>` (patterns) + `corpus-query --methods <class>` (the discovery METHODS / `discovery_how` — HOW each bug was found: trace/simulate/diff/enumerate, not just what to grep). The method bank imports the investigative technique, the closest the catalogue gets to the check-matrix's discovery mindset.
+
+
 You are executing the MrRobbot methodology — an adaptive security audit framework that adjusts its depth based on what you find. This replaces surface scanning with parallel agents. The framework was battle-tested on Reserve Protocol ($10M bounty, 14+ audits, produced 1 confirmed Medium via check matrix technique).
 
 **Core principle:** Go deep on one target for weeks. The bugs that survive 14 audits live in UNAUDITED code, cross-module state transitions, and function-level check inconsistencies — not in surface patterns.
+
+**Door A vs Door C (M-1 fix — the discovery doors).** The check matrix (Phase 1) and the mirror invariant are **Door A** — they find the SIBLING that differs / the guard that is absent (both need a pair to compare). They do NOT find the no-CWE COMPOSITION bug where the whole design is the bug and there is no sibling (F-STALE-NAV class: hand-posted NAV + park-not-burn queue, four audits missed it). On a 14-audit survivor — exactly this skill's target — that composition bug is where the remaining win lives. **Invoke `/darkside` (Door C) in PARALLEL with the check matrix: mrrobbot = catalogue + inconsistency completeness; darkside = the un-catalogued composition discovery. Run BOTH — the SC>$50K cadence without Door C is the vector-first failure firmaudit named.**
 
 ## Arguments
 
@@ -35,6 +42,8 @@ You are executing the MrRobbot methodology — an adaptive security audit framew
 
 ## Automated Tools (MANDATORY — run these, don't do manually what tools can do)
 
+> **Tool-existence guard (M-3 fix) — before any 'MANDATORY run these' tool.** The tools below are HARDCODED paths. `ls <path> 2>/dev/null` first; if MISSING (fresh install / machine-2 not synced / moved), NOTE "tool X unavailable, surface Y uncovered" and CONTINUE — never crash, never silently skip. 'MANDATORY' = run an EXISTING tool, not crash on a missing one.
+
 | Tool | Command | When |
 |------|---------|------|
 | `~/arsenal/tools/pattern-scan.sh` | `./pattern-scan.sh <dir> --type vault\|dex\|bridge\|lending\|staking --lang sol\|rs\|go` | Phase 0 — first thing after cloning. Run BEFORE manual review. |
@@ -51,10 +60,29 @@ You are executing the MrRobbot methodology — an adaptive security audit framew
 
 | File | Content | Count |
 |------|---------|-------|
-| `~/arsenal/methodology/C4-HUNTING-PATTERNS.md` | Solidity vulnerability patterns from C4 reports | 128 patterns |
+| `~/arsenal/methodology/C4-HUNTING-PATTERNS.md` | Solidity patterns from C4 (older sibling — SUPERSEDED by the 163-corpus below, same lineage; kept for the inline grep tells) | 128 patterns |
 | `~/arsenal/methodology/MULTI-LANG-PATTERNS.md` | Rust (R-001 to R-010), Go (G-001 to G-008), Cairo (C-001 to C-005), Move (M-001 to M-003) | 28 patterns |
+| `~/arsenal/tools/corpus-query.sh <shape>` (c4-corpus + solodit) | Shape-prioritized class-density + detection_tells + named P-XXX patterns (ORACLE-enriched) | 1484 findings / 163 patterns |
 | `~/arsenal/methodology/H1-HUNTING-PATTERNS.md` | HackerOne hacktivity patterns: IDOR, SSRF, RCE, race conditions, auth bypass, business logic, API, cache, AI/LLM | 60+ patterns |
 | `~/arsenal/methodology/H1-STATISTICS.md` | Bounty ROI analysis, payout distribution, target selection heuristics, industry patterns | Data-driven |
+
+## 🚪 GATED IS NEVER A VERDICT — pierce every gate (GATING, 2026-06-17 operator directive)
+
+"Gated / 401 / auth-required / requires-login, surface blocked, moving on" is an un-executed hypothesis dressed as a conclusion. A gate names a control's EXISTENCE, never its STRENGTH. The thief does not respect the wall — he pierces it; a 401 is a sign something valuable is HERE, the place to dig HARDEST. On EVERY gated surface, run the 4 bypass angles before "blocked/hardened":
+- **(A) AUTHN≠AUTHZ (highest value)** — the gate proves a valid token is needed; does the controller verify THIS token OWNS THIS resource? a resource-id (orderId/withdrawId/subAccount/addrId/positionId/accountId) with no ownership bind = IDOR/BFLA. A 401 proves authn and NOTHING about authz. A GLOBAL pre-routing authn filter (a 401 even on a nonexistent path) is solid against unauth probing but moves 100% of the value to the post-filter authz it does NOT test (and kills route-enumeration — the gate doesn't leak its structure).
+- **(B) UNGUARDED SIBLING** — v1-vs-v2 drift, REST-vs-WS-vs-GraphQL (M-H1-001), HMAC-layer-vs-session-layer for the same op, on-chain-vs-keeper, web-vs-mobile, singular-vs-plural, the staging mirror.
+- **(C) GATE SATISFIABLE** — token issued before 2FA completes (M-H1-007); destructive op takes a standard credential while a read needs sudo/re-auth (M-H1-002 inversion); replayable/forgeable sig; a sig that covers payload-but-not-actor.
+- **(D) DIFFERENTIAL LEAK** — 401-vs-403-vs-404-vs-timing leaks other users' resource existence/state.
+Piercing has TWO honest outcomes: find the window (bypass candidate) OR PROVE the gate holds against THIS angle → the value moves to the NEXT angle, never to "done." A recon-only probe that can't reach the authz layer does NOT prove a bypass — it scopes the SUSPENDED two-owned-account harness that would (most live gate-piercing ends in harness+suspend, not a solo finding). Tell you're closing too early: writing "gated/401/requires-auth → blocked → next" without running the 4 angles. See `feedback_gated_is_not_a_verdict_pierce_the_gate.md`.
+
+## 🦣 "PROBABLY UNREACHABLE" IS NOT A VERDICT — the inverse of the gate rule (GATING, Mito 2026-06-17)
+When you've PROVEN a real high-impact defect (a missing owner-gate, a trusted-value path, a fund-mover with no validation) and the only thing left is REACHABILITY, "probably unreachable / latent / non-attacker-reachable / skip" is NOT a verdict — it's the signal you stopped at the FIRST closed leg. A high-impact defect is NEVER abandoned on "probably." Reachability is a SURFACE to exhaust recoin-by-recoin, each leg an EXECUTED artifact (live `simulate`/`cast`/read with pasted output, or a byte-trace). Recoins for a "caller-must-be-X" gated sink: **(a) become-X cheaply** (register/buy/take-over an existing privileged instance, a weak/abandoned/contract owner key); **(b) does ANY blessed instance reach the sink via ANY handler** — grep every call-site/reply/submsg, not the happy path; **(c) owner-controlled CONFIG** making the blessed code emit the sink; **(d) the UPGRADE path** (migrate-admin → attacker code); **(e) the REACHABLE SIBLING with the same weak root** (Mito: every market_make routes through the same trust-boundary — pivot the finding to it); **(f) cross-instance binding** ("is registered X" vs "owns ITS OWN resource" → cross-tenant); **(g) compose with a cheaper bug**. Only when ALL recoins are executed-null does "non-reachable" stand — and then it's a real latent defect to CATALOGUE (activates if config changes), not nothing. See `feedback_probably_unreachable_is_not_a_verdict_make_it_reachable.md`.
+
+## 🔍 UNDERSTAND THE SYSTEM BEFORE REVERSE-ENGINEERING THE BYTECODE (Mito 2026-06-17)
+If you find yourself tracing a decompiled binary (WASM/SBF/EVM) with anonymous offsets, GUESSING what `f_pk`/`m+648`/a storage slot means — STOP the blind RE and build the model from public ground-truth FIRST (I traced `m+648`=config.owner from Mito's WASM; it was the `vaults[caller]` key, and the entire reachability analysis hung on that wrong guess until the source was found). Exhaust the cheap channels in order: **(1) the public AUDIT REPORT** (SCV-Security/Oak/Zellic/Halborn/C4/Sherlock describe handlers with file:line + the trust-boundary bug class + each finding's STATUS — acknowledged = still-live worklist; search `github.com/SCV-Security/PublicReports`, `oak-security/audit-reports`, `Zellic/publications`, firm-name+protocol). **(2) the SOURCE crate** — Rust/CosmWasm types crate often on crates.io via the STATIC CDN `https://static.crates.io/crates/<n>/<n>-<ver>.crate` (the API blocks bots); `.cargo_vcs_info.json` inside = git commit sha + workspace path. **(3) embedded file paths** — `strings <wasm> | grep -oE 'contracts/[a-z/_-]+\.rs'` reveals the module structure so you read the right handler. **(4) global commit-sha search** (a sha is globally unique). **(5) the deployed enum** — trigger a parse error (`{"__x__":{}}`) to enumerate the EXACT deployed message variants (which often DIFFER from the published crate). Only when source is private AND no audit describes the handler do you byte-trace — and CALIBRATE the decompile against the audit's file:line anchors. The SCV report turned 6h of WASM-guessing into an understood system in 20min.
+
+## ⚖️ EXECUTE-THEN-CLASSIFY — a real bug on in-scope infra can still be OOS by IMPACT TARGET (Injective F-POLY, 2026-06-18)
+Two scope disciplines run IN ORDER, and the trap is doing only one. **(Step 1) EXECUTE every wrongly-killed surface** — a "scope-fissure / OOS / not-my-host" kill on an UN-executed surface is illegal; open it (the bias re-audit re-opened `/api/v1/polymarket/sign`, lazily killed "scope-fissure OOS" — on execution it was a REAL unauth credential leak + blind signing oracle). **(Step 2) THEN classify by the IMPACT TARGET, not the bug's LOCATION** — receivability is decided by WHERE the demonstrable impact lands (whose funds/state/users/identity), NOT where the vulnerable host/code sits. F-POLY lives on in-scope Injective infra (`bff-api`) but the leaked credential is Polymarket-only (doesn't authenticate to bff's own routes; the Polymarket order is signed by the USER's own EIP-712, so the builder sig is fee-attribution not authorization) → the only demonstrable harm lands on Polymarket = a VENDOR system the program excludes → OOS despite the real in-scope-host leak. **Run the impact-target test before drafting any paid finding:** "if perfectly proven, WHOSE asset is harmed — in-scope or vendor?" Enumerate the in-scope angles, confirm each returns NO. A bug undeniable in MECHANISM but vendor-side in IMPACT is an honest scope-KILL caught before submission, not a finding. Without step 1 you miss the real leak; without step 2 you submit OOS and burn credibility. See `feedback_execute_the_surface_then_classify_the_impact_target.md`.
 
 ## PoC Templates (COPY-PASTE — don't write PoCs from scratch)
 
@@ -439,6 +467,71 @@ function_B        | ✓            | ✓          | ✓           | ✗  ← BUG
 Two functions that do the same thing but differ in checks = access control bypass.
 
 **Example (Reserve F-001):** `bid()` checks `bidsEnabled`, `createTrustedFill()` doesn't. Same trade initiation, different checks.
+
+**MANDATORY MIRROR INVARIANT AUDIT (CLAUDE.md rule #41, runs in Phase 1 before declaring any in/out file clean):**
+
+For bridges, vaults, escrow, lock/unlock, mint/burn — any protocol with paired state-changing operations — the Check Matrix must include a vertical mirror comparison across the in/out boundary, not only the horizontal comparison between siblings of the same direction.
+
+```python
+# For each bidirectional pair in the protocol:
+pairs = [
+    ("transferToAgent", "transferToken"),        # bridge ingress/egress
+    ("transferToAgent", "transferEther"),         # native variant
+    ("deposit", "withdraw"),                      # vault
+    ("mint", "redeem"),                           # ERC4626 share
+    ("convertToShares", "convertToAssets"),       # inverse rounding direction
+    ("lock", "unlock"),                           # cross-chain asset
+    ("mint", "burn"),                             # wrapped token
+    ("sendMessage", "dispatchMessage"),           # message bridge
+    ("encode", "decode"),                         # symmetric codec
+    ("registerToken", "unregisterToken"),         # registry symmetry
+    ("fund", "release"),                          # escrow
+    ("dispute", "resolve"),                       # challenger/defender
+]
+
+# For each pair, extract validation sets V_in and V_out side-by-side:
+for (f_in, f_out) in pairs:
+    V_in  = { each require/revert/modifier/balance-delta check in f_in }
+    V_out = { each require/revert/modifier/balance-delta check in f_out }
+    diff_in_only  = V_in - V_out  # protection on ingress, absent on egress
+    diff_out_only = V_out - V_in  # protection on egress, absent on ingress
+    for check in (diff_in_only | diff_out_only):
+        # Each asymmetry is a finding-candidate UNLESS one of these is true:
+        # (a) one-sentence articulable design reason (e.g., "transferFrom pulls from
+        #     attacker-controlled source while transfer pushes to user-controlled dest")
+        # (b) different-layer guarantee (e.g., "registry enforces token validity at
+        #     registration so egress trusts already-registered tokens") — verify by
+        #     reading the guarantor code, not by assuming
+        # (c) documented in a code comment or spec
+        # If none of a/b/c hold, it is an oversight → apply Kill Gate
+```
+
+**Grep starter patterns** (tune to the codebase):
+
+```bash
+# bridges
+grep -nE "function (transferToAgent|transferFromAgent|transferToken|transferEther|lock|unlock|registerToken|unregisterToken|processInbound|processOutbound|handleMessage|dispatchMessage|encodeMessage|decodeMessage)" src/
+
+# vaults / ERC4626
+grep -nE "function (deposit|withdraw|mint|redeem|convertToShares|convertToAssets)" src/
+
+# escrow / dispute
+grep -nE "function (fund|release|dispute|resolve|claim|refund|challenge|settle)" src/
+```
+
+**Mechanical gate for Phase 1 completeness:** if your audit notes contain "file X audited clean" without a companion line explicitly stating the mirror comparison result (e.g., `"transferToAgent V_in={balanceDelta, isContract, nonZero} vs transferToken V_out={∅} — ASYMMETRY, finding-candidate"`), the file is not clean and Phase 1 is not complete on that file. Force both halves to be written before moving on.
+
+**Why:** 2026-04-19 Snowbridge audit session, notes recorded `Functions.sol (transferToAgent has FoT protection)` AND `AgentExecutor.sol audited clean` in the same pass. The bug was the absence of the ingress FoT guard on the egress side of the same codebase. V12 found it next day. Checkbox audit ("has FoT check ✓") without the mirror comparison is incomplete — absence-of-protection bugs are invisible to presence-scanning. Mirror audit is how humans achieve the same uniformity that LLM auditors have by default.
+
+**Example (Snowbridge SNOW-002):**
+```
+Pair: transferToAgent (ingress) / transferToken (egress)
+V_in:  { isContract, nonZeroAmount, balanceDeltaCheck, revertOnShortDelivery }
+V_out: { safeTransferReturnCheck }
+Diff V_in \ V_out: { balanceDeltaCheck, revertOnShortDelivery }
+Articulable design reason? NO — same protocol, same 1:1 invariant, PR #1636 added V_in's balanceDeltaCheck explicitly, did not touch V_out.
+→ ASYMMETRY → finding-candidate → Kill Gate → Proceed → SNOW-002 High
+```
 
 **MANDATORY FUND THEFT SCAN (run on EVERY SC target, 30 min):**
 

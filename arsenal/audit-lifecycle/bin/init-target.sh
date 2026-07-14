@@ -103,17 +103,17 @@ if [ ! -f "$TIMEBOX_FILE" ]; then
   done
 fi
 
-# Run fortress-score.sh — UPSTREAM EV-gate (Mezo $0 lesson: don't deep-audit a fortress).
-# Computes audit_count/auditor_tier/adversarial-devtests/freshness from cloned repos+audits.
-# HIGH score (>=60) = NO-GO or fresh-delta-only + explicit "expected null" operator opt-in.
-# See feedback_fortress_target_selection_ev_gate.md. Emits a manual card (exit 2) if no source yet.
-FORTRESS_FILE="$WORKSPACE/.fortress-score"
-if [ ! -f "$FORTRESS_FILE" ]; then
-  bash "$LIFECYCLE_DIR/bin/fortress-score.sh" --workspace "$WORKSPACE" > "$FORTRESS_FILE" 2>&1 || true
-  echo "" ; echo "FORTRESS SCORE → $FORTRESS_FILE :"
-  sed 's/^/  /' "$FORTRESS_FILE" 2>/dev/null | head -8
-  grep -qiE 'HIGH FORTRESS' "$FORTRESS_FILE" 2>/dev/null && \
-    echo "  ⚠️  HIGH FORTRESS — re-baseline EV before committing immortal-mode depth (Mezo lesson)."
+# Run saturation-score.sh — UPSTREAM target-gate (Mezo $0 lesson: don't prove-null on a picked-clean core).
+# Computes audit_count/auditor_tier/adversarial-devtests/freshness + scans for a PAYABLE SURFACE.
+# HIGH score (>=60) = RE-SOURCE to a payable surface (web/API/off-chain/fresh), NOT prove-null on the core.
+# See feedback_fortress_target_selection_ev_gate.md + feedback-default-posture-thief-not-fortress-prover.md.
+SATURATION_FILE="$WORKSPACE/.saturation-score"
+if [ ! -f "$SATURATION_FILE" ]; then
+  bash "$LIFECYCLE_DIR/bin/saturation-score.sh" --workspace "$WORKSPACE" > "$SATURATION_FILE" 2>&1 || true
+  echo "" ; echo "SATURATION SCORE → $SATURATION_FILE :"
+  sed 's/^/  /' "$SATURATION_FILE" 2>/dev/null | head -10
+  grep -qiE 'HIGH SATURATION' "$SATURATION_FILE" 2>/dev/null && \
+    echo "  ⚠️  HIGH SATURATION — RE-SOURCE to a payable surface (web/API/off-chain/fresh); do NOT prove-null on the core."
 fi
 
 # Initialize OUTCOMES.jsonl if missing (workspace-local, separate from global tracking)

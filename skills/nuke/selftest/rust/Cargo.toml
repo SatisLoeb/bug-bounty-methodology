@@ -1,0 +1,5 @@
+[package]
+name = "nuke-rust-selftest"
+version = "0.1.0"
+edition = "2021"
+# NOTE: no [profile.release] overflow-checks -> NUKE must emit the overflow-checks FINDING.

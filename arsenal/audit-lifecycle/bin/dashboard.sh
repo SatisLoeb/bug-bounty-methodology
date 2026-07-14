@@ -319,7 +319,9 @@ if [ -n "$RELANCES" ]; then
 fi
 
 if [ "${#ACTIONS[@]}" -eq 0 ]; then
-  echo "  ${GREEN}✓ No immediate action items — hunt time${RESET}"
+  echo "  ${GREEN}✓ No immediate action items — run a SOURCING pass for a PAYABLE surface${RESET}"
+  echo "  ${GREEN}   (web/API · off-chain/operator infra · fresh <2-audit), NOT another saturated SC core.${RESET}"
+  echo "  ${GREEN}   → PROTOCOLE-sourcing-cibles.md. Track record: SC-cores 71% null/\$0; payable seams = every payout.${RESET}"
 else
   for i in "${!ACTIONS[@]}"; do
     echo "  $((i+1)). ${ACTIONS[$i]}"
