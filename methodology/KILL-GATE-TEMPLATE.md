@@ -127,30 +127,37 @@ Feasibility: [ ] REALISTIC — permissionless, low-cost trigger
 
 ---
 
-### Q5b: Temporal Reachability / Window-Actor Gate (3 min)
+### Q5b: Temporal Reachability / Window-Actor Gate (3 min pre-PoC + a post-quantification recheck)
 
-> Does the exploit need the system to SIT in an intermediate state for a DURATION — and does a rational actor already watching that state reset it before your window matures?
+> Does the exploit need the system to SIT in an intermediate state for a DURATION — and does any actor collapse that state early, refresh it as a byproduct of routine traffic, or front-run your extraction at maturity, before you are paid?
 
-Q2/Q5 ask whether the state is *reachable* and the trigger *affordable*. This asks whether the state **survives long enough to use.** A finding can be correct in a frozen snapshot yet require the protocol to REMAIN transient — a pending withdrawal, an un-liquidated unhealthy position, a stale-but-not-yet-refreshed oracle, a vesting/unlock cliff, an epoch boundary, a slowly-accumulating imbalance — for long enough to act. The market is not frozen. Permanent rational actors (MEV searchers, arbitrageurs, liquidators, keepers) are **present at t=0**, capital deployed and bots already running, and they are paid to collapse exactly those transient states.
+Q2/Q5 ask whether the state is *reachable* and the trigger *affordable*. This asks whether the state **survives long enough to use, and whether YOU — not a faster actor — get the payoff.** A finding can be correct in a frozen snapshot yet require the protocol to REMAIN transient — a pending withdrawal, an un-liquidated unhealthy position, a stale-but-not-yet-refreshed oracle, a vesting/unlock cliff, an epoch boundary, a slowly-accumulating imbalance — for long enough to act. The market is not frozen: MEV searchers, arbitrageurs, liquidators and keepers are **present at t=0**, capital deployed and bots running.
 
-- [ ] Does the exploit require an intermediate state to PERSIST for any non-zero duration? If NO (atomic, single-tx) → N/A, skip to Q6.
-- [ ] Name the window precisely: which state must hold, and for how long (blocks / hours / days)?
-- [ ] List every actor with a standing incentive to touch that state: liquidator, arbitrageur, MEV/sandwich bot, keeper, other depositors. **Count each as present at t=0 — not "a risk that might appear later."**
-- [ ] For the CHEAPEST such actor: is resetting/harvesting the state profitable for THEM before your window matures? Compute *their* payoff, not yours.
+**Two checkpoints — the payoff number does not exist yet, so do not hand-wave SURVIVES on it:**
+- **Pre-PoC (now, 3 min):** FLAG the dwell-time dependency and KILL the obvious deaths (state visibly refreshed every block by routine traffic). For an accumulation vein the window LENGTH and harvested VALUE are OUTPUTS of the PoC — Ammalgam's "120 days" and premium rate came from the PoC, not before it — so you usually cannot yet *quantify* the adversary payoff. Flag, don't rubber-stamp SURVIVES.
+- **Post-quantification (before submission):** once the PoC yields the REAL window and REAL value, recompute the adversary payoff and re-run this gate on numbers. This second pass is what scores Ammalgam's harvest DEAD; the first could only flag it.
 
-| Window state | Duration needed | Actor who resets it | Their payoff to reset | Survives? |
-|--------------|-----------------|---------------------|-----------------------|-----------|
-| [state] | [blocks/time] | [MEV/liq/arb/keeper] | [$ / why] | YES/NO |
+- [ ] Does the exploit require an intermediate state to PERSIST for a non-zero duration? If NO (atomic, single-tx) → not a temporal case — but NOT "clean": an atomic exploit is still mempool-copyable (a bot reads your calldata, outbids gas, extracts first). Route to the **front-run / mempool sister gate** (§5.3 pre-gate / Q5), then skip the rest of Q5b.
+- [ ] Name the window: which state must hold, for how long (blocks / hours / days).
+- [ ] **Death (i-a) — TARGETED reset:** an actor resets the state FOR a reset payoff. Compute *their* payoff before your window matures.
+- [ ] **Death (i-b) — INCIDENTAL reset:** an actor refreshes the state FREE, as a byproduct of unrelated routine profitable activity — a liquidation of a *neighbor* triggers a global update, an arb rebalance pokes the oracle you wanted stale, any deposit/withdraw touches the accumulator. This needs **no payoff of its own** to kill you: if routine traffic resets the state, it dies regardless of any targeted incentive. (Most windows die here, not to a targeted resetter.)
+- [ ] **Death (ii) — front-run AT maturity:** even if the window survives to maturity, when you go to extract does a faster actor (liquidation bot, MEV searcher) front-run your extraction and take the payoff? Window intact, you still unpaid.
 
-**The t=0 rule (non-negotiable):** MEV / arbitrage / liquidation / keeper activity is a CONSTANT of the environment, live from block zero — never model it as a hazard that "might show up later." If your exploit assumes N days of undisturbed accumulation, you are assuming N days with every bot in the mempool asleep. They are not asleep. The burden is on the finding to show the reset is UNprofitable, with the adversary's payoff computed.
+| Window state | Duration | Death mode | Actor | Payoff / trigger | Kills you? |
+|--------------|----------|------------|-------|------------------|-----------|
+| [state] | [time] | (i-a) targeted / (i-b) incidental / (ii) front-run | [who] | [$ or "free byproduct"] | YES/NO |
+
+**The t=0 rule (non-negotiable):** MEV / arbitrage / liquidation / keeper activity is a CONSTANT of the environment, live from block zero — never model it as a hazard that "might show up later." If your exploit assumes N days of undisturbed accumulation, you are assuming N days with every bot in the mempool asleep. They are not asleep — and routine traffic does not need to *target* you to reset you.
 
 ```
-Result: [ ] N/A — atomic exploit, no dwell time
-        [ ] SURVIVES — no rational t=0 actor profits from resetting the window (show their negative payoff)
-        [ ] DEAD — a t=0 actor harvests/resets the intermediate state before it matures → KILL
+Result (pre-PoC):  [ ] FLAGGED — needs dwell-time, obvious deaths ruled out → re-run post-quantification
+                   [ ] N/A — atomic (→ front-run / mempool gate instead, not "nothing to check")
+                   [ ] DEAD — routine traffic visibly resets the state every block → KILL now
+Result (post-PoC): [ ] SURVIVES — with the REAL window + value: no targeted/incidental reset and no maturity front-run is profitable (show the numbers)
+                   [ ] DEAD — a t=0 actor collapses the window (targeted OR incidental) OR front-runs the payoff → KILL before submission
 ```
 
-**Ammalgam lesson:** a saturation-accumulation finding needed a ~120-day intermediate window; MEV bots harvested the state from second zero and the old-saturation value refreshed early every cycle. Correct in a static read, dead in a live market. This is the question that was never asked before the first PoC — the model held the window frozen while the environment did not.
+**Ammalgam lesson:** a saturation-accumulation finding needed a ~120-day window; MEV bots harvested the state from second zero (harvest WAS the reset — deaths (i) and (ii) coincided there) and the old-saturation value refreshed early every cycle. The pre-PoC pass could only FLAG the dwell-time dependency; the post-quantification pass — real 120-day window, real premium rate, both PoC outputs — is what scores it DEAD. Correct in a static read, dead in a live market.
 
 ---
 

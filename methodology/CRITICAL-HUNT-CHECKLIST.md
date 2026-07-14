@@ -274,7 +274,7 @@ See `feedback_mirror_invariant_audit.md` for the full methodology and grep pairs
 ```
 
 - [ ] **Pre-gate passed** — frontrunning NOT excluded in program scope
-- [ ] **Window-actor check** — does any candidate finding need an intermediate state to PERSIST (saturation/liquidation/unlock/oracle-stale window)? A rational MEV/arb/liq bot resetting it before the window matures = KILL. Model those bots as present at **t=0**, not a future risk. → KILL-GATE **Q5b**
+- [ ] **Window-actor check** — does any candidate finding need an intermediate state to PERSIST (saturation/liquidation/unlock/oracle-stale window)? Three deaths: (i-a) targeted reset, (i-b) INCIDENTAL reset by routine traffic (payoff ~0, kills you anyway), (ii) front-run of your extraction AT maturity. Bots present at **t=0**, not a future risk. Payoff recomputed POST-PoC (window+value are PoC outputs). → KILL-GATE **Q5b**
 
 #### Price function manipulability
 ```bash
