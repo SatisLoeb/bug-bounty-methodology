@@ -52,6 +52,12 @@ faussement présente, l'exécution montre qu'elle ne couvre pas le chemin).
 
 L'état exploitable est-il atteignable organiquement (pas seulement en théorie) ?
 Est-il cappé (limite par tx, par bloc, par position) ?
+**Survit-il ?** Si l'exploit exige que l'état reste INTERMÉDIAIRE pendant une DURÉE (fenêtre de
+saturation / liquidation / déblocage / oracle-stale / époque), quel acteur-fenêtre le remet à zéro ?
+MEV / arbitrage / liquidateur / keeper = **présents à t=0**, capital déployé, bots tournants — jamais
+un risque futur. Charge à la veine de prouver que la remise-à-zéro leur est NON-profitable (payoff
+adverse chiffré) ; sinon la fenêtre ne tient pas et la math extractible meurt en marché vivant.
+Voir KILL-GATE **Q5b** (gate universelle).
 
 ## Gate 5 — IMPACT RÉALISÉ
 
@@ -63,6 +69,7 @@ organiquement présent.)
 - meurt Gate-1 : directionnalité absente (math non-directionnelle, Scribe crypto)
 - meurt Gate-2 : 1-wei non-accumulable (Euler les deux candidats)
 - meurt Gate-3 : absorbée
+- meurt Gate-4 : fenêtre intermédiaire récoltée par un acteur t=0 (MEV/arb/liq) avant maturité (Ammalgam saturation 120j)
 - passe les 5 : veine extractible (GR-001)
 
 ## DETTE DE VALIDATION (honnête)

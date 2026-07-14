@@ -274,6 +274,7 @@ See `feedback_mirror_invariant_audit.md` for the full methodology and grep pairs
 ```
 
 - [ ] **Pre-gate passed** — frontrunning NOT excluded in program scope
+- [ ] **Window-actor check** — does any candidate finding need an intermediate state to PERSIST (saturation/liquidation/unlock/oracle-stale window)? A rational MEV/arb/liq bot resetting it before the window matures = KILL. Model those bots as present at **t=0**, not a future risk. → KILL-GATE **Q5b**
 
 #### Price function manipulability
 ```bash

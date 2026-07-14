@@ -75,6 +75,13 @@ EXPAND = {
 _WORD = re.compile(r"[a-z0-9_]+")
 _IDENT = re.compile(r"[A-Za-z_][A-Za-z0-9_]{2,}(?:\(\))?")
 _PATH = re.compile(r"[A-Za-z0-9_./-]+\.(?:sol|rs|go|move|cairo|vy|ts)\b")
+# "dense" is an ABSOLUTE property ("enough findings that a bare class word is noise"), NOT "above THIS
+# corpus's median". On a thin corpus (cosmwasm/cosmos-go/solana — exactly where the vein-granular net is
+# aimed) the median collapses and a class goes "dense" for global_total>=1..2, so the specific-ident
+# requirement kicks in on a 3-finding class → a differently-phrased real dup misses the exact ident →
+# silent VIERGE → dig a dup. The floor keeps the broad OR (safe SUSPECT) until a class is genuinely dense.
+DENSE_FLOOR = 25
+
 # generic DeFi/class prose — present in a huge fraction of findings, so USELESS as a vein discriminator.
 GENERIC = set("""oracle price prices fee fees share shares balance balances mint mints burn amount amounts
 account accounts accounting reward rewards debt collateral asset assets token tokens vault vaults value
@@ -82,7 +89,9 @@ values check checks state states user users owner owners admin config configs up
 gets with without before after when then that this from into over under call calls send sends transfer
 transfers withdraw withdraws deposit deposits redeem redeems borrow borrows repay repays swap swaps pool
 pools fund funds pay pays paid could should would will must does missing wrong incorrect return returns
-function functions contract contracts module modules address addresses caller sender receiver protocol""".split())
+function functions contract contracts module modules address addresses caller sender receiver protocol
+liquidation liquidate liquidated premium reserve reserves governance governor validator validators staking
+stake unstake delegate delegation slashing epoch margin position positions lending feed feeds price""".split())
 
 
 def _load(p):
@@ -187,7 +196,7 @@ def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
         label = v["label"]
         ccls = map_class(label)
         global_total = sum((cmap.get(c, {}) or {}).get("total", 0) for c in ccls)
-        dense = global_total >= dense_cut
+        dense = global_total >= max(DENSE_FLOOR, dense_cut)
 
         # two nets: class-coarse (broad synonyms) and vein-specific (REAL mechanism idents from money+tell).
         # The label is NOT a mechanism source — its only distinctive token is the class word itself, too
@@ -201,6 +210,12 @@ def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
             # (that would give the emergent-seam vein a phantom collision and re-bury it — defeats fix #4).
             if c and c != "other":
                 class_net.update(EXPAND.get(c, [c]))
+        # The dense-class specific test uses `mech` = code idents PLUS distinctive long words. A strict
+        # code-idents-ONLY variant was tried and the BACKTEST REJECTED it: it flipped genuine dups to
+        # false-VIERGE (e.g. the oracle-staleness vein → VIERGE on a fork that HAS Pyth findings, because
+        # "Pyth"/"maxConf" are not snake/camel idents and the vein's exact idents differ from the finding's
+        # prose). The false-discriminator worry about long words is handled the right way — by a fuller
+        # GENERIC set — not by amputating recall into the costly failure the floor exists to kill.
         mech = mech_tokens((v.get("money", "") + " " + v.get("tell", "")))
         has_mech = bool(mech)
 
@@ -209,11 +224,13 @@ def compute_saturation(sig, forks, shape, corpus_dir, coverage_text=""):
             class_hit = bool(f["classes"] & set(ccls)) or any(k in f["text"] for k in class_net)
             vein_hit = any(k in f["text"] for k in mech) if has_mech else False
             if dense:
-                # dense class: a bare class-word collision is near-meaningless. If we HAVE mechanism tokens,
-                # demand a SPECIFIC match (restores vein resolution). If we DON'T (coarse vein), keep the
-                # class-level collision but flag it `class-only` — labeled-unresolved, never false-VIERGE.
+                # genuinely dense class (>= max(FLOOR, median)): a bare class word is noise → demand a
+                # SPECIFIC vein match. No mechanism at all (coarse vein) → keep the class-level collision but
+                # flag `class-only` — labeled-unresolved, never a silent false-VIERGE.
                 hit = vein_hit or (class_hit and not has_mech)
             else:
+                # below the density floor: a class-level collision is still meaningful → broad OR = SUSPECT
+                # (safe side, you read it), never a silent VIERGE on a thin class.
                 hit = class_hit or vein_hit
             if hit:
                 collisions.append(f)

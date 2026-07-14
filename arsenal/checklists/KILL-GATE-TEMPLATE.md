@@ -143,6 +143,33 @@ Feasibility: [ ] REALISTIC — permissionless, low-cost trigger
 
 ---
 
+### Q5b: Temporal Reachability / Window-Actor Gate (3 min)
+
+> Does the exploit need the system to SIT in an intermediate state for a DURATION — and does a rational actor already watching that state reset it before your window matures?
+
+Q2/Q5 ask whether the state is *reachable* and the trigger *affordable*. This asks whether the state **survives long enough to use.** A finding can be correct in a frozen snapshot yet require the protocol to REMAIN transient — a pending withdrawal, an un-liquidated unhealthy position, a stale-but-not-yet-refreshed oracle, a vesting/unlock cliff, an epoch boundary, a slowly-accumulating imbalance — for long enough to act. The market is not frozen. Permanent rational actors (MEV searchers, arbitrageurs, liquidators, keepers) are **present at t=0**, capital deployed and bots already running, and they are paid to collapse exactly those transient states.
+
+- [ ] Does the exploit require an intermediate state to PERSIST for any non-zero duration? If NO (atomic, single-tx) → N/A, skip to Q6.
+- [ ] Name the window precisely: which state must hold, and for how long (blocks / hours / days)?
+- [ ] List every actor with a standing incentive to touch that state: liquidator, arbitrageur, MEV/sandwich bot, keeper, other depositors. **Count each as present at t=0 — not "a risk that might appear later."**
+- [ ] For the CHEAPEST such actor: is resetting/harvesting the state profitable for THEM before your window matures? Compute *their* payoff, not yours.
+
+| Window state | Duration needed | Actor who resets it | Their payoff to reset | Survives? |
+|--------------|-----------------|---------------------|-----------------------|-----------|
+| [state] | [blocks/time] | [MEV/liq/arb/keeper] | [$ / why] | YES/NO |
+
+**The t=0 rule (non-negotiable):** MEV / arbitrage / liquidation / keeper activity is a CONSTANT of the environment, live from block zero — never model it as a hazard that "might show up later." If your exploit assumes N days of undisturbed accumulation, you are assuming N days with every bot in the mempool asleep. They are not asleep. The burden is on the finding to show the reset is UNprofitable, with the adversary's payoff computed.
+
+```
+Result: [ ] N/A — atomic exploit, no dwell time
+        [ ] SURVIVES — no rational t=0 actor profits from resetting the window (show their negative payoff)
+        [ ] DEAD — a t=0 actor harvests/resets the intermediate state before it matures → KILL
+```
+
+**Ammalgam lesson:** a saturation-accumulation finding needed a ~120-day intermediate window; MEV bots harvested the state from second zero and the old-saturation value refreshed early every cycle. Correct in a static read, dead in a live market. This is the question that was never asked before the first PoC — the model held the window frozen while the environment did not.
+
+---
+
 ### Q6: Industry-Known Vulnerability Check (2 min)
 
 > Is this a well-documented vulnerability class with >80% chance of being already known?
@@ -396,6 +423,7 @@ Reason: _______________________________________________
 | L17 | MEV: pre-gate exclusion check BEFORE analysis | Multiple programs | Q5 pre-gate |
 | L18 | Supply chain: devDependencies don't execute in prod | Multiple | Q2 |
 | L19 | Proxy chain: trace FULL chain, not just immediate admin | Bybit $1.4B | Q7 |
+| L24 | Intermediate-state exploit dies if a t=0 MEV/arb/liq actor resets the window before it matures | Ammalgam saturation (120-day window) | Q5b |
 
 ---
 
@@ -416,6 +444,7 @@ Reason: _______________________________________________
 ### MEV Structural (§5.3)
 - **Custom pre-gate:** Does the program exclude frontrunning/MEV/sandwich? If YES → auto-KILL.
 - **Q5 (Feasibility):** Is MEV extraction quantifiably > 0.1% TVL/year?
+- **Q5b (Window-Actor):** Does your exploit need a transient state to PERSIST? Then MEV/arb/liq bots resetting it are the DEFAULT, present at t=0 — the finding dies unless you prove the reset is unprofitable for them. Not a future risk; a t=0 constant.
 
 ### Off-Chain Infra (§F3.4-F3.6)
 - **Q2 (Reachability):** Is the exposed endpoint actually used by the production application?
