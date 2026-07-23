@@ -1,0 +1,20 @@
+---
+name: reference-arsenal-vs-immunefi-top10-coverage-map
+description: "Where the operator's skill+memory arsenal sits against the Immunefi SC Top-10 — deep/thin per class + the meta insight that the taxonomy is one slice wrapped in a payability pipeline. Use when deciding whether to build a new vein or which class is a soft spot."
+metadata: 
+  node_type: memory
+  type: reference
+  originSessionId: 91ada56b-1372-4a8e-9cae-4aa535de28a0
+---
+
+13-agent workflow (2026-07-23) mapped the Immunefi Top-10 SC vuln taxonomy against the 28 skills + 63 memories, reconciled + source-verified (every cited semgrep rule present among 208 vendored; extract Gate-1..5 and power GATE DE POUVOIR spot-checked verbatim).
+
+**Coverage per class** (final, reconciled):
+- **DEEP + vein-anchored:** V02 Incorrect-Calc (`/extract` 5-gate chain + invfuzz→halmos→fizz ladder), V06 Rounding (extract Gate-1 directionality IS the V06 test), V04 Access-Control (`/power` GATE DE POUVOIR + VERROU-NON-RÉSOLU by-execution probe — most executed pierces in corpus).
+- **DEEP in method but REFUTATION-ONLY, zero landed wins:** V03 Oracle (manipulation-COST gate refutes plausible findings — Ammalgam −116,600 net), V05 Replay (decompose-the-digest + ~10 executed refutations, no dedicated vein).
+- **MODERATE, handled as gate/self-kill not discovery vein:** V07 Reentrancy (First-Maxim unguarded-sibling; Metric transient-guard edge-math, Arcadia cross-version — no classic-callback/read-only PoC ever driven), V08 Frontrunning (SPLIT: Q5b window-actor self-kill gate is DEEP defensive, offensive side deliberately under-invested — "MEV standalone = unpayable"), V10 Governance (IMPACT-LEDGER row + one executed reserve-dtf flash-vote refutation — no constructive-takeover playbook).
+- **SOFT SPOTS:** V01 Input-Validation (moderate but softest — no dedicated dispatcher, scattered across power/numerical-gap/NUKE-semgrep; best instance dYdX Price:0 = DUPLICATE), **V09 Uninitialized-Proxy = THIN, weakest class** (catalogue + 2 semgrep rules + one tangential OKX 7702-storage-collision; textbook UUPS unguarded-initialize / `_disableInitializers` NEVER executed, owns no methodology).
+
+**The headline insight the operator would want:** the Immunefi Top-10 is ONE slice — question "what type of bug is this?" — and the arsenal wraps every class in an EV-and-evidence pipeline a flat list structurally cannot express. Two layers past the taxonomy: (1) **methodology primitives** lateral/upstream of any class — seam thesis, negative-space/2nd Maxim, chainability-to-payable, [[feedback-payable-impact-not-just-theft]] IMPACT-LEDGER, saturation/dup gate, [[feedback-model-manipulation-cost-before-crediting-twap-finding]], [[feedback-trigger-reachability-is-payability-gate]], Q5b [[feedback-model-window-actors-day-one]], First Maxim executed-artifact-per-gate, [[feedback-map-severity-to-program-rubric]], [[feedback-manual-poke-mandatory-bracket]]; (2) whole **impact×surface×ecosystem×time×source axes OUTSIDE the list** — chain-halt/liveness, perma-freeze, insolvency, griefing, deanon/privacy; non-EVM (Cosmos/Solana/NEAR/Go/BitVM); seams (off-chain-operator, cross-VM binding, deployed-config drift, temporal write-lazy/read-unguarded = the [[project-perena-bankineco-intake]] #83 class via [[feedback-corpus-not-100-percent-poke-finds-unnamed-surface]]); post-audit drift; closed-source BPF RE; AA-4337/7702, MPC/threshold, ZK-soundness, DA/SPV, LRT-slashing.
+
+**Actionable:** the taxonomy classes are covered where they pay (value-math + authz). Real gaps if ever wanted: no dedicated V01 input-validation dispatcher, no V09 textbook-UUPS drill, no constructive V10 governance-takeover playbook, and oracle/replay are validated on refutation not landing. But most are covered deliberately-thin because the operator judges them lower-EV than the seam/impact axes the Top-10 has no cell for. Reconcile flagged 3 positive-construction memories the mappers first missed: [[project-aurora-launchpad-withdraw-rollback]] (over-allocation PoC), usdai C1 (phantom-NAV insolvency), flare-fassets (proof-dedup + accumulator-conservation, on-class for V05/V02/V06/V04).

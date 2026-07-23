@@ -1,0 +1,24 @@
+---
+name: reserve-program-closed-dup-fortress
+description: "Reserve (RToken core + DTF Folio, Cantina) CLOSED 2026-06-26 — near-total-dup fortress-null; rc-5.0.0 post-audit delta is the only non-dup surface and it's clean"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 8c7164c7-5d3e-4878-99e4-730b45d08d7f
+---
+
+**Reserve Protocol (RToken core rc-4.2.0 / 3.4.0-rc1 + DTF Folio rc-5.0.0/rc-4.0.0 + trusted-fillers, Cantina BBP) — whole program CLOSED 2026-06-26 as earned dup-fortress-null.** Do NOT re-engage without a re-open trigger below.
+
+**Why closed:** one of the most-audited protocols alive — the bounty's OOS "known issues" list = ~24 prior audits (Trail of Bits ×4, Trust Security ×5, Code4rena ×4, Solidified ×4, Pashov, Halborn, Ackee, Cantina-comp). Standing code is structurally **dup-dead**. The ONLY epistemically-novel surface is the **rc-5.0.0 DTF post-audit delta** (Dec 2025; no 5.0.0 audit in the OOS list). A dup-gated workflow on that delta (RebalancingLib +196 overhaul, Folio +149, StakingVault +75, FeeRegistry +40, UpgradeSpell_5_0_0 +89): **12 raw candidates → 0 survived** the new-in-rc5 / untrusted-reachable / design-intent / dup pre-filter. Every lever = trusted-role write (REBALANCE_MANAGER/AUCTION_LAUNCHER = OOS), literal CHANGELOG design-intent, or executed-trace refutation; the rc5 accounting changes moved PROTOCOL-FAVORING (rc5 bid stricter than r4, BNB fee caps lower) = anti-leak direction. Report: `reserve-dtf-rc5/CORPUS-GAP-REPLAY.md`.
+
+**The 4 prior candidates (months of scattered pokes) are all dead:** RSV-001 Convex reward-freeze (vendored 3rd-party = OOS, prepped for the old boycotted Immunefi, never submitted); F-003 wrapper share-inflation (D8b-blocked, 5/6 named wrappers totalSupply=0 = $0 live; P-VAULT-001 = most-audited class); RG-01 StakingVault zero-supply reward-capture (HARD-DEAD by source disconfirmer: `StakingVault is` OZ ERC4626 with virtual-share offset + time-streamed `_calculateHandout` → atomic capture attacker-net-negative, non-atomic needs an empty-vault+dormant-unvested-reward window; M-02 area = near-certain dup); RSV-F001 bidsEnabled bypass (KILLED design-intent — rc5 CHANGELOG says the flag is meant to keep the trusted-filler channel open).
+
+**⚡ UPDATE 2026-07-04 — re-open trigger FIRED, real finding found but HELD (OOS+undeployed):** DTF **6.0.0** shipped (optimistic governance, un-audited, audit-handoff Jun 2026). Axiom-driven hunt (new component + composition seam) found a CONFIRMED **HIGH gov-manipulation** finding — **veto-dilution** in the `reserve-governor` repo (the new optimistic-governance component): optimistic-proposal veto bar = `vetoThreshold × getPastOptimisticTotalSupply` (FULL staked supply) but veto votes come only from opt-in optimistic-delegators (`StakingVault.deposit` doesn't auto-delegate) → an untrusted actor stakes un-delegated before the snapshot to inflate the denominator, defeating an honest veto → malicious optimistic proposal executes timelock-bypassed. Confirmed 6 ways (direct read + devs' tests only cover 100%-delegated=untested sibling + 6 adversarial agents). **NOT SUBMITTED — OUT OF SCOPE:** Cantina scope pins reserve-protocol/protocol@rc-4.2.0/3.4.0-rc1 + reserve-index-dtf@**rc-4.0.0/rc-5.0.0** + trusted-fillers; `reserve-governor` is UNLISTED (OOS 'all unlisted assets') and 6.0.0 is UNDEPLOYED (latest release 5.0.0; HEAD doesn't compile vs released OZ = pre-deploy WIP). DTF-core 6.0.0 delta separately swept = fortress-null (0/23). **Finding doc: `reserve-governor/VETO-DILUTION-FINDING.md`. FIRE when: 6.0.0 deploys + DTFs run reserve-governor w/ TVL (Primacy-of-Impact makes it in-scope), OR a Reserve 6.0.0 Cantina audit-competition opens.** Periodically re-check reserve-index-dtf releases + register.app + Cantina competitions.
+
+**Re-open triggers (the ONLY reasons to touch Reserve again):**
+- **6.0.0 DEPLOYMENT / a 6.0.0 audit competition → fire the HELD veto-dilution finding (see UPDATE above).**
+- A NEW post-6.0.0 DTF/Folio version ships → audit only that fresh delta (Rule 4), never the standing code.
+- A brand-new un-cloned in-scope component appears that no OOS audit covered.
+- (low value) F-003's named wrappers get funded → cheap `cast call totalSupply` re-check, but still near-certain dup on the most-audited class.
+
+Methodology contrast (the three-archetype set, keep together): **Solana = thin-pass replay FINDS a buried Low; Midas-EVM = firmaudit replay CONFIRMS a fortress; Reserve = near-total-dup replay where the only live surface is the post-audit version delta, and it's null.** The dup-gate-as-pre-filter (new-in-version AND untrusted-reachable AND not-design-intent, BEFORE verify) is what avoids Reserve's documented ~25-false-criticals failure mode. See [[midas-program-closed-fortress-null]], [[ev-gate-check-program-responsiveness-not-just-severity]].

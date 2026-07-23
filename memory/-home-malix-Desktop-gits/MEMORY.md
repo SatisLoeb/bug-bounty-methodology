@@ -1,0 +1,1 @@
+- [grunt: audit findings = known issues](grunt-audit-findings-are-known-issues.md) — on grunt, all in-repo audit PDF findings (any disposition) are out of scope; hunt only post-audit code + novel composition bugs

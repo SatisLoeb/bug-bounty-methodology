@@ -6,7 +6,9 @@ description: >-
 
 # extract — chaîne de la veine math-extractible
 
-Veine = MATH-EXTRACTIBLE (une erreur de calcul transfère de la valeur).
+Veine = MATH-EXTRACTIBLE (une erreur de calcul transfère de la valeur — ou, si
+elle ne la transfère pas, la DÉTRUIT / bloque / brise la solvabilité : ces sorties
+non-vol sont ré-orientées au Gate-1, PAS enterrées).
 Structure = chaîne. Chaque gate tue. Ordonnée par vitesse-de-mort.
 Le Gate-2 par LECTURE est l'exercice de l'instrument — pas le fork.
 Monter un fork ≠ exercer l'instrument. Trancher chaque gate au coût minimal = l'exercer.
@@ -14,9 +16,18 @@ Monter un fork ≠ exercer l'instrument. Trancher chaque gate au coût minimal =
 ## Gate 1 — DIRECTIONNALITÉ (tue le plus vite)
 
 L'erreur penche-t-elle TOUJOURS vers l'extracteur ?
-Bidirectionnelle/aléatoire = moyenne à zéro = MORTE.
+Bidirectionnelle/aléatoire = moyenne à zéro POUR LE VOL — mais "moyenne à zéro"
+≠ MORTE. Ré-oriente avant d'enterrer (une erreur de calcul produit d'AUTRES
+impacts payants que le transfert de valeur) :
+- directionnelle vers l'extracteur → veine EXTRACTION (continue la chaîne).
+- casse la solvabilité / crée de la bad-debt (même sans bénéficiaire) → INSOLVENCY (High/Crit).
+- revert/lock sur une branche ATTEIGNABLE (div-by-0, underflow, overflow-cap) → DoS/FREEZE (fonds bloqués = perma/temp-freeze payant).
+- force une perte à la victime, gain-attaquant ≈ 0 → GRIEFING (Medium payant).
+MORTE UNIQUEMENT si : moyenne à zéro pour le vol ET préserve TOUTE invariante de
+solvabilité ET ne revert/lock sur AUCUN input atteignable. Sinon la veine CHANGE
+DE NOM, elle ne meurt pas (→ `~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`).
 
-Deux modes :
+Deux modes (pour la branche EXTRACTION) :
 - ACCOUNTING : directionnel-signé. L'arrondi penche-t-il contre l'utilisateur ?
   (ERC-4626 : sharesDown au dépôt, sharesUp au retrait, debtUp. Si le sens
   correct Down/Up est appliqué selon le flux → gardé. Si un appelant choisit
@@ -48,12 +59,31 @@ Un mécanisme mange-t-il l'erreur avant extraction ?
 MESURE en exécution, pas en lecture (le piège GR-001 : l'absorption se lit
 faussement présente, l'exécution montre qu'elle ne couvre pas le chemin).
 
+## Gate 0 — ORACLE FREE-READ (avant tout, court-circuite la fenêtre)
+
+Un finding oracle N'ENTRE PAS dans Gate-4 tant que ce pré-check déterministe n'a pas tourné. Un
+wrong-read déterministe (staleness / decimals / clamp / negative / sequencer / read-only-reentrancy)
+n'a AUCUNE fenêtre — il est faux à chaque bloc, toujours, gratuitement — donc il ne se re-chiffre PAS
+contre un resetter t=0 et il ne passe JAMAIS par le gate coût-de-manip (qui ne s'applique QU'AUX findings
+exigeant de POUSSER un prix). Six checks, chacun un seul `cast_call`, zéro fork, zéro P&L :
+1. le **CONSUMER** vérifie `updatedAt` / `publish_time` vs un heartbeat serré (PAS le wrapper — le consumer)
+2. decimals/exponent du feed = l'échelle assumée par le consumer
+3. `answer > 0` ET pas collé au plancher/plafond `minAnswer` / `maxAnswer` (classe LUNA / Venus)
+4. `sequencerUptimeFeed` interrogé sur L2 (Arbitrum/Optimism grace-period)
+5. le getter de prix n'est pas read-only-reentrable mid-callback (`get_virtual_price` / spot getter)
+6. le consumer **REVERT** (ne swallow pas) sur un tuple pourri
+
+Propres tous les six ⇒ le finding tombe dans la machinerie manip/fenêtre (Gate-4). Un seul KO ⇒ c'est un
+bug cost-free déterministe : saute Gate-4, va direct Gate-5. Sévérité = MEDIUM en général (le VOLUME paie),
+HIGH/Crit seulement s'il est posé sur un mint/borrow/liquidation/quorum. Voir
+[[feedback-oracle-replay-refute-first-reflex-fix]].
+
 ## Gate 4 — TRIGGER + BORNE
 
 L'état exploitable est-il atteignable organiquement (pas seulement en théorie) ?
 Est-il cappé (limite par tx, par bloc, par position) ?
 **Survit-il ?** Si l'exploit exige que l'état reste INTERMÉDIAIRE pendant une DURÉE (fenêtre de
-saturation / liquidation / déblocage / oracle-stale / époque), la fenêtre meurt de trois façons :
+saturation / liquidation / déblocage / oracle-stale [manip-window UNIQUEMENT — un wrong-read déterministe a court-circuité via Gate-0] / époque), la fenêtre meurt de trois façons :
 (i-a) un acteur la RESET pour un payoff ; (i-b) reset INCIDENT — du trafic de routine la refresh
 gratuitement (liquidation d'un voisin, rééquilibrage d'arb, tout dépôt/retrait qui touche l'accumulateur),
 payoff propre ~0 mais te tue quand même ; (ii) front-run de ton extraction À maturité (fenêtre intacte,

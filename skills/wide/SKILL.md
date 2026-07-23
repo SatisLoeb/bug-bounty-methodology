@@ -30,7 +30,11 @@ Version canonique (skill nouveau, n'a jamais existé ailleurs) ; affiner à l'us
 Mappe chaque surface → son plafond $ + quelles CLASSES-CAPACITÉ paient le top tier.
 (Bitget : web 20k, extension 50k, "core w/ financial impact" 1M, desktop 1.5k→SKIP.)
 Ratio veine-capacité/plafond GOOD = on continue, MAIS seulement si on touche une
-CAPACITÉ, pas une view. Plafond élevé sur une surface sans veine-capacité = mirage.
+CAPACITÉ PAYANTE — bouger-la-valeur, agir-pour-autrui, OU (selon ce que le programme
+paie) geler/DoS une fonction sensible, exposer la donnée/identité d'autrui (deanon/PII).
+Plafond élevé sur une surface sans AUCUNE capacité payante = mirage ; mais une "view"
+qui fuit la donnée d'un tiers, ou un DoS qui bloque des fonds, N'EST PAS un mirage —
+c'est une capacité sur l'axe confidentialité/disponibilité que le programme paie.
 
 ## Phase 2 — MURS DE SCOPE DURS (lire avant de digger)
 
@@ -56,7 +60,11 @@ Chacun rend : "l'endpoint/seam existe + le gate est uniforme/tient" — le map, 
 
 ## Phase 5 — DÉCISION D'ALLOCATION (après retour des maps)
 
-Classe chaque candidat : CAPACITÉ (observée, pas inférée) vs VIEW (leak/DoS/missing-valid).
+Classe chaque candidat : CAPACITÉ-PAYANTE (observée, pas inférée — bouger-valeur ·
+agir-pour-autrui · geler/DoS-fonction-sensible · exposer-donnée-d'autrui/deanon) vs
+VIEW-INERTE (lecture de donnée publique · DoS non payé · missing-valid sans impact).
+Un leak de la donnée d'autrui et un DoS qui bloque des fonds SONT des capacités-payantes,
+PAS des views inertes (`~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`).
 Range par **capacité × plafond × accessibilité-solo × (1/dup-risk)**. Profondeur sur UNE
 seule — la plus haute. Favorise la veine SOUS-explorée (les N rapports existants ont déjà
 pris les veines évidentes : XSS reflété, open-redirect, IDOR-endpoint-évident).

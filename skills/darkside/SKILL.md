@@ -14,7 +14,9 @@ description: >
   design DEVIATION, make explicit the invariant the devs never wrote because they believe it holds by
   construction, attack that belief by an untrusted actor — runs in PARALLEL to A/B, finds the
   no-CWE composition bug that survives multi-audit fortresses, does NOT fan-out). Every candidate
-  enters a THIEF INVENTORY whose admission gate is chainability-to-a-theft, fused with chain-triage.
+  enters a THIEF INVENTORY whose admission gate is chainability-to-a-PAYABLE-IMPACT (theft first, but
+  equally freeze/halt/governance-takeover/insolvency/deanon where the program pays them — keep the thief's
+  accumulation mentality, generalize only the terminal verb), fused with chain-triage.
   The 5 axes are demoted from generator to per-candidate analyzer. Use standalone on any audited
   target, and firmaudit references it at Pass-1. Trigger on "/darkside", "darkside", "mine the devs'
   tests", "ce que les devs ont testé", "place où l'attention a fui", "max-trust min-verification",
@@ -393,10 +395,14 @@ gate every A/B/C candidate must pass before it earns a single line of PoC.
 4. **The prize is a shared ROOT, not a magic Critical.** Multiple weak primitives feeding ONE root
    cause = a single coherent higher-severity thesis, far more defensible than any one alone. Report
    format when chained: `STANDALONE: Medium (x) / CHAINED: High (y)` + explicit chain path
-   `[A] → [pivot] → [B] → concrete impact` + the `loss = $X` of the chained impact.
+   `[A] → [pivot] → [B] → concrete impact` + the payable impact of the chain (`loss = $X` for theft, or
+   frozen-$/duration · insolvency-$ · governance-scope-seized · halt-duration · users-deanonymized for the non-theft classes).
 5. **ANTI-INFLATION (mandatory, symmetric to the executed disconfirmer).** A chain is real ONLY if
-   **every hop is executed/proven** AND **the attacker nets positive.** Dismantle your own chain
-   before believing it. **Zest worked example:** a "bank-run free-money" CHAIN-A looked Critical, but
+   **every hop is executed/proven** AND **it produces a net in-scope PAYABLE IMPACT** — the attacker
+   EITHER nets positive (extraction) OR imposes a payable denial/seizure/exposure (freeze/halt/griefing/
+   governance-takeover/deanon) the victim/protocol cannot cheaply undo. Attacker-nets-positive is required
+   for the EXTRACTION class ONLY — do NOT kill a freeze/griefing/deanon chain for netting the attacker
+   zero; that is its nature, not inflation. Dismantle your own chain before believing it. **Zest worked example:** a "bank-run free-money" CHAIN-A looked Critical, but
    dust didn't bypass `is-healthy`, couldn't open underwater, and creating bad debt still cost the
    attacker collateral → the dust primitive was a *timing aid*, not free money → honest verdict
    **Medium/High, not Critical.** A chain you can't net-positive-prove is the same LLM-garbage as an
@@ -493,7 +499,8 @@ doc):
 
 ## 5. EXIT — drop-on-EV ≠ drop-on-fatigue
 
-Reused as-is. A surface dies on **EV** (every admitted primitive in the inventory chains to no theft,
+Reused as-is. A surface dies on **EV** (every admitted primitive in the inventory chains to no in-scope
+PAYABLE IMPACT of any class — not theft, nor freeze/halt/governance-takeover/insolvency/deanon —
 or every chain fails anti-inflation/scope) — not on **fatigue** ("this is taking long, probably
 fine"). The trigger phrase to DIG, not conclude, is catching yourself about to write
 "OOS / REFUTED / probably / likely fine / solid / skip" on a surface you have not run code against.

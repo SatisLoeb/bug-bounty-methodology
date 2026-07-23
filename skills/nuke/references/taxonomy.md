@@ -10,12 +10,14 @@ n'a PAS imaginé ? » à poser en lisant le code.
 | reentrancy | oui (slither cross-fn, decurity readonly/erc677/721/777) | read-only reentrancy via un getter de prix ; reentrancy cross-contrat via un callback token non-standard |
 | access-control | partiel (tx.origin, unprotected) | authn≠authz : le modifier existe mais un sibling non gardé atteint le même write ; rôle mal scopé |
 | arithmetic/precision | faible (underflow basique) | precision loss par ordre des opérations ; rounding qui favorise l'attaquant ; cast qui tronque |
-| oracle/price | seulement patterns connus (decurity) | spot price d'un pool manipulable dans le même bloc ; oracle en retard exploitable sous le coût de slippage |
+| oracle/price (MANIP) | seulement patterns connus (decurity) | spot price d'un pool manipulable dans le même bloc — CIBLER single-pool/low-liq (Yellow $2.4M), PAS TWAP/deep-liq où refuter est garanti |
+| oracle/price (FREE-READ, coût-zéro) | AUCUN scanner — hunt à la main, voir extract Gate-0 | staleness `updatedAt` non checké AU CONSUMER ; decimals/exponent ≠ échelle assumée ; clamp `minAnswer`/`maxAnswer` (LUNA/Venus) ; `answer ≤ 0` ; L2 `sequencerUptimeFeed` absent ; read-only-reentrancy sur le getter de prix (dForce $3.64M) |
 | unchecked-return/call | oui | retour ignoré d'un token non-standard (USDT-like) qui `false` sans revert |
 | delegatecall/proxy | oui (slither controlled, decurity) | storage collision proxy↔impl ; slot d'implémentation non initialisé ; upgrade qui décale le layout |
 | external-call-order | partiel (CEI) | effet après interaction sur un chemin secondaire que le detector ne trace pas |
 | erc20-integration | patterns decurity | fee-on-transfer non géré ; `approve` non remis à zéro ; double-entry point token |
-| signature/replay | faible | replay cross-chain (chainid absent du domaine) ; nonce réutilisable ; malléabilité ecrecover |
+| signature/replay (off-chain reusable-sig / cross-chain shared-domain) | HIGH-value, LOW-dup — les couronnes y paient (Circle Ed25519, Snowbridge) ; PAS "faible" | sink SANS nonce on-chain + sig off-chain réutilisable = veine PRIMAIRE (artefact capture-replay requis, jamais OOS) ; `DOMAIN_SEPARATOR` partagé sur 2 déploiements (two-fork replay) ; EIP-712 field-omission (fee/refund/target hors digest, Biconomy HIGH) ; ecrecover(0) auth-bypass (Swivel HIGH) ; signer-dedup k-of-N→1-of-N |
+| signature/replay (malléabilité) | semgrep `openzeppelin-ecdsa-recover-malleable` (LOW/MEDIUM) | s-value flip / raw-sig comme clé de mapping (Meebits) |
 | randomness | faible | `block.timestamp`/`prevrandao` comme source d'aléa exploitable par un validateur |
 | dos/griefing | partiel (unbounded loop) | griefing par un élément qui revert dans une boucle de distribution ; gas-bomb |
 | flashloan/economic | rarement | first-depositor share inflation ; donation attack sur le ratio ; asymétrie mint/burn |

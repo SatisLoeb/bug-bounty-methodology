@@ -70,11 +70,11 @@ Before drafting, identify which components are mandatory for this finding.
 - Severity claimed is Critical or High
 - Exploit is empirically reproducible (PoC produces server-side artifact, on-chain tx, or forge-test state delta)
 - Bounty floor for the program is ≥ $5K
-- PoC involves state-changing actions (not pure info disclosure)
+- PoC produces a reproducible payable impact — a state-changing action, OR a reproducible information-disclosure/deanonymization an independent party can re-retrieve (decoded key, `.onion`↔identity linkage, another user's PII/private state). On privacy/anonymity scopes the disclosure IS the crown-jewel finding — keep the rigor block for it, do not skip.
 
 **Skip when:**
 
-- Pure information disclosure with no state impact
+- Pure information disclosure of PUBLIC / non-sensitive data (a leak of another party's identity, secret, or PII is NOT this — it is a payable confidentiality finding; keep the block)
 - Design-level concerns without a PoC
 - Conceptual findings where exploit would require privileged access the researcher doesn't have
 - Low/Informational findings where the format weight is disproportionate
@@ -495,7 +495,7 @@ For every finding ≥ Low with dollar impact, populate at least W1 OR W5 with a 
 
 If W4 is mandatory (TVL-at-risk claim), populate with literal on-chain readback at a specific block.
 
-If W1 yields $0 and W5 yields no paid precedent for the class → severity claim is unsupported → either drop severity or do not submit.
+If W1 yields $0 and W5 yields no paid precedent for the class → severity claim is unsupported → either drop severity or do not submit. **Non-$ payable classes carry a class-NATIVE W1 anchor, not $0:** users-deanonymized (count), records/PII disclosed (count), funds-frozen ($ × minimum-duration), governance-scope seized, chain-halt duration. A freeze/deanon/halt finding is NOT "unsupported" for lacking a `loss=$X` — anchor W1 in the class's native unit (`~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`).
 
 ---
 

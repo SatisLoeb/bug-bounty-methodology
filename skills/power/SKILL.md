@@ -18,11 +18,12 @@ Grep les pouvoirs, pas les fonctions :
 - grants on-chain (authz, approve, delegate)
 
 GATE DE POUVOIR (dur, mécanique). Score chaque op :
-- 5 = agit sur la valeur/l'identité d'autrui
+- 5 = agit sur la valeur/l'identité d'autrui, OU EXPOSE une donnée confidentielle d'autrui (identité, `.onion`↔IP, clé, PII, état privé) — un read non-autorisé EST une capacité de divulgation/désanonymisation
 - 4 = agit sur un état partagé / une protection
-- ≤3 = agit sur soi, lecture, ou sans valeur
+- ≤3 = agit sur soi, ou LECTURE de donnée PUBLIQUE / de SA PROPRE donnée, ou sans valeur
 
 JETTE tout ≤3 AVANT de tester. Ne teste que ≥4.
+[PIÈGE PRIVACY — un read n'est ≤3 QUE si la donnée est publique ou celle de l'appelant. Un read qui rend la donnée/identité d'un TIERS = capacité de divulgation = ≥4 ; ne le jette pas. Sur une cible privacy (Monero/Tor, anonymity-net) c'est la veine COURONNE (deanon), pas du bruit — et c'est la classe payante que ce gate écartait par construction. Voir `~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md` § privacy.]
 
 Contrôle de brutalité du filtre : si plus de ~15 lignes entrent en Phase 2,
 le filtre n'est pas assez brutal — resserre. 200 mutations → ~10 power≥4 → 10 tests.
@@ -43,15 +44,19 @@ VERROU NON-RÉSOLU : une op trop coûteuse à appeler reste NON-RÉSOLU.
 Troisième état, PAS écarté. Ne jamais écrire "gardé/forteresse" sur une op
 power≥4 sans un appel rejeté EXÉCUTÉ.
 
-SONDE CONTRE-VALEUR-D'AUTRUI : teste contre de la valeur que l'appelant ne
-possède PAS. Permissionless-sur-soi ≠ veine. Permissionless-sur-autrui = veine.
+SONDE CONTRE-L'ACTIF-D'AUTRUI : teste contre un actif que l'appelant ne possède
+PAS — valeur, état partagé, protection, rôle, OU donnée confidentielle/identité.
+Permissionless-sur-soi ≠ veine. Permissionless-sur-autrui (y compris lire/exposer
+l'identité, le secret ou l'état privé d'un tiers) = veine.
 
 ## Phase 3 — Différentiel voisin
 
 Compare l'op à son op VOISINE (même famille, scope adjacent).
 Asymétrie d'autorisation entre voisines = veine (le BFF Helix, le v2/v2-local
 Polymarket, le main/subaccount Deribit).
-Différentiel sur une op de LECTURE = view, pas capacité = Informative.
+Différentiel sur une op de LECTURE de donnée PUBLIQUE/propre = view = Informative.
+MAIS un différentiel sur un read qui expose la donnée d'AUTRUI = capacité de
+divulgation, rangée sur la tier confidentialité (deanon/PII), PAS Informative.
 
 ## Phase 4 — Gate impact-réalisé
 

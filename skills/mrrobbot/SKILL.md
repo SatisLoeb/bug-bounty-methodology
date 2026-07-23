@@ -203,6 +203,23 @@ contract DepOracleFuzz is Test {
             // Expected: revert on stale data
         }
     }
+
+    // THE LANDING PROBE: the bug is the CONSUMER swallowing a bad feed, not the wrapper's own isStale().
+    // Mock the feed to each pathological tuple and assert the CONSUMER entrypoint (borrow/mint/liquidate)
+    // reverts or safely handles it. Zero attacker cost — this is the cost-free free-read class that
+    // survives audited-to-death oracle wrappers. See feedback-oracle-replay-refute-first-reflex-fix.
+    function testFuzz_consumerRejectsBadFeed(uint8 which, int256 answer, uint256 updatedAt) public {
+        // which: 0=stale, 1=zero/negative, 2=minAnswer clamp, 3=wrong-decimals, 4=sequencer-down
+        MockFeed feed = new MockFeed();
+        if (which == 0)      feed.set(answer, 1);                       // updatedAt far in the past → stale
+        else if (which == 1) feed.set(int256(bound(answer, type(int256).min, 0)), block.timestamp); // ≤0
+        else if (which == 2) feed.set(feed.minAnswer(), block.timestamp);                // clamp floor
+        else if (which == 3) feed.setDecimals(uint8(bound(updatedAt, 0, 27)));           // decimals ≠ assumed
+        else                 feed.setSequencerDown();                                    // L2 grace-period
+        // The consumer MUST revert or clamp — swallowing the value is the finding.
+        vm.expectRevert();
+        consumer.actionThatReadsPrice(); // borrow / mint / liquidate entrypoint under test
+    }
 }
 ```
 
@@ -712,13 +729,22 @@ For each match, verify a specific number (dollar amount, user count, TVL percent
 
 **Severity decision tree:**
 ```
-Permissionless direct fund theft         → CRITICAL
-Fund theft with specific preconditions   → HIGH
-Access control bypass + value leakage    → HIGH (if $ quantifiable) / MEDIUM
-Griefing / forced unfavorable trade      → MEDIUM
-DoS on critical function                 → MEDIUM
-Informational inconsistency             → LOW
+Permissionless direct fund theft            → CRITICAL
+Fund theft with specific preconditions      → HIGH
+Permanent freezing of funds                 → CRITICAL   (Immunefi/HackenProof; C4=High — has no Crit)
+Protocol insolvency / bad-debt              → CRITICAL / HIGH
+Unauthorized mint / supply inflation        → CRITICAL
+Governance takeover by an UNTRUSTED actor   → CRITICAL   (C4=QA/Low — trusted-role TRAP: needs authn≠authz)
+Upgrade / init takeover (untrusted)         → CRITICAL / HIGH
+Temporary freezing of funds                 → HIGH        (by duration × TVL)
+Access control bypass + value leakage       → HIGH (if $ quantifiable) / MEDIUM
+Chain halt / liveness (Blockchain/DLT scope)→ CRITICAL   (app-layer SC DoS caps at MEDIUM unless it locks funds)
+Deanon / PII disclosure (privacy scope)     → per program (HackenProof tiered; crown jewel on anonymity targets)
+Griefing / forced unfavorable trade         → MEDIUM      (explicitly paid — NO attacker profit required)
+DoS on critical function                    → MEDIUM      (→ CRITICAL if it becomes a PERMANENT freeze)
+Informational inconsistency                 → LOW
 ```
+Do NOT use this as a fixed hierarchy — look up THIS platform's table (Cantina points Crit=20/High=10/Med=3; Sherlock pool×tier; C4 High=10-share/Med=3-share). The perma-vs-temp-freeze word is a ~3.3x lever. See `~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`.
 
 **Output:** Submitted reports with PoCs
 
@@ -765,7 +791,7 @@ When target is web/API (not smart contracts), apply gravedigger methodology BUT 
 10. **Spending days on dependency 0-days when deps are battle-tested** — Reserve lesson: OZ + Chainlink + Aave = top 3 most audited DeFi deps. Vendor files were direct copies. 0 findings after full dep audit. Run Phase 0.7 FAST: if deps are standard → SKIP in <30min. Only DEEP DIVE deps that are obscure, forked, or custom.
 11. **Trusting agent-reported findings without manual verification** — Agents over-report 10:1 on well-audited code. On Reserve, agents flagged ~25 "critical" findings that were ALL false positives (intentional rounding, design choices, acknowledged issues). ALWAYS verify manually before investing time.
 12. **Not checking CSP headers for RPC credentials** — The Content-Security-Policy connect-src directive is a goldmine for DeFi targets. GetBlock, QuikNode, and custom RPC proxy URLs with auth tokens are regularly leaked in CSP. Takes 30 seconds to check. Tothemoon finding came from CSP analysis alone.
-13. **Submitting fork-feature-absence as vulnerability** — GMTrade lesson: pendingImpactAmount absent from GMX V2 Solana port, valid HIGH, rejected as "feature request." The program accepted 2 findings that demonstrated direct fund theft with PoCs. Rule: can you write a PoC that steals funds using ONLY the code that EXISTS? If the PoC depends on what DOESN'T exist, it's a feature request. Design divergences lose. Implementation bugs win.
+13. **Submitting fork-feature-absence as vulnerability** — GMTrade lesson: pendingImpactAmount absent from GMX V2 Solana port, valid HIGH, rejected as "feature request." The program accepted 2 findings that demonstrated direct fund theft with PoCs. Rule: can you write a PoC that produces a PAYABLE impact (steals / freezes / bricks / renders-insolvent / seizes-governance-as-untrusted / deanonymizes) using ONLY the code that EXISTS? If the PoC depends on what DOESN'T exist, it's a feature request. Design divergences lose. Implementation bugs win.
 14. **Not checking `as` type casts in Rust** — Rust `as` casts SILENTLY truncate. Unlike Solidity 0.8.x which reverts on overflow, Rust wraps without warning. `as u32` on a price calculation that can exceed 4.3B = silent price corruption = fund theft. GMTrade #31: one `as u32` accepted as HIGH, paid bounty. Scan every `as uN` cast in price/amount/fee calculations. This is the #1 Rust-specific fund theft pattern.
 
 ---

@@ -1,0 +1,6 @@
+# Memory index
+
+- [Rheo = Size fork fortress](rheo-size-fork-fortress.md) — 2026-07-05 /darkside hunt: thin-residual fortress, no payable Critical/High; only deployed finding = VLV VAULT_MANAGER timelock-bypass on a hot EOA (OOS/Low).
+- [Metric-OMM extract+power fortress](metric-omm-extract-fortress.md) — 2026-07-06 /extract + /power on Sherlock Metric-OMM: both veins fortress, no payable Medium+. Math: 7 executed fuzz artifacts + 9 agents. Authz: all gates reject unprivileged (executed); only capability (timelock=0 arbitrary-PP rug) is Zellic-acknowledged/OOS.
+- [Ondo Perps account-id BOLA harness-suspend](ondo-perps-accountid-bola-harness-suspend.md) — 2026-07-07 /gravedigger on Ondo Perps (Cantina $1.5M perps DEX, web/API): hardened; crown jewel = client-supplied account-id BOLA across 6 channels, all harness+suspend (2-owned-acct sandbox); ~25 candidates refuted. Isolated workspace to avoid parallel-terminal collision.
+- [Ammalgam DLEX fortress NO-GO](ammalgam-dlex-fortress-nogo.md) — 2026-07-10 /gravedigger on Ammalgam DLEX (Cantina b5e376ee, Crit $25k, on-chain-loss-only SC AMM+lending). Fortress: 17/17 fork PoCs refute every vein incl. the $10k saturation bull's-eye (newSat price-independent) + the callback-seam (per-transfer validateOnUpdate). Executed NO-GO. URL is Ammalgam NOT Injective/Upshift (stale skill ref).

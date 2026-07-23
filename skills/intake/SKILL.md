@@ -183,7 +183,13 @@ path — never read or overwrite the existing one.) Template:
 - **The corpus exists**: 4670 findings, 163 named patterns, 4588 discovery methods. Query it with
   `corpus-query <shape> | --route <shape> | --methods <class>` — AIM, vein-route, technique.
 - **The class→vein map** is empirical (proven on 4670 findings): accounting→check-matrix,
-  oracle→invfuzz, rounding→extract, access-control→power, liquidation→mrrobbot:Phase-3.
+  oracle→invfuzz, rounding→extract, access-control→power (theft AND governance/valset-capture),
+  liquidation→mrrobbot:Phase-3. **Non-theft impact classes have veins too** — the map was theft-only
+  by construction (the bias the operator flagged 2026-07-19): liveness/DoS→unbounded-iteration/panic-halt
+  probe · freeze→state-lock probe · griefing→forced-loss probe · insolvency→extract Gate-1 (branche non-vol)
+  · governance-takeover→power (untrusted→privileged) · deanon/PII→power (read-authz sur la donnée d'autrui).
+  Rank surfaces by PAYOUT-density (the program's real severity table), not class-density — a Cosmos
+  chain-halt or a perma-freeze can outrank a theft. See `~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`.
 - **Discovery-door doctrine**: on a fortress the catalogued classes are already swept — the win is
   **Door C** (`/darkside`, the no-CWE composition bug). gravedigger/mrrobbot/exploit-primitive-mindset
   now carry a `/darkside` pointer; use it on any audited target.

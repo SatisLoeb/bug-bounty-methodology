@@ -46,7 +46,7 @@ Trace le gate AMONT qui décide si l'input divergent peut ENTRER une exécution 
 expected_bits = max_bits OU l'output du retarget, tous deux bien-formés → un attaquant
 NE PEUT PAS soumettre une nbits sign-bit/size-56 : rejetée AVANT que la valeur diverge.)
 Une divergence sur un input que le gate amont rejette = MORTE.
-Ne jamais écrire un NULL-COÛTEUX (un échec-à-voler chèrement documenté, jamais un badge) sans avoir tracé CE gate par exécution/lecture du code — chaque divergence est une tentative de vol qui doit mourir avec son artefact exécuté.
+Ne jamais écrire un NULL-COÛTEUX (un échec-à-voler chèrement documenté, jamais un badge) sans avoir tracé CE gate par exécution/lecture du code — chaque divergence est une tentative d'ATTEINTE (vol de valeur | gel/freeze | faux-consensus/split de chaîne | censure/rejet-de-valide) qui doit mourir avec son artefact exécuté. **Une divergence qui REJETTE un input VALIDE (over-rejection) n'est pas inerte : les fonds valides sont bloqués ou la chaîne forke = liveness/gel/censure, payant même sans vol** (`~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`).
 
 ## Phase 5 — DISCONFIRMER
 

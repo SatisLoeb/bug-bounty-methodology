@@ -100,8 +100,9 @@ tout ce qui est hors fichiers changés est supprimé.
    d'accord. C'est un point de départ solide, **pas** une preuve. La corroboration monte la priorité,
    jamais la certitude.
 3. **Un signal high non corroboré** peut valoir plus qu'un cluster ★★★ trivial (ex. un
-   `controlled-delegatecall` seul > trois `solc-version` d'accord). Juge par capacité de vol, pas par
-   nombre d'étoiles.
+   `controlled-delegatecall` seul > trois `solc-version` d'accord). Juge par PLAFOND DE PRIME de la classe
+   sur CE programme (capacité de vol, MAIS aussi de freeze/halt/takeover-untrusted/insolvency/deanon — un
+   chain-halt Cosmos ou un perma-freeze peut dépasser un vol), pas par nombre d'étoiles ni par `loss=$X` seul.
 4. **`gate → moving on` est interdit.** Un detector qui « voit un require » ne prouve pas que le
    require tient. Pierce chaque gate (authn≠authz · sibling non gardé · gate satisfaisable · fuite
    différentielle · math du gate) avant d'écrire « bloqué ».
@@ -137,9 +138,13 @@ classes muettes changent.
 | **Go/Cosmos-SDK** | `go.mod` + `cosmos-sdk`/`cometbft` | golangci-lint + govulncheck + gitleaks + nilaway + opengrep(ToB) + codeql(opt-in) | worklist CURÉE (23 classes) |
 | **Move / Cairo** | `Move.toml` / `Scarb.toml` | ❌ pas de barrage (1 outil faible) | → **Prover/formel** (aptos move prove ; Aegis/Horus + snforge) |
 
-**Non-EVM : l'espace négatif EST le livrable.** Aucun scanner ne voit les classes de vol
-(authz `authn≠authz`, reply-reentrancy, bridge sig-scope, Token-2022, oracle) — la worklist curée
-(`references/negative-space.json`, `money-path` + `tell` par classe) est ce sur quoi tu chasses.
+**Non-EVM : l'espace négatif EST le livrable.** Aucun scanner ne voit les classes d'IMPACT PAYANT
+— ni vol (authz `authn≠authz`, reply-reentrancy, bridge sig-scope, Token-2022, oracle) NI non-vol
+(chain-halt/liveness, perma/temp-freeze de fonds, gouvernance/valset-capture par un acteur untrusted,
+insolvency, deanon) — et sur un scope Blockchain/DLT (L1/consensus Cosmos) un halt est **Critical**,
+souvent > un vol. La worklist curée (`references/negative-space.json`, `money-path` + `tell` par classe)
+est ce sur quoi tu chasses ; ajoute-lui la ligne d'impact-payant NON-VOL par classe et range par plafond
+de prime (`~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`).
 Un barrage vert non-EVM ne dit **RIEN** ; il ne couvre que le substrat mécanique (deps/panics/overflow/
 secrets). **SARIF est la colonne de normalisation** : golangci-lint/govulncheck/osv/gitleaks/opengrep/
 codeql/clippy émettent tous du SARIF → un loader générique ; les rustc/JSON (cargo-audit, cargo-deny,

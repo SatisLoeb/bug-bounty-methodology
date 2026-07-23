@@ -1,0 +1,16 @@
+[package]
+name = "fwd"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+
+[dependencies]
+solana-program = "=1.18.26"
+
+[profile.release]
+overflow-checks = true
+
+# Build:  cargo-build-sbf   (needs platform-tools; if the tarball is a truncated download,
+#   `rm -rf ~/.cache/solana/vX` and rebuild to re-fetch). Output: target/deploy/fwd.so

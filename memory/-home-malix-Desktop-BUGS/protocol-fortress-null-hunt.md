@@ -1,0 +1,18 @@
+---
+name: protocol-fortress-null-hunt
+description: The executable protocol for hunting a finding on a multi-audited fortress-null target (from the Injective
+metadata: 
+  node_type: memory
+  type: reference
+  originSessionId: d5b2185c-f48f-4556-bf43-911375bdb403
+---
+
+**`~/Desktop/BUGS/MANIFEST-injective-funding-hunt.md`** — *PROTOCOLE — Chasser un finding sur une forteresse multi-auditée fortress-null.* Extracted from the Injective funding hunt ([[injective-funding-selfcross-345-submitted]]) and rewritten as a reproducible protocol: an operator who never touched the target takes the index, pulls their block, executes it, decides on the exit criterion.
+
+**The AXIOM (the key, everything derives from it):** `P(class-bug survives 5 audits) ≈ 0`. Classes are covered by construction (it's the firms' job), so the living finding is BY DEFINITION in the complementary space: an invariant-break with no CWE, a **seam composition no isolated audit covers** (each audit takes one contract; the system invariant ACROSS them is nobody's scope), or a component auditors can't structurally cover (ZK, whole-system economics, off-chain, cross-VM). **The bug that survives the pros is not a class — it's a composition nobody owns.** **Companion READING POSTURE (observe ce que le code fait, pas ce que tu cherches):** a hypothesis makes you read the code to CONFIRM it → you slide past the real bug because it matches no template; instead trace the ACTUAL data flow value-by-value across the seam (swap↔oracle, on-chain↔off-chain, VM↔VM) and let the anomaly reveal itself (`A → f()→B → g() consumes as C`; the bug is the hop where B ≠ what g() assumes). The dev's model blinds you AND your own template blinds you (2nd Maxim +1).
+
+**Form:** 13 standalone blocks + an index (when → which block). Two types: GESTE (discovery = déclencheur/action/critère-qui-tranche) and CHECKPOINT-de-faillibilité (guard against your own errors = "vérifie X avant Y parce que ne pas le vérifier a failli coûter Z", binary cases each = an executed artifact, + a PREDICTIVE corollary "attends-toi à…"). Best blocks: CP5 (agent maps ≠ decides; re-derive every REFUTED — the one you don't re-read hid the bug) + CP13 (the #7 "CONFIRMED" that was false, the executed demonstration of CP5); CP8 (adversarial gauntlet, 5 binary cases); CP9 (does the PoC compile AS POSTED, whole package).
+
+**PERIMETER — do NOT pull it at the wrong moment.** It is the MIDDLE protocol: from "target is fortress-null closed" to "submit and log". It does NOT cover: (a) **sourcing** — which target to attack (WRITTEN: ~/Desktop/BUGS/PROTOCOLE-sourcing-cibles.md — the day-0 EV/payer/scope/fortress/diet gates; `/intake` is its operational tool); (b) **post-submission dispute** — the Helix-class fight-to-the-end (WRITTEN: ~/Desktop/BUGS/PROTOCOLE-dispute-post-soumission.md; see also [[doctrine-surgical-reports-fight-to-the-end]]); (c) the strategic **"is this client worth my work"** call (payer-disengagement, [[ev-gate-check-program-responsiveness-not-just-severity]]). Those are other blocks, to write separately if worth making reproducible.
+
+**Meta-discipline it encodes (why it's trustworthy):** the finding started as "High theft 1.5%/day" and was brought to an honest Medium by applying the kill-triage case by case; the protocol corrects the three places the narrative wanted to flatter — the epic register (cut), admin-api as a cold-poke trophy (it was a scope error the gate correctly killed — fail-closed, OOS), denzoBTC2 as a victory (it's unresolved raw material: a seam found, no exploitable operation → not a finding). Truth without theater, including where theater would flatter.
