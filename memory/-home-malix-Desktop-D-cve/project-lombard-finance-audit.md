@@ -1,0 +1,21 @@
+---
+name: project-lombard-finance-audit
+description: "Lombard Finance (Immunefi $250k) audit: message-auth core tight, hunting periphery seams (Bascule, bridge-vs-Bascule asymmetry, epoch-freeze)"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: cfee37ae-4ecb-491d-b3d4-10fe89cccbc7
+  modified: 2026-09-10T19:54:59.418Z
+---
+
+Pivoted to **Lombard Finance** (Immunefi bug bounty, max $250k, **PoC + KYC + non-refundable submission FEE required** — so a dubious finding is negative EV, see [[feedback-no-dubious-low-submissions]]) on 2026-09-10, after parking Robinhood ([[project-robinhood-chain-audit]]).
+
+LBTC = 1:1 BTC-backed liquid staking token, cross-chain, minted on a NOTARY CONSORTIUM threshold signature over a GMP message, with a BASCULE "drawbridge" as an independent second gate. Repo cloned: `/home/malix/Desktop/D-cve/lombard/evm-smart-contracts/` (open-source, audited Halborn/Veridise/OZ). In-scope addrs: LBTC 0x8236, Consortium 0xdad5, BasculeV1 0xc750, GMPBasculeV1 0xC3ec, BTC.b 0xB0F7, AssetRouter 0x9ece, Mailbox 0x9646, BridgeV2 0x451c, StakedLBTCOracle 0x1De9, Timelock 0x055E.
+
+**Phase 0 done — message-auth CORE is tight** (don't re-audit): Mailbox `payload.id = sha256(rawPayload)` binds every field handlers trust; consortium signs it; destChain inside `msgPath`; handlers dedup (BridgeV2 `payloadSpent`, AssetRouter `usedPayloads`); `handledPayload` write-only = retry-by-design; Consortium `_checkProof` position-binds 64-byte sigs to `validators[i]`, OZ low-s enforced, weight>=threshold. Cross-context replay infeasible (action prefix + sha256).
+
+**Seams hunted (workflow wf_6ece60bc running):** Bascule drawbridge (`_mintID=keccak(nonce,chainid,recipient,toToken,amount)` ≠ AssetRouter's payload.id dedup; **sub-threshold mints skip validation**; bascule disable-able), AssetRouter fee/bucket accounting, BridgeV2 rate-limits, Consortium epoch transition, StakedLBTCOracle manipulation, Mailbox config. OOS filter: consortium/reporter/admin compromise = privileged = OOS; finding must be non-privileged/composed/oracle-manipulation.
+
+**Two sharpest leads (seeded into synth):** (1) **bridge-mint-vs-Bascule asymmetry** — Bascule only wired to AssetRouter._confirmMint; does BridgeV2→LBTC.mint bypass the drawbridge? (sibling-guard, the operator's edge-class). (2) **epoch-rotation freeze** — checkProof uses `$.epoch`; a valset rotation may invalidate in-flight epoch-N-signed messages → permanent-freeze of cross-chain funds in transit.
+
+**RESULT: FORTRESS (2026-09-10, workflow wf_6ece60bc, 66 agents, 0 survivors / 29 killed).** Dossier `lombard/LOMBARD-PERIPHERY-FORTRESS-DOSSIER.md`. Both leads died by EXECUTION: (a) bridge-vs-Bascule asymmetry is REAL but correct — the Bascule attests an off-chain BTC deposit, a bridge withdrawal has none (backing burned on source), supply-neutral, precondition OOS, + BaseLBTC per-minter second rate-limit. (b) epoch rotation invalidates in-flight proofs but freezes NOTHING — `_verifyPayload` calls checkProof BEFORE setting deliveredPayload, so a dead proof reverts wholesale, re-signs in N+1, retryable; attacker adds zero differential. Residue = 5-6 QA/missing-validation defects whose worst case is a caller destroying their OWN tokens (attacker=victim, `fromAddress=_msgSender()`) or a 1-tx admin fix. Oracle cluster collapsed on one grep: `ratio()`/`getRate()` have NO in-scope consumers (pure view passthroughs). **Recommendation: HOLD — do NOT pay the submission fee** (no PoC demonstrates an in-scope critical; best candidates are "provable and worthless"). Optional free courtesy disclosure (no Immunefi ticket) of 2 clean defects: missing `validateAddressLength` on AssetRouter cross-chain path (`Assets_InvalidRecipient`/`Assets_InvalidToToken` declared-and-never-used = check dropped in impl); missing `payload.msgRecipient==address(this)` assert in `AssetRouter._mint`. Re-engage on a diff that: adds a new Mailbox handler / changes `_mint` msgRecipient handling; makes any in-scope contract consume `ratio()`/`getRate()` in value math; or adds a second inbound Mailbox path. **Two deep fortresses in a row (Robinhood+Lombard) = both heavily-audited high-profile launches; the seam-edge plays better on less-picked-over code.**

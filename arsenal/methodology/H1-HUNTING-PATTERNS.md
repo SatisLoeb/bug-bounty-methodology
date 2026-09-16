@@ -753,9 +753,6 @@
 ### M-H1-010: Higher bounty = deeper bugs
 **Rule:** IDOR read = $500-$2K. IDOR write = $2K-$5K. IDOR delete + chain to ATO = $5K-$12K. Same vulnerability class, 6x payout difference based on impact demonstration. Always chain.
 
-### M-H1-011: Authorization reads a different request-representation than the router/dispatcher uses
-**Rule:** The attribute an auth/allow-list check reads (a raw path string, a reconstructed URL, a `Host` header) can diverge from the attribute the router or dispatcher actually uses to select the handler. Two concrete forms: (1) a non-exact allow-list match — `endsWith`/`startsWith`/`contains`/regex on a path — where the router does exact-segment routing, so any caller-chosen path segment satisfying the suffix/prefix bypasses the check (Kestra CVE-2026-49869: `AuthenticationFilter` used `request.getPath().endsWith("/configs")`, so any path ending in `/configs` skipped auth while the router still dispatched on the full path — unauth workflow creation → RCE); (2) the authorizer reads a normalized/reconstructed representation (e.g. `request.url.path` rebuilt from an attacker-controlled `Host` header) while the ASGI/framework router reads the raw path from the request line, so a crafted `Host` makes the two disagree (Starlette BadHost, CVE-2026-48710). Generalize: reverse-proxy path ≠ framework path ≠ middleware path ≠ router path ≠ authorization path. Test every path/host-based allow-list for non-exact matching, and test `Host`/`X-Forwarded-*`/absolute-URI-in-request-line/encoding variants against any middleware that reconstructs the URL before deciding access. Cross-link: [[M-H1-002]] (weaker auth on the sibling operation) and [[M-H1-008]] (same resource, different route, different auth) are the same family — this is the case where the *same* route is reached through two representations that disagree.
-
 ---
 
 ## DETECTION PRIORITY MATRIX

@@ -5,6 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: 676ee768-18be-4105-b623-333fd6940088
+  modified: 2026-08-05T14:59:52.001Z
 ---
 
 The operator's custom audit skills (firmaudit, darkside, gravedigger, mrrobbot, report-nerve, chill, expand-surface, exploit-primitive-mindset, upshift, upshift2, screenshot, immunefi-submit, disclose) live in THREE locations, kept aligned by `~/arsenal/tools/sync-skills.sh`:
@@ -12,6 +13,13 @@ The operator's custom audit skills (firmaudit, darkside, gravedigger, mrrobbot, 
 - **Source of truth (git):** `~/Desktop/methodology-backup/skills/` — committed via "sync methodology backup". 13 methodology skills.
 - **Working copy:** `~/arsenal/skills/`
 - **Loadable by Claude Code:** `~/.claude/skills/<name>/SKILL.md` — **this is the ONLY path Claude Code (v2.1.185) scans for personal skills.** `~/arsenal/skills/` is NOT scanned; no setting makes it discoverable.
+
+⚠️ **EDIT THE SOURCE, NEVER A DESTINATION.** `sync-skills.sh` copies backup → arsenal → .claude and
+**silently overwrites** whatever is in the two destinations. Editing `~/.claude/skills/<name>/SKILL.md`
+appears to work (edits hot-load) right up until the next sync wipes them. Burned 2026-08-05: edits to
+chill + report-nerve were written to `~/.claude/skills`, then destroyed by the sync run seconds later.
+Correct order every time: edit `~/Desktop/methodology-backup/skills/<name>/SKILL.md` → run
+`~/arsenal/tools/sync-skills.sh` → grep all three locations to confirm the change landed.
 
 Loading facts: `~/.claude/skills/` being NEWLY created needs a CC restart (file-watcher); thereafter edits hot-load. Skill name = the `name:` frontmatter field (authoritative), NOT the dir name — so dir `security-disclosure` with `name: disclose` is invoked `/disclose`. Frontmatter MUST be valid YAML: a `description:` plain-scalar containing `: ` (e.g. `nobody owns: audited`) is INVALID and silently fails to load — wrap such descriptions in a folded block scalar (`>-`), which is what was done to firmaudit/report-nerve/exploit-primitive-mindset/screenshot/upshift/upshift2 (backups `.bak-frontmatter`).
 

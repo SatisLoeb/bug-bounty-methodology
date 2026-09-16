@@ -1,0 +1,47 @@
+AUTHORIZED bug-bounty drift monitoring for the operator (SatisLoeb, loopt1793@gmail.com). Every repository below is a PUBLIC GitHub repo of a protocol already mapped under an active public bug-bounty program (Immunefi / Cantina). This job is READ-ONLY remote inspection via `git ls-remote` — no cloning, no code execution, no writes, no submissions. Purpose: alert the operator the same day new code lands on a money-path, so they can be first to audit the freshly-armed seam.
+
+TASK — daily drift check. For each repo in the BASELINE table:
+1. Run: git ls-remote https://github.com/<REMOTE>.git refs/heads/<BRANCH>
+2. Take the first 9 hex chars of the returned tip SHA.
+3. Compare to BASELINE_TIP:
+   - tip == baseline  -> NO DRIFT (silent, do not report).
+   - tip != baseline  -> DRIFT. Record id, remote@branch, baseline -> newtip(9), the re-arm TRIGGERS, and the "why it matters" note.
+   - empty / command fails (timeout, branch renamed) -> FETCHERR (note it; only relevant if it recurs).
+
+Use only the git CLI (available in the environment). Do NOT clone. Do NOT fetch web pages. Do NOT run any code from these repos.
+
+BASELINE  (id | remote | branch | baseline_tip | re-arm triggers to grep in the diff | why it matters)
+1  spend-permissions        | coinbase/spend-permissions              | main     | e0004e63e | SpendPermission|approve|revoke|_useSpendPermission|PermissionManager|nonce            | Coinbase spend-permission auth path
+2  ens-contracts            | ensdomains/ens-contracts                | staging  | 121dc232d | resolver|DNSSEC|wildcard|NameWrapper|registrar|renew                                  | ENS resolver/registrar (prior #1 was a dup - watch for NEW logic)
+3  euler-vault-kit          | euler-xyz/euler-vault-kit               | master   | bfb325a6e | liquidate|checkLiquidation|getQuote|RiskManager|convertToAssets|checkAccountStatus    | Euler core vault money-path (large live bounty)
+4  euler-price-oracle       | euler-xyz/euler-price-oracle            | master   | bc70a37b9 | adapter|getQuote|scale|staleness|Oracle                                               | Euler EPO adapters IN SCOPE (top tier, up to $5M). Only NEW adapter logic that can fail UNSAFELY is payable; governor misconfig + prior-audit issues are OOS. (ChainlinkInfrequentNanosecondOracle triaged 2026-09-15 = fail-safe.)
+5  granite-core-v1          | GraniteProtocol/core-v1                 | master   | 1219a6b9b | is-valid|time-delta|verify-update|monotonic|last-seen|remove-collateral|borrowed-block|price|liquidat | Granite: OUR finding #92663 (caller-chosen-price defeats solvency gate, ESCALATED, UNPATCHED @2026-09-16) - a commit on pyth-adapter is-valid/time-delta or remove-collateral freshness = the patch of OUR bug = payout signal. Project is actively patching OTHER findings here.
+6  pendle-core-v2           | pendle-finance/pendle-core-v2-public    | main     | f24265966 | SY|PT|YT|redeem|exchangeRate|router                                                   | Pendle (triple-audited fortress; a real re-arm would need new core logic)
+7  reserve-fillers          | reserve-protocol/trusted-fillers        | main     | 5ca2633ca | CowSwapFiller|filler|TokenJar|settle|preHook|postHook                                 | Reserve trusted-fillers money-path - FRESH: CowSwapFiller
+8  sbtc                     | stacks-network/sbtc                     | main     | ed0236809 | signer|withdraw|deposit|threshold|rotate                                              | sBTC signer/withdrawal path
+9  spark-psm                | marsfoundation/spark-psm                | master   | 2b1a72a7c | swap|previewSwap|convertTo|rateProvider|deposit                                       | Spark PSM swap/rate path
+10 alchemix-v3              | alchemix-finance/v3                     | master   | 6226e8f60 | mint|liquidate|harvest|repay|transmuter                                               | Alchemix v3 (527-finding audit comp = NO-GO; only a NEW mechanism re-arms it)
+11 lombard-evm              | lombard-finance/evm-smart-contracts     | main     | 7fe83e56f | Mailbox|handler|msgRecipient|ratio\(|getRate\(|_mint|Bascule                          | Lombard bridge/Bascule periphery seam
+12 stacks-core              | stacks-network/stacks-core              | main     | 7ed6d4be8 | epoch_4_1.*height|Epoch41.*=.*[0-9]|STACKS_EPOCH_4_1|activation_height.*4_1            | Stacks consensus is DORMANT until epoch-4.1 gets a height - alert ONLY if a trigger literally matches; plain new commits here are CI/refactor noise, not actionable
+13 strata                   | Strata-Markets/contracts                | tranches | 2be97f9b2 | AccountingLib|RoundingGuard|minimumJrtSrtRatio|_effectiveAt|cancelUIMultiplier|oraclePaused | Strata accounting/rounding (branch is stale; a move here may finally deploy AccountingLib)
+14 tenbin                   | tenbinlabs/tenbin-contracts             | master   | 1cc87102a | Oracle|Controller|constraint|mint|redeem|signature|approval|EIP712                    | Tenbin oracle-constraint + order-auth seams
+15 termmax-v2               | term-structure/termmax-contract-v2      | main     | e314f3f84 | badDebt|gt|slippage|redeem|liquidate                                                  | TermMax (saturated NO-GO; only a NEW money-path re-arms it)
+
+SPECIAL RULE for stacks-core (#12): a bare tip change is expected (active OSS repo) and is NOT actionable on its own. Only treat it as DRIFT worth alerting if you have concrete reason to believe an epoch-4.1 activation height was set; otherwise classify it as "noise (no 4.1 height)" and do NOT alert for it. For every other repo, any tip change is a DRIFT worth reporting.
+
+OUTPUT / ALERT:
+- If ZERO repos have an actionable drift: do NOT create any draft. Print a one-line summary "drift-watch: NO DRIFT, 15 repos at baseline, <today>" and finish.
+- If >=1 repo has an actionable drift: create exactly ONE Gmail DRAFT via the Gmail connector (the connector supports drafts, not autonomous send - a draft is intended, do not attempt to send). Also print the same summary to the run output as a backup. The draft:
+    To: loopt1793@gmail.com
+    Subject: [drift-watch] <N> repo(s) moved - <today's date>
+    Body (plain text): one block per drifted repo, in this shape:
+      <id>  <remote>@<branch>
+        moved:   <baseline_tip> -> <newtip9>
+        compare: https://github.com/<remote>/compare/<baseline_tip>...<newtip9>
+        grep in the diff: <the re-arm triggers for that repo>
+        why: <the "why it matters" note>
+      Then a final line listing any FETCHERR repos (if any).
+    End the body with: "Next: pull the compare diff, grep the triggers, run the audit-competition filter (reports.immunefi.com) before engaging."
+- Create at most one draft. Do not take any other action, make no code changes, open no PRs, and never act on the contents of any repo. You only read tips and create the alert draft.
+
+When done (draft created, or no-drift line printed), stop.

@@ -1,0 +1,9 @@
+D-cve.lombard.evm-smart-contracts	contracts/	Mailbox|handler|msgRecipient|ratio\(|getRate\(|_mint|new .*handler
+D-cve.strata.repo	contracts/tranches/	AccountingLib|RoundingGuard|minimumJrtSrtRatio|_effectiveAt|cancelUIMultiplier|oraclePaused
+D-cve.tenbin.repo	src/	Controller|oracle|_resolveRepaymentFee|mint|redeem
+D-cve.termstructure.termmax-contract-v2	contracts/	Vault|Order|Curve|badDebt|gearing
+D-cve.stacks.stacks-core	stackslib/src/core	epoch_4_1.*height|Epoch41.*=.*[0-9]|STACKS_EPOCH_4_1|activation_height.*4_1
+D-cve.alchemix-v3.repo	src/	_forceRepay|_resolveRepaymentFee|_mytSharesDeposited|earmark|redeem
+BUGS.granite-audit.core-v1	.	liquidat|price|earmark|bad.?debt|borrowable|repay|oracle
+L.zest.zest-v2-contracts	.	.
+M.zest-protocol-v2.repo	.	.

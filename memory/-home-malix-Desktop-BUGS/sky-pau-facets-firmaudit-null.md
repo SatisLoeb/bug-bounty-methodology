@@ -1,0 +1,17 @@
+---
+name: sky-pau-facets-firmaudit-null
+description: "Sky PAU diamond-pau facet family (Immunefi $10M) — firmaudit-depth NULL-COÛTEUX; the reusable lesson: a target whose OWN threat model declares the privileged actor untrusted + bounds loss pre-absorbs the whole facet-audit finding class"
+metadata: 
+  node_type: memory
+  type: feedback
+  originSessionId: 67a6d67e-e2a6-4c3d-acff-dc1e5f8bf71f
+  modified: 2026-09-04T19:37:10.390Z
+---
+
+**Sky PAU `diamond-pau` (Immunefi $10M) — firmaudit-depth close = NULL-COÛTEUX, RE-SOURCE.** 30-facet family (Aave/Curve/Uni/Pendle/Ethena/Basin/PSM/… allocator facets, added to scope 2026-07-06 but 15+ audited: Cantina x many, ChainSecurity, Certora, Octane, Unvariant). Clone: `~/Desktop/BUGS/sky-nexus-test/diamond-pau`.
+
+**Executed ledger:** solo seam trace — ALMProxy (`doCall` CONTROLLER-only, `doDelegateCall` unused), RateLimits (`triggerRateLimitDecrease` reverts on unset key ⇒ the `(label,asset,venue)` key is BOTH whitelist AND cap), AccessControls (OZ, no self-grant), Beacon+Controller (governance-gated selector-translation diamond; `msg.sender` preserved so facet `onlyRole` gates untrusted) — all CLEAN. Reliable sweep: 0 unguarded fund-movers across 30 facets. 0 cross-facet `LIMIT_*` label collisions (every label unique ⇒ no theft-above-cap via shared limit). Workflow fan-out (11 auditors → 10 candidates → adversarial verify) = 0 confirmed. Hand-verified the load-bearing kills: UniV3 single-sided-slippage = verbatim dup of **acknowledged Certora L-04 (Low)** in `audits/v1120-certora-audit.pdf` (grep-confirmed); DualPool temp-freeze = accepted (`THREAT_MODEL.md` + `LIQUIDITY_OPERATIONS.md:178`); Pendle freeze = temporary (accepted) + self-healing.
+
+**THE REUSABLE LESSON (intake heuristic):** when a target's OWN docs declare the privileged actor UNTRUSTED and bound the damage by design — here `docs/THREAT_MODEL.md:10` "Allocator = Untrusted, assumed potentially compromised at any time", defended by rate-limit (bounded loss) + on-chain-computed `maxSlippage` floors ("a compromised allocator cannot weaken them") + freezer revocation — then the ENTIRE facet-audit finding class (allocator-triggered value-loss bounded by rate-limits, temp-DoS, single-leg floor-gaps) is PRE-ABSORBED into accepted risk. On such a target only THREE classes remain payable: (1) a rate-limit BYPASS (theft above the cap), (2) a PERMANENT freeze (temp is accepted), (3) an un-acknowledged floor-gap the on-chain floor doesn't catch. Check those three fast; if clean → RE-SOURCE, don't grind the facets. **Read the target's threat-model/security docs BEFORE the deep facet read — they tell you which finding classes are already dead.** Ties [[feedback-audit-acknowledgment-is-a-liability-not-an-asset]], [[feedback-a-known-issue-note-is-a-dup-fossil]], [[feedback-oos-bullet-describing-your-finding-is-its-tombstone]], [[protocol-fortress-null-hunt]].
+
+Confirms the intake read (703k paid / 19 reports over 4 years on a $10M program = fortress). p_bounty for a new facet finding ≈ 0. OUTCOMES: sky-pau-facets-firmaudit (null_couteux_resource; firmaudit+nexus+darkside). See also [[nexus-skill-differential-foil]] (this engagement was launched as the nexus 1-target test, then continued as a real firmaudit).

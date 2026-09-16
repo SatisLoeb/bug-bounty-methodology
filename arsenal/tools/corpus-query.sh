@@ -12,6 +12,17 @@
 #   ~/Desktop/BUGS/solodit-corpus/protocol-type-index.json   shape -> top_classes (density)
 #   ~/Desktop/BUGS/solodit-corpus/class-map.json             class -> high_density + detection_tell
 #   ~/Desktop/BUGS/c4-patterns/PATTERN-TAXONOMY.md           named P-XXX patterns (163, ORACLE-enriched)
+#   ~/Desktop/BUGS/immunefi-corpus/{protocol-type-index,class-map}.json   OPTIONAL, own block/scale
+#
+# IMMUNEFI BLOCK (2026-07-31): shape/--route/--class now also emit an Immunefi audit-comp block
+# (2971 findings, 53 comps) BELOW the solodit output. It is deliberately NOT merged: solodit
+# severity is a contest judge's on 2 levels, Immunefi's is the PAYER's on 5 (Critical..Insight,
+# Insight weighted 0). Averaging them yields a meaningless number and would corrupt the H-density
+# calibration below, which 9 skills depend on. Read the two blocks side by side, never compare
+# their numbers. What it adds that solodit structurally cannot express: the node classes
+# (consensus / p2p-networking / mempool / state-sync / resource-exhaustion) and the `L1/L2 node`
+# shape, which has no solodit equivalent and resolves through the Immunefi-only path.
+# Absent corpus = block silently omitted; all pre-existing output and exit codes are unchanged.
 #
 # Usage:
 #   corpus-query.sh <shape>          # hunting plan for a shape (fuzzy: "lending", "amm", "bridge", "perp"...)
@@ -19,7 +30,8 @@
 #   corpus-query.sh --class <class>  # deep-dive one class (density + tell + examples)
 #   corpus-query.sh --methods <class> # discovery METHODS for a class (how auditors found it)
 #   corpus-query.sh --route <shape>  # which VEIN (skill) to activate per top class of the shape
-#   corpus-query.sh <shape> --json   # machine-readable (for a skill to parse)
+#   corpus-query.sh <shape> --json   # machine-readable (adds an "immunefi" key; all prior keys unchanged)
+#   immunefi-corpus-query.sh ...     # the Immunefi corpus direct (dup-check / severity-precedent / VSC impacts)
 #
 # CALIBRATION (measured on Pendle Boros blind firmaudit, 2026-06-24 — feedback_corpus_methods_beats_route_lead_with_the_tell):
 #   LEAD WITH `--methods` on the top-2 classes. The detection_tell it returns is the highest-real-value output —
@@ -39,6 +51,14 @@ TAX="$BUGS/c4-patterns/PATTERN-TAXONOMY.md"
 C4F="$BUGS/c4-corpus/findings.jsonl"          # has discovery_how (the METHOD) per finding
 SOLF="$BUGS/solodit-corpus/findings.jsonl"    # discovery_how backfilled
 
+# Immunefi audit-competition corpus — OPTIONAL, and rendered as its OWN block on a
+# SEPARATE scale. It is never merged into high_density: solodit severity is a contest
+# judge's on 2 levels, Immunefi's is the PAYER's on 5 (incl. Critical and a zero-weight
+# Insight). Averaging the two produces a number that means nothing, and the existing
+# density calibration (Pendle Boros, 2026-06-24) is load-bearing for 9 skills.
+IMFPTI="$BUGS/immunefi-corpus/protocol-type-index.json"
+IMFCMAP="$BUGS/immunefi-corpus/class-map.json"
+
 for f in "$PTI" "$CMAP" "$TAX"; do
   [ -f "$f" ] || { echo "FATAL: corpus artifact missing: $f" >&2; exit 1; }
 done
@@ -51,19 +71,82 @@ while [ $# -gt 0 ]; do
     --methods|--how) MODE="methods";;
     --route) MODE="route";;
     --json) JSON=1;;
-    -h|--help) sed -n '2,24p' "$0"; exit 0;;
+    -h|--help) sed -n '2,10p;27,35p' "$0"; exit 0;;   # intro + Usage block
     *) ARG="$1";;
   esac
   shift || true
 done
 
-export PTI CMAP TAX C4F SOLF MODE ARG JSON
+export PTI CMAP TAX C4F SOLF IMFPTI IMFCMAP MODE ARG JSON
 python3 - <<'PY'
 import json, os, re, sys
 pti = json.load(open(os.environ["PTI"]))
 cmap = json.load(open(os.environ["CMAP"]))
 tax_text = open(os.environ["TAX"], encoding="utf-8", errors="ignore").read()
 mode = os.environ["MODE"]; arg = os.environ["ARG"].strip(); as_json = os.environ["JSON"] == "1"
+
+
+def _opt(envkey):
+    p = os.environ.get(envkey)
+    if p and os.path.exists(p):
+        try:
+            return json.load(open(p, encoding="utf-8"))
+        except Exception:
+            return None
+    return None
+
+
+imf_pti = _opt("IMFPTI")     # Immunefi shape -> classes; None when the corpus is absent
+imf_cmap = _opt("IMFCMAP")
+
+
+def imf_shape(q):
+    """Resolve a shape name against the Immunefi index. Its vocabulary is nearly the
+    same as solodit's (same SHAPE_TELLS lineage) with two deltas: `stablecoin/RWA`
+    vs `stablecoin`, and `L1/L2 node`, which solodit has no equivalent for."""
+    if not imf_pti or not q:
+        return None
+    if q in imf_pti:
+        return q
+    ql = q.lower()
+    for k in imf_pti:
+        toks = re.split(r"[/ ]", k.lower())
+        if ql == k.lower() or ql in toks or any(ql in t or t in ql for t in toks if t):
+            return k
+    return None
+
+
+def imf_rows(shape, limit=8):
+    sh = imf_shape(shape)
+    if not sh:
+        return None, []
+    rows = []
+    for tc in imf_pti[sh].get("top_classes", [])[:limit]:
+        c = tc.get("class")
+        cm = (imf_cmap or {}).get(c, {})
+        rows.append({"class": c, "n": tc.get("n"), "weight": tc.get("weight"),
+                     "crit_high_share": cm.get("crit_high_share"),
+                     "detection_tell": cm.get("detection_tell", "")})
+    return sh, rows
+
+
+def print_imf_block(shape, tells=False):
+    """Own scale, own header, printed BELOW the solodit output — additive, never merged."""
+    sh, rows = imf_rows(shape)
+    if not rows:
+        return
+    n = imf_pti[sh].get("finding_count", "?")
+    print(f"\n-- IMMUNEFI audit-comps (payer-assigned severity, {n} findings on this shape) --")
+    print(f"   ranked by PAYOUT-WEIGHT C=4 H=3 M=2 L=1 I=0 — a DIFFERENT scale from H-dens above, do not compare the numbers")
+    for i, r in enumerate(rows, 1):
+        ch = r["crit_high_share"]
+        ch = f"{ch:.2f}" if isinstance(ch, (int, float)) else "  ?"
+        print(f"  {i:2}. {r['class']:20} n={r['n']:<5} wgt={r['weight']:<6} C+H={ch}")
+        if tells and r["detection_tell"]:
+            print(f"      tell: {r['detection_tell']}")
+    if any(r["class"] == "logic" for r in rows):
+        print("   note: `logic` is the untagged RESIDUE (31.5%), not a class.")
+    print(f"   deep-dive: immunefi-corpus-query.sh --route '{sh}'  ·  --class <class>")
 
 # shape -> taxonomy P-prefix (the named-pattern bucket). ORACLE is cross-cutting, always appended.
 SHAPE_PREFIX = {
@@ -191,7 +274,11 @@ if mode == "route":
                      "methods": mcount.get(cls, 0), "vein": CLASS_VEIN.get(cls, DEFAULT_VEIN),
                      "detection_tell": cm.get("detection_tell", "")})
     if as_json:
-        print(json.dumps({"shape": shape, "route": rows}, indent=1)); sys.exit(0)
+        _sh, _ir = imf_rows(shape)
+        out = {"shape": shape, "route": rows}
+        if _ir:
+            out["immunefi"] = {"shape": _sh, "scale": "payout_weight C4/H3/M2/L1/I0", "route": _ir}
+        print(json.dumps(out, indent=1)); sys.exit(0)
     print(f"== CORPUS ROUTE — shape: {shape}  → which VEIN (skill) to activate per class ==\n")
     print(f"  {'#':>2}  {'class':18} {'n':>5} {'Hdns':>5} {'meth':>5}   VEIN")
     for i, r in enumerate(rows, 1):
@@ -203,6 +290,7 @@ if mode == "route":
             f"{r['class']} -> {r['vein'].split()[0]}" for r in t2))
     if any(r["class"] in ("oracle", "price-manipulation") for r in rows):
         print(f"  cross-cutting: oracle/price present -> invfuzz (differential vs reference lib).")
+    print_imf_block(shape)
     print(f"\n  then: corpus-query --methods <class>  (the techniques) · corpus-query {shape}  (the named patterns)")
     sys.exit(0)
 
@@ -210,6 +298,12 @@ if mode == "list":
     print("Available shapes (protocol_type) in the corpus:")
     for k in sorted(pti, key=lambda x: -pti[x].get("finding_count", 0)):
         print(f"  {k:22} ({pti[k].get('finding_count',0)} findings)")
+    if imf_pti:
+        extra = [k for k in imf_pti if not resolve_shape(k)]
+        if extra:
+            print("\nImmunefi-only shapes (no solodit equivalent — query these via the immunefi block):")
+            for k in sorted(extra, key=lambda x: -imf_pti[x].get("finding_count", 0)):
+                print(f"  {k:22} ({imf_pti[k].get('finding_count',0)} findings)")
     sys.exit(0)
 
 if mode == "class":
@@ -221,18 +315,39 @@ if mode == "class":
         arg = hit or arg
     if not c:
         print(f"unknown class '{arg}'. Known: {', '.join(cmap)}"); sys.exit(1)
+    imf_c = (imf_cmap or {}).get(arg)
     if as_json:
-        print(json.dumps({"class": arg, **c})); sys.exit(0)
+        out = {"class": arg, **c}
+        if imf_c:
+            out["immunefi"] = {k: imf_c[k] for k in
+                               ("total", "by_severity", "payout_weight", "crit_high_share", "detection_tell")
+                               if k in imf_c}
+        print(json.dumps(out)); sys.exit(0)
     print(f"== CLASS: {arg} ==")
     print(f"  H/M: {c.get('high')}/{c.get('medium')}  |  H-density: {c.get('high_density')}")
     print(f"  detection_tell: {c.get('detection_tell','')}")
     for ex in (c.get("examples") or [])[:4]:
         print(f"    ex: {ex.get('title','')[:80]}")
+    if imf_c:
+        bs = imf_c.get("by_severity", {})
+        print(f"\n  -- IMMUNEFI (payer severity, separate scale) --")
+        print(f"     n={imf_c.get('total')}  " + " ".join(f"{k}={v}" for k, v in bs.items())
+              + f"  |  payout-weight={imf_c.get('payout_weight')}  C+H={imf_c.get('crit_high_share')}")
+        if imf_c.get("detection_tell") and imf_c["detection_tell"] != c.get("detection_tell"):
+            print(f"     tell: {imf_c['detection_tell']}")
+        print(f"     exemplars: immunefi-corpus-query.sh --class {arg}")
     sys.exit(0)
 
 # mode == shape
 shape = resolve_shape(arg) if arg else None
 if not shape:
+    # solodit has no such shape — but Immunefi may (e.g. `L1/L2 node`, which is the
+    # coverage this corpus adds). Emit the Immunefi block alone rather than failing.
+    _sh, _rows = imf_rows(arg)
+    if _rows:
+        print(f"== shape '{_sh}' exists ONLY in the Immunefi corpus (no solodit equivalent) ==")
+        print_imf_block(arg, tells=True)
+        sys.exit(0)
     print(f"unknown shape '{arg}'. Run --list for available shapes.", file=sys.stderr); sys.exit(1)
 info = pti[shape]
 top = info.get("top_classes", [])
@@ -249,9 +364,13 @@ for tc in top:
                  "detection_tell": cm.get("detection_tell", "")})
 
 if as_json:
-    print(json.dumps({"shape": shape, "finding_count": info.get("finding_count"),
-                      "class_priority": prio, "named_patterns": [{"id": i, "title": t} for i, t in named],
-                      "oracle_patterns": [{"id": i, "title": t} for i, t in oracle]}, indent=1))
+    out = {"shape": shape, "finding_count": info.get("finding_count"),
+           "class_priority": prio, "named_patterns": [{"id": i, "title": t} for i, t in named],
+           "oracle_patterns": [{"id": i, "title": t} for i, t in oracle]}
+    _sh, _ir = imf_rows(shape)
+    if _ir:
+        out["immunefi"] = {"shape": _sh, "scale": "payout_weight C4/H3/M2/L1/I0", "class_priority": _ir}
+    print(json.dumps(out, indent=1))
     sys.exit(0)
 
 print(f"== CORPUS HUNTING PLAN — shape: {shape}  ({info.get('finding_count','?')} findings in corpus) ==\n")
@@ -261,6 +380,7 @@ for i, p in enumerate(prio[:10], 1):
     print(f"  {i:2}. {p['class']:16} n={p['n']:<5} H-dens={hd}")
     if p["detection_tell"]:
         print(f"      tell: {p['detection_tell']}")
+print_imf_block(shape, tells=True)
 print(f"\nNAMED PATTERNS for this shape (P-{prefix}-*, from PATTERN-TAXONOMY.md):")
 if named:
     for i, t in named:

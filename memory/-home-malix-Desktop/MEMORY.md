@@ -1,0 +1,1 @@
+- [Bounty submission tracking](bounty-submission-tracking-convention.md) — where submitted-vs-draft status lives (OUTCOMES.jsonl ledger + .lifecycle-status + submissions/)

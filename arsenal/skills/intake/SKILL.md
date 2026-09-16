@@ -30,6 +30,23 @@ NOT invoking it.
 A repo path, a scope URL, a package name, or just a protocol name + "audited? / TVL?". Read-only:
 you classify and brief; you don't clone-and-hunt here.
 
+## Phase 0 — NUKE hook (if the code was already barraged)
+If the target has been run through `/nuke` (a `nuke-digest.md` sits next to a `.nuke/<ts>/signals.json`,
+or run `nuke digest <target>` to (re)generate it), **READ that digest FIRST**. It grounds the routing
+in what the code ACTUALLY contains:
+- its **detected/corroborated classes** (with `file:line`, `★` tool-agreement) are concrete LEADS →
+  fold into **Phase 1 Classification** and **Corpus ROUTE** (sharpen which class per vein);
+- its **negative space** (silent classes) are the highest-value MANUAL-hunt directions → weight them
+  up in **Phase 3 RECOMMENDED SKILL(S)**;
+- the digest already ranks veins (`/extract /power /darkside /upshift …`) — treat that as a prior to
+  refine with the corpus, NOT a replacement. Corpus = industry precedent; digest = this code's reality.
+- **if the digest opens with a `🎯 VEINES VIERGES (corpus-vérifié)` section** (operator ran `nuke digest
+  <t> --fork <name> --shape <s>`), those are the corpus-cross-checked UNPLOUGHED veins — payable class,
+  ~0 finding on this target/fork-source — each carrying a `detection_tell` (the HOW). **Lead the dossier
+  with these** over the raw negative space; the demoted `🚧 LABOURÉES` are already-taken → deprioritize.
+Still U-1: the digest SUGGESTS; you brief and name the skill; the operator launches. If no digest
+exists (target not yet cloned/barraged), skip to Phase 1 unchanged.
+
 ## Phase 1 — Classify (COMPOSE the existing brains; never re-implement them)
 The classification machinery already exists. Run it, read its verdicts — don't duplicate the logic.
 
@@ -166,7 +183,13 @@ path — never read or overwrite the existing one.) Template:
 - **The corpus exists**: 4670 findings, 163 named patterns, 4588 discovery methods. Query it with
   `corpus-query <shape> | --route <shape> | --methods <class>` — AIM, vein-route, technique.
 - **The class→vein map** is empirical (proven on 4670 findings): accounting→check-matrix,
-  oracle→invfuzz, rounding→extract, access-control→power, liquidation→mrrobbot:Phase-3.
+  oracle→invfuzz, rounding→extract, access-control→power (theft AND governance/valset-capture),
+  liquidation→mrrobbot:Phase-3. **Non-theft impact classes have veins too** — the map was theft-only
+  by construction (the bias the operator flagged 2026-07-19): liveness/DoS→unbounded-iteration/panic-halt
+  probe · freeze→state-lock probe · griefing→forced-loss probe · insolvency→extract Gate-1 (branche non-vol)
+  · governance-takeover→power (untrusted→privileged) · deanon/PII→power (read-authz sur la donnée d'autrui).
+  Rank surfaces by PAYOUT-density (the program's real severity table), not class-density — a Cosmos
+  chain-halt or a perma-freeze can outrank a theft. See `~/.claude/skills/IMPACT-LEDGER-PLAYBOOK.md`.
 - **Discovery-door doctrine**: on a fortress the catalogued classes are already swept — the win is
   **Door C** (`/darkside`, the no-CWE composition bug). gravedigger/mrrobbot/exploit-primitive-mindset
   now carry a `/darkside` pointer; use it on any audited target.

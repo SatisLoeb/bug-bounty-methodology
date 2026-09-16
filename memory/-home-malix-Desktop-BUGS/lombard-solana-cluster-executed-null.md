@@ -1,0 +1,25 @@
+---
+name: lombard-solana-cluster-executed-null
+description: "Lombard Immunefi Solana programs (sol-svm-contracts) — full executed sweep 2026-08-12: single consortium threshold-sig root holds across asset_router/mailbox/bridge/CCIP-pool/bascule_gmp/ratio_oracle; invfuzz valset-decoder differential real but not exploitable; whole Lombard scope (EVM+Solana) = NULL-COÛTEUX, RE-SOURCE"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: a3337c82-163f-4d2c-bc2a-e5d0432d849c
+  modified: 2026-08-12T21:03:20.938Z
+---
+
+Lombard Finance, Immunefi ($250K, PoI for SC Crit/High — see [[lombard-strategy-tranche-oos-strategy-contract]] for the premise correction). **Solana cluster swept 2026-08-12, executed-null.** Fresh clone `~/Desktop/BUGS/lombard-2026-08/sol-svm-contracts` (full history). Audits: Sherlock GMP/CCIP (2026-03-20, SINGLE firm on the V2/GMP programs) + Ackee/Veridise V1 (LBTC/Bascule, 2025). ~5-month post-audit delta. Rust/Anchor = thin competition — but it HELD.
+
+**Architecture = one consortium threshold-sig root of trust, and it's sound.**
+- `consortium`: secp256k1_recover vs `current_validators[index]`; **dedup-by-index** (`session.signed[index]`) kills the malleability double-count (a malleable twin (r,n-s) is still index=k, skipped); "one-sig-two-indices" recovery-id oddity (check tries id 0 then 1) is latent-but-unexploitable (can't force the 2nd recovery pubkey into the valset). `finalize_session` weight≥threshold. `update_valset` is self-referentially threshold-gated (needs a ValidatedPayload finalized by the CURRENT valset, epoch==cur+1, height↑). `set_initial_valset` admin-once.
+- `asset_router` mint paths (`mint_from_payload`, `gmp_receive`, `mint_with_fee`): all consortium-ValidatedPayload-rooted, replay-guarded (`deposit_payload_spent`/`message_handled` init — SHARED across paths, no cross-path double-mint), recipient/token/dest-chain-bound. `mint_with_fee` also Claimer-role-gated + recipient-owner ed25519 fee sig.
+- `redeem`/`redeem_for_btc`: burn caller's OWN LBTC (authority=payer), fee→treasury, GMP body = amount−fee. No theft-of-others.
+- `mailbox` deliver/handle: consortium-rooted; `destination_caller` binds CCIP messages to the pool.
+- `bridge` gmp_receive: consortium(mailbox)-rooted, `remote_bridge_config.bridge==message.sender` per source-chain, recipient/token-bound, inbound rate-limited.
+- **CCIP `lombard_token_pool` = the crown-jewel deviation, and it's well-built.** `release_or_mint` does NOT mint — it validates CCIP (offramp authority + allowed_offramp PDA owned by router — canonical Chainlink) then **delegates the mint to the bridge via mailbox.handle_message** (2nd, consortium-rooted attestation) and requires `res.amount==parsed_amount`. Dual-attestation (Chainlink DON + Lombard consortium) bound by DON-attested `source_pool_data` (=bridge payload_hash, set in lock_or_burn) + `destination_caller`==pool-state-PDA. Chased decoupling / recipient-not-checked / None-amount-skip / destination_caller-bypass — all dead (mint always lands on the consortium-attested recipient; layers hash-bound).
+- `bascule_gmp`: role-gated circuit-breaker (asset_router PDA = MintValidator; off-chain reporter = MintReporter + trusted_signer secp sig). No untrusted path; MintPayload PDA not externally squattable; secondary to consortium.
+- `ratio_oracle`: publish-only on Solana (consortium-gated), NO on-chain consumer → oracle-manip inert here.
+
+**invfuzz differential (the last vein, /report B swing) — REAL but NOT exploitable.** Solana `UpdateValSetPayload::from_session_payload` reads a FIXED tight-packed layout and IGNORES the ABI offsets (`consume(32)` on off_validators/off_weights, `consume(32*N)` on the element-offset table); EVM `Actions.validateValSet` (contracts/libs/Actions.sol) does `abi.decode` (offset-driven) + a **re-encode-length canonicalization check** (`abi.encode(decoded).length == payload.length`). Same action selector `0x4aab1d6f`. Takeover disconfirmed: to make Solana read an attacker pubkey EVM doesn't, that key is EXTRA data → len(B)>len(canonical(V1)) → EVM re-encode-length reverts → notaries (canonical decode) never sign; length-preserving constructs only REORDER the same keys. Mint decoders (`DepositV1`, bridge `Mint`) are STATIC/strict-length → no offset differential. Reachability also off-chain-gated (needs the notary encoder to sign non-canonical bytes; unavailable). NULL. **Re-open trigger:** if the off-chain Lombard ledger/notary encoder ever becomes available, re-check whether it signs non-canonical valset bytes (only then does the differential become reachable).
+
+**Verdict:** whole Lombard scope (EVM strategy core + entire Solana cluster) = executed NULL-COÛTEUX. Genuinely well-built, multi-audited. Non-refundable fee + brutal known-issues clause. **RE-SOURCE.** Do NOT re-hunt these paths without a NEW deployed program, new converter wiring, or the off-chain encoder. Instascope EVM harness built green at `~/Downloads/foundry-v2-lombard-finance-9dee88d64a5f3aa3/`.

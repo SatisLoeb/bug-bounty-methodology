@@ -1,0 +1,1 @@
+- [Bug-bounty Playbook v1.4](bugbounty-playbook.md) — governs all security work: front-load receivability+materiality, saturation→re-source, dup is the only uncontrollable param

@@ -14,8 +14,8 @@ DRY="${1:-}"
 cd "$REPO"
 
 # --- wipe content dirs (keep .git, README, .gitignore, this script) ---
-rm -rf claude-md methodology skills arsenal memory
-mkdir -p claude-md methodology skills arsenal memory
+rm -rf claude-md methodology skills arsenal memory workflows drift-watch tools
+mkdir -p claude-md methodology skills arsenal memory workflows drift-watch tools
 
 # --- 1. CLAUDE.md + rules + agents ---
 cp "$DESKTOP/CLAUDE.md" claude-md/CLAUDE-Desktop.md 2>/dev/null || true
@@ -50,17 +50,29 @@ for md in "$HOME"/.claude/projects/*/memory; do
   cp -r "$md/." "memory/$proj/" 2>/dev/null || true
 done
 
+# --- 4c. v1.6 playbook stack: gate-runner + reusable fanout template + on-chain tools ---
+PBK="$DESKTOP/D-cve/playbook"
+cp "$PBK/playbook-bug-bounty-v1.6.md" "$PBK/finding-acceptance-standard.md" \
+   "$PBK/audit-competition-filter-results.md" "$PBK/README.md" methodology/ 2>/dev/null || true
+cp "$PBK/audit-fanout-template.js" workflows/ 2>/dev/null || true
+cp -r "$PBK/tools/." tools/ 2>/dev/null || true
+
+# --- 4d. drift-watch system: scripts + watchlists + cloud-routine prompt (NO logs) ---
+DW="$DESKTOP/drift-watch"
+cp "$DW"/*.sh "$DW"/*.tsv "$DW"/*.md "$DW"/*.txt drift-watch/ 2>/dev/null || true
+rm -f drift-watch/*.log 2>/dev/null || true
+
 # --- 5. SCRUB: secrets, key material, nested .git, caches, large blobs ---
-find claude-md methodology skills arsenal memory -name ".git" -type d -prune -exec rm -rf {} + 2>/dev/null || true
-find claude-md methodology skills arsenal memory \
+find claude-md methodology skills arsenal memory workflows drift-watch tools -name ".git" -type d -prune -exec rm -rf {} + 2>/dev/null || true
+find claude-md methodology skills arsenal memory workflows drift-watch tools \
   \( -iname "*.key.pem" -o -iname "*.key" -o -iname "*.pem" -o -iname "id_rsa*" \
      -o -iname "*.keystore" -o -iname "*.env" -o -iname "*.p12" \) -delete 2>/dev/null || true
-find claude-md methodology skills arsenal memory -type d \
+find claude-md methodology skills arsenal memory workflows drift-watch tools -type d \
   \( -name node_modules -o -name __pycache__ -o -name .venv -o -name target \) -prune -exec rm -rf {} + 2>/dev/null || true
-find claude-md methodology skills arsenal memory -type f -size +3M -delete 2>/dev/null || true
+find claude-md methodology skills arsenal memory workflows drift-watch tools -type f -size +3M -delete 2>/dev/null || true
 
 # --- 6. HARD secret gate: abort if any real token/key pattern slipped through ---
-HITS="$(grep -rIlE 'gh[posu]_[A-Za-z0-9]{36}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,}' claude-md methodology skills arsenal memory 2>/dev/null || true)"
+HITS="$(grep -rIlE 'gh[posu]_[A-Za-z0-9]{36}|sk-[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}|-----BEGIN [A-Z ]*PRIVATE KEY-----|xox[baprs]-[A-Za-z0-9-]{10,}' claude-md methodology skills arsenal memory workflows drift-watch tools 2>/dev/null || true)"
 if [ -n "$HITS" ]; then
   echo "ABORT: real-secret pattern detected, not committing:"; echo "$HITS"; exit 1
 fi

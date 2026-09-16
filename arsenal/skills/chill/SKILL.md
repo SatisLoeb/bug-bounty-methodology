@@ -72,6 +72,51 @@ A hardening nit is about five lines: one sentence of mechanism, a short repro, o
 
 Reference: py_webauthn #265 / cbor2 (Mar 2026). The original report was a CVSS-9.8 advisory with downstream blast-radius tables for what was, at bottom, "cbor2 collapses bool/int map keys and the parser doesn't reject it." The maintainer read and re-read it and still flagged "seemingly LLM-assisted over-explaining is overstating the problem." The first post set that verdict, and a later severity-stripped, chill-voiced follow-up did not undo it.
 
+### Principle 0b: Length budget, and NO ADDITION WITHOUT REMOVAL (the revision ratchet)
+
+Principle 0 sizes the report at draft time. This one keeps it sized through revision, which is
+where the damage actually happens. **The body of a full report stays under 250 lines. When a
+revision round adds a paragraph, another paragraph gets cut or compressed in the same round. The
+budget does not rise.**
+
+**Why the load-bearing clause is "no addition without removal" and not "be concise":** concision
+alone never attacks the ratchet, because *every addition justifies itself in isolation*. Each
+review round surfaces a real objection, a real missing number, a real correction, and each one is
+genuinely worth a paragraph on its own merits. Nothing in "be concise" ever says no to a paragraph
+that is individually correct. So the report grows monotonically while every single step looks like
+good judgment, and the operator ends up reading a document where the argument is buried in its own
+defences. Pairing each addition with a removal is the only rule that forces the comparison: *is
+this new paragraph worth more than the weakest one currently in the document?* That question has an
+answer. "Is this paragraph good?" does not.
+
+Admission test, applied per paragraph: it earns its place only as **a cited fact, a measured
+number, or a disarmed objection.** Anything that restates something already established elsewhere
+in the document is a removal candidate, and restating is the dominant failure mode because a
+revision round rarely knows what the other sections already say.
+
+**One objection gets one paragraph, never a section.** A dedicated heading per pre-emption is how a
+report doubles in size while its author believes they are hardening it. If a pre-emption cannot be
+disarmed in a paragraph, either it is a real weakness that belongs in the finding's honest limits,
+or it is not worth pre-empting.
+
+The cost of the discipline, stated honestly so the operator can price it: every pre-emption you cut
+is an objection the triager may raise, which can cost a round-trip on a two-week SLA. That trade is
+worth making, because a report whose argument is legible wins more often than a report that
+answered every possible objection before it was asked.
+
+Measured instance (TruFin F-1, 2026-08-05): a report went through roughly ten operator review
+rounds, each one correctly compressing something, and moved 3889 -> 3760 words. **3%.** Every round
+added a pre-emption, a live readback, a corrected fix analysis, an audit-history answer. Every
+addition was right. The ratchet still won, and it took an explicit paired-removal instruction to
+break it.
+
+**Prompt tail (paste at the end of any revision request):**
+```
+<tone_preference>
+Budget de longueur respecte. Pas d'ajout sans retrait.
+</tone_preference>
+```
+
 ### Principle 1: Imperfection signals authenticity
 
 A perfect writeup looks like AI output. A writeup with one typo corrected in-line, one digression, one "wait, let me check that," one acknowledgment of fatigue, reads like a human. Build small imperfections in deliberately.
@@ -462,6 +507,7 @@ Before considering a draft ready, walk through this list. Each item should pass.
 > **Item 0 (size gate) is the OPENING condition — settle it before you draft.** **Items 1-18 are content review. Item 19 (grep gate) is the closing condition** — the draft is not done until item 19 returns clean. Treat it as the final action before the draft is rendered or sent, not as a checklist line to skim when tired. For triager-response comments, the equivalent gate lives in `report-nerve § Triager response discipline` and supersedes item 19.
 
 0. **Size gate (do this FIRST, before drafting — Principle 0)**: is the artifact sized to the finding, or over-produced? A hardening nit / endpoint-compromise-only / low-payoff finding gets ~5 lines (mechanism + short repro + one-line fix), NOT a multi-section advisory. Cut on sight: a markdown table of downstream "blast radius" / affected libraries, a CVSS string on something whose real impact is "good practice," Impact/Details/PoC/CVSS/References scaffolding wrapped around a one-liner, enumerated equivalence classes. The over-structured advisory template is itself the LLM tell, and the verdict it triggers is set on the first post and sticky. If the finding is small, the report must be small before any voice pass runs.
+0b. **Length budget (revision rounds)**: is the body under 250 lines? If this round added a paragraph, did it also cut or compress one? A pure-addition round fails the item: cut the weakest paragraph now, or state in one line why nothing in the document is weaker than what was just added. Check also for any pre-emption promoted to its own heading, and any paragraph restating something established elsewhere.
 1. **Em dashes**: grep the draft for `—`. There should be zero. Replace any found with commas, periods, parentheses, or colons.
 2. **Triples**: count any sequence of three parallel items (three sentences starting the same way, three list items in a bulleted "this does X, Y, Z" pattern). Break or reduce.
 3. **Symmetric section pairs in argumentative prose**: search for "What X / What Y" or "Strengths / Weaknesses" patterns. Replace with prose limits inline. (Exception: Chain Acceptance Verification block from `report-nerve`.)

@@ -1,0 +1,17 @@
+---
+name: cosmos-evm-locked-scaling-latent-parked
+description: "cosmos/evm StateDB↔bank locked reconciliation adds base-denom locked (unscaled) to 18-dec spendable — real burn on 6-dec chains, but every prod chain is 18-dec ⇒ PARKED on materiality; re-arm on a 6-dec chain"
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 75e0c51f-54bf-4b81-bca7-963696d3ccbc
+  modified: 2026-09-06T23:03:24.039Z
+---
+
+cosmos/evm v0.7.3, engagement 2026-09-06/07. Chasing the precompile/vm-reconciliation class after the Aug-2026 GHSA-7g4w vesting-drain. Candidate: the locked-balance-snapshot fix (`ae2db4f1` = backport #1187/#1189, the SAME fix as the incident) reconstructs the native balance at StateDB write-back as `newBalance = amount + locked` (`x/vm/keeper/statedb.go` SetBalanceWithLocked → `bankWrapper.SetBalance` → `UncheckedSetBalance`, mint/burn). `amount` (EVM spendable) is read via the wrapper in the **extended** (18-dec) denom; `locked` is `LockedCoins.AmountOf(GetEVMCoinDenom())` — the **base** denom — and is **never scaled** to 18-dec (`k.lockedCoin` keeper.go:347; snapshot path statedb.go:151; fresh path statedb.go:162). `ConvertEvmCoinDenomToExtendedDenom` only relabels, no scaling.
+
+**Why it PARKED (materiality, Decentraland-V4/Gate-5 pattern):** `validateCoinInfo` (x/vm/types/denom_config.go) enforces `Decimals==18 ⇒ Denom==ExtendedDenom`. On an 18-dec chain base==extended → `amount` and `locked` are the same units → `amount+locked` **conserves** (proven algebraically: newBalance = load_bank − net_events = actual). The mismatch fires ONLY on a **6-dec (base≠extended)** chain, where `locked` is under-scaled by 10^12 (or 0 if LockedCoins returns extended) → the locked portion is dropped → a vesting account **burns its locked balance** on any EVM tx that dirties its stateObject. But census: **every known production cosmos/evm chain runs 18-dec** (MANTRA `amantra`, KiiChain `akii` = atto/18-dec; survey "every known prod chain is 18-dec"; 6-dec via x/precisebank supported but ~unused). So the vulnerable FORM is absent in prod ⇒ realized impact = 0.
+
+**Status:** real latent defect in the non-18-dec code path (legit upstream GHSA, no materiality gate upstream — drafted at `BlackBox/submissions/cosmos-evm-nil-pubkey-crash/GHSA-DRAFT-locked-scaling.md`). Distinct from [[cosmos-evm-ghost-cache-distinct-from-ghsa-missed-vesting-surface]] (SubBalance underflow) and [[cosmos-evm-nil-pubkey-mempool-dos-parked]] (mempool DoS). **RE-ARM TRIGGER:** any in-scope cosmos/evm chain configured 6-dec (Denom≠ExtendedDenom) with vesting accounts → instant Critical burn; re-verify precisebank/LockedCoins denom on that specific chain before claiming.
+
+**Strategic lesson (the real takeaway):** TWO consecutive cosmos/evm vm-reconciliation candidates killed at materiality, both config-dependent (nil-pubkey = opt-in mempool default-off; locked-scaling = 6-dec unused). The Aug incident paid because SubBalance underflow hit the 18-dec path itself; since the fix, the 18-dec path (where the money is) is guarded (panic + snapshot) and residual reconciliation bugs live only on non-deployed configs. The precompile/vm-reconciliation vein is **exhausted for payable-on-deployed-config**; the fix front-loading materiality before any simnet saved the build twice. Applies [[feedback-depth-is-an-edge-only-where-ore-remains]] and [[feedback-prelaunch-audit-hunt-the-path-not-the-current-value]]. Census is a survey, not a per-chain on-chain config read.

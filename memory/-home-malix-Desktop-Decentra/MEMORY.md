@@ -1,0 +1,4 @@
+- [dHEDGE #92214 submitted](dhedge-92214-submitted.md) — live Immunefi report, HyperEVM CoreWriter IOC-only slippage, awaiting triage; gist to delete on close
+- [Engagements ledger](engagements-ledger.md) — where past bug-bounty engagements are recorded (OUTCOMES.jsonl + PLAYBOOK.md) + top confirmed wins
+- [Decentraland social-service scope](decentraland-social-scope.md) — in-scope surface = WS-RPC + uWS only; community REST is OOS (Primacy of Rules); governs the deep audit
+- [Decentraland web XSS chain](decentraland-web-xss-chain.md) — CLOSED 2026-09-10: XSS direction exhausted (H2 survived_leads:0, SSO-exfil dead); apps hardened. Only OOS-producer residual left

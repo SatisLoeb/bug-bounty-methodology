@@ -1,68 +1,131 @@
-- [Ammalgam DLEX core (Cantina) — CONFIRMED unhealable freeze (fund-trapping)](ammalgam-dlex-core-blind-null-couteux.md) — sat-premium liquidity-manip class = executed-dead (correct); BUT the fragile+penalty FREEZE is LIVE: dominant LP+tiny borrow (fragile high) + borrowLiquidity~85% depL (activeLiquidity collapses) + ≥1day → penalty-mint hits require(totalDepositLAssets==0,'TS') TokenController:537 → deposit/withdraw/repayLiquidity all revert, existing lender funds TRAPPED, unhealable (poc-blind/TSFreeze.t.sol); but LOW sev — pure griefing, attacker self-locks ~$14M all-trapped, needs dominant-LP + full reserves, guarded on organic pools (util cap); TS invariant violable=real bug but EV marginal; my first "refuted" was NOVEL-READING
-- [Ammalgam DLEX — prior T1 fragile-freeze: PARTIALLY VINDICATED](ammalgam-dlex-saturation-liq-immunity.md) — firmaudit $25K SC; prior claimed EXECUTED fragile freeze (0x4ea97c63/0xbd3279df) — I first REFUTED it via novel-reading, then operator forced re-hunt and CONFIRMED an unhealable freeze via the 'TS' penalty-assert (adjacent mechanism, same fragile family) → see [[ammalgam-dlex-core-blind-null-couteux]]; META gate=existence≠strength, reading-as-novel-reveals-nothing
-- [Mezo (Cantina) breadth-map — BTC bridge-out commit-seam, PoC-pending](mezo-cantina-breadth-map-btc-bridgeout-commit-seam.md) — scope=musd+mezod; surviving candidate = BTC bridge-out dual-ledger desync under nested precompile calls (single flushCache ptr × clone vs journal revert); needs faithful system PoC; ~/Desktop/BUGS/mezo-audit/
-- [Vercel OSS bounty — turborepo codemod RCE (hand-verified DIG)](vercel-oss-turborepo-codemod-rce.md) — @turbo/codemod migrate yarnPath RCE = incomplete remediation of CVE-2026-45772, verified on shipped 2.10.4; commit Low/Med floor (vendor rates class Low); ~/Desktop/BUGS/vercel-audit/
-- [Default posture: think like a thief, don't prove the fortress](feedback-default-posture-thief-not-fortress-prover.md) — STANDING critique: I default to PROVING null ($0) not hunting; flip "is it safe?"→"where does money leave & what primitive reaches it?"; fortress-null only after theft-paths die with teeth
-- [Privy (H1 crypto-auth/embedded-wallet) — NO-GO/RE-SOURCE](privy-bbp-crypto-auth-defended.md) — self-provisioned app+users (SIWE) + @privy-io React SDK harness minting TEE wallets; crown jewels defended (server/TEE wallet BFLA 401, recovery BFLA arch-defended, custom-JWT not-enable-able); harness kept; ~/Desktop/BUGS/privy-audit/
-- [Ondo Perps (Cantina web/API) — NO-GO/RE-SOURCE](ondoperps-web-api-verified-seam.md) — custodial perps DEX; blind thief re-hunt + workflow closed FREE surface null (BFLA+SIWE+web2+deposit+api-key-scope all DEFENDED); referral sybil = LOW (share=0); live EV = funds-gated trade-accounting (operator declined fund); ~/Desktop/BUGS/ondo-audit/
-- [Rheo (Size + very-liquid-vaults) — executed earned-null](rheo-size-vlv-earned-null.md) — Size=9-audit dup-fortress, VLV=hardened; thief PoC null (value conserved, dead-shares block inflation); 1 admin-trust gov note (no-timelock EOA 3 roles)=Low
-- [Reachability is a kill-gate, not a severity modifier](feedback-reachability-is-kill-gate-not-severity-modifier.md) — passing PoC proves code does X, not that X is reachable on deployed build; unresolved reachability = NOT READY at ANY tier; tell = "submit with a caveat" on an unverified leg
-- [Alchemy Modular Account V2 = earned fortress-null](alchemy-ma2-fortress-null.md) — ERC-6900/4337 $100K, 4 audits; 13 surfaces null (decoder-differential closed by fuzz); only live = OOS ALC-16; re-open on new code
-- [Symbiotic V2 delta — CLOSED earned-null](symbiotic-v2-delta-pass1.md) — Cantina $500K; ll-adapter RWA unaudited but value-conservation defended; F-1 CutoffMidas DoS REFUTED by neutral PoC; re-open on new commit/token/off-chain
-- [LI.FI delta + fee-config seam = CLOSED earned-null](lifi-delta-seam-earned-null.md) — Cantina $1M; 603-commit delta null (sigs bind receiver); fee-config BFLA = web-tier-only $2.5-25K, PARKED; re-open on new-facet or FREE authed-portal
-- [Fortress protocol = mandatory-read hook on every hunting skill](protocole-forteresse-mandatory-hook.md) — PreToolUse/Skill hook injects "lecture OBLIGATOIRE" for PROTOCOLE-FORTERESSE-v2.md; a Skill call carrying it = comply
-- [Protocole Forteresse v2 (hunt)](protocole-forteresse-v2.md) — fortress-null HUNT protocol; spine CP1(+exit gate)→G2→G3 seam→G4 darkside→CP5-7→G8 PoC→G12
-- [OKX Labs $1M breadth-map — CLOSED earned-null](okx-labs-breadth-map-2026-07-05.md) — 9-repo DEX/wallet; 25-agent breadth + on-chain refutation: all Med+ = residue swept to dust; neutral fork PoC → Low not Medium; real EV off-chain (OOS)
-- [Wallet (@wallet/Telegram) BFLA engagement](wallet-tg-telegram-bfla-engagement.md) — custodial TON wallet; ~20-microservice backend, value 100% authed; cross-user BFLA harness SUSPENDED awaiting 2 throwaway sessions; bombshell /internal/users/{id}/{tokens,verify}
-- [Verify before working, no theater](feedback-verify-before-working-no-theater.md) — execute to confirm state; never fabricate a need or narrate process
-- [Concluding "guard holds/refuted" from tracing code IS novel-reading](feedback-refuted-by-tracing-the-guard-is-novel-reading.md) — an executed disconfirmer proves the path I tested is guarded, NEVER that the surface is dead; a defensive assert (require 'should not happen') is a NEON SIGN of the un-imagined state — hunt to REACH it; the tell to STOP = writing "airtight/self-prevented/refuted/unreachable" from reading the code (Ammalgam: I novel-read a live fund-trapping freeze into "refuted"; operator forced re-hunt)
-- [Audited target: hunt the invariant, not the class](feedback-audited-target-hunt-invariant-not-class.md) — on N-audit code, per-function class checklists → predetermined null; living bug = design-invariant break / cross-component composition / auditor-blind component
-- [Agent fan-out recreates the audit blind spot](feedback-agent-fanout-recreates-audit-blindspot.md) — N per-surface agents = N isolated audits; the composition/seam belongs to no shard; workflow for BREADTH, trace the seam SOLO in one context
-- [Kiln On-Chain V1: earned fortress-null](kiln-onchain-v1-earned-fortress-null.md) — SC-only $1M earned-SKIP; proxy-init Crit dead, dead-husk premise falsified (~829K ETH live), 7/8 null + 8th dup; re-open on code delta
-- [Corpus-coverage gate: lead, don't improvise](feedback-corpus-coverage-gate-lead-dont-improvise.md) — corpus is a COMPLETENESS backstop, never the VERDICT; poke FIRST, corpus SECOND, executed artifact decides
-- [Polymarket: fresh surface is Perps + combos-RFQ](polymarket-fresh-surface-perps-rfq.md) — prior dossiers null on Ctf-Exchange; fresh = api.perpetuals.polymarket.com/v1 + combos-rfq-api; high-EV seams need wallet onboarding
-- [Apparatus is packaging, not discovery](feedback-apparatus-is-packaging-not-discovery.md) — sophisticated skills REDUCE findings; manual cold-poke OUTPERFORMS auto-orchestration (found admin-api.injective.network the workflow missed); always poke
-- [Aave V3 on Aptos: SC fortress-null, off-chain untouched](aave-aptos-sc-fortress-null.md) — Cantina $100k-$1M; SC null (13 seam-checks faithful to V3.3); LIVE EV = untouched off-chain frontend/API → /upshift
-- [Closure-bias: expand voies, hunt seams](feedback-closure-bias-expand-voies-hunt-seams.md) — when re-running disconfirmers to PROVE null, meta-goal flipped find→prove; STOP, expand voies + attack intersections; null on one voie ≠ null on target
-- [Skill infrastructure topology](skill-infrastructure-topology.md) — skills load from ~/.claude/skills only; 3-location sync via sync-skills.sh
-- [Surgical reports, then fight to the end](doctrine-surgical-reports-fight-to-the-end.md) — verify every load-bearing claim before submit; dispute every wrongful close surgically, never emotionally
-- [Defense-shadow / confession doctrine](doctrine-defense-shadow-confession.md) — code is a rewritable proposal; each dev defense = aveu of where he stopped; bug lives in the adjacent-unplayed shadow; sibling-asymmetry condemns the omission
-- [Seam rattachement IS the value](doctrine-seam-rattachement-is-the-value.md) — intersection = organizational blind spot (each team assumed the other guarded it); build the scope-anchoring rattachement from the start
-- [Don't infer broad no-probe from one interrupt](feedback-direct-disclosure-no-live-infra-probe.md) — authorized engagement = live probing allowed; a single interrupt scopes that action, not a standing rule — ask if it changes approach
-- [OpenAPI is NOT the full API surface](feedback-openapi-is-not-the-full-api-surface.md) — never conclude "no auth flow" from the spec; auth/SIWE/nonce live undocumented on the BARE host; mine the prior dossier fully before any null
-- [Web corpus (Solodit-for-web) goal](project-web-corpus-solodit-equivalent.md) — deferred: build a structured WEB/API findings corpus mirroring the SC corpus pipeline
-- [EV gate: check program responsiveness, not just severity](ev-gate-check-program-responsiveness-not-just-severity.md) — EV = severity × p_bounty; dormant/disengaged sponsor = p_bounty≈0 = SKIP regardless of ceiling; gate in Step-0
-- [dYdX bounty: DROPPED — validator≠payer](dydx-bounty-sponsor-disengaged.md) — Cantina validates but dYdX (payer) disengaged (~1yr) → p_bounty≈0 regardless of $5M ceiling
-- [Boros tooling calibration](boros-tooling-calibration.md) — workflow=coverage-not-finding, corpus --methods>--route, cheapest-economic-disconfirmer-before-PoC, cast-not-hand-hex
-- [Injective exchange firmaudit = fortress-null](injective-exchange-firmaudit-parked.md) — v1.20.0 mainnet; null on single-margin; 1 dormant Medium (BO reward-farming, HOLD); live EV only OOS cross-margin
-- [Injective EVM precompiles + cross-VM = fortress](injective-evm-precompiles-crossvm-fortress.md) — bank precompile NULL (over-claim killed by unbiased PoC), exchange DOUBLE-gated, cross-VM store-atomic; only escape = riskEngine cache but cross-margin OOS
-- [Injective downtime→post-only seam = earned null](injective-downtime-postonly-earned-null.md) — downtime-detector correct on every untrusted path; residual = ≥⅓-validator DoS (OOS/Low); NEXT = oracle-write, txfees, authz-fork
-- [Authz is split across layers](feedback-authz-split-across-layers.md) — a privileged action's authz = AND of entrypoint + msg ValidateBasic + keeper leaf; "no check" in ONE layer ≠ permissionless; trace to the state-mutating leaf
-- [Workflow agents = coverage, not verdict](feedback-workflow-agents-coverage-not-verdict.md) — agents reliable on MECHANISM/file:line, unreliable on VERDICT (severity/reachability); use for breadth, own the verdict by reading directly
-- [Compliance-control bypass: score on compliance-exposure](feedback-compliance-control-bypass-severity-frame.md) — for a regulated/OFAC issuer a blocklist bypass = severity in regulatory exposure; commit fund-loss floor, argue compliance ceiling; control-defeat = capability
-- [Midas program CLOSED — fortress-null both chains](midas-program-closed-fortress-null.md) — EVM+Solana RWA; EVM replay confirms fortress; Solana dormant Low (Pyth .conf ignored ≤0.3%); re-open on volatile-feed-wired-to-PYTH
-- [Symbiotic Cantina $500K — fortress-null](symbiotic-cantina-fortress-null.md) — whole SC scope null; 19 contracts + 24-agent apparatus → 0 survivors; Vault internal accounting + _migrate reverts kill 2 classes; wrong target diet
-- [Reserve — dup-fortress + HELD 6.0.0 finding](reserve-program-closed-dup-fortress.md) — bounty scope = dup-fortress (~24 audits). DTF 6.0.0 CONFIRMED HIGH gov-manip (veto-dilution in reserve-governor, 6 ways). NOT SUBMITTED: OOS+undeployed; FIRE on 6.0.0 deploy/audit-comp
-- [Target diet is the binding constraint](feedback-target-diet-is-the-binding-constraint.md) — OOS/fortress/reachability/dup are pre-analysis target properties → money won/lost at sourcing; pull funds-at-risk FIRST, source fresh-funded/off-chain/crypto-primitive not the next audited SC core
-- [Pre-launch audit: hunt the path, not the current value](feedback-prelaunch-audit-hunt-the-path-not-the-current-value.md) — pre-launch/contest empty pool → "no value now/self-rug" is WRONG gate; finding = the CODE PATH that steals when FUNDED; permissionless creation makes the ATTACKER the admin; depositors are victims
-- [Depth is an edge only where ore remains](feedback-depth-is-an-edge-only-where-ore-remains.md) — fortress-null on N-audit core = CORRECT; depth pays ONLY where ore remains (fresh<2-audit / off-chain / access-gated); don't drill picked-clean cores; reach verdict in HOURS
-- [Verify the recommended fix against real usage](feedback-verify-the-recommended-fix-against-real-usage.md) — the remediation is load-bearing too; run the disconfirmer on the FIX against real call sites; prefer upstream-blessed flag over a clever local check
-- [Injective Cantina web bounty rug-pull signal](injective-cantina-web-bounty-rugpull-signal.md) — #134 validated→agreed-Medium→Rejected in ~30 min; payer-disengagement signal; never close a dispute the instant they concede
-- [Rogo program SKIP — perimeter-only lock](rogo-program-parked-access-gated.md) — closed-B2B Cantina web; scope locked to unauth/perimeter-only → 100% value OOS; META: closed-B2B + no creds + no signup = probably perimeter-only, EV-gate day-0
-- [Over-production IS the LLM tell — size report to finding](feedback-report-size-must-match-finding-size-overproduction-is-the-llm-tell.md) — tell is OVER-PRODUCTION (tables+CVSS for a 1-line nit); verdict set by FIRST post + STICKY; hardening nit = 5 lines no tables/CVSS
-- [Kill-PoC must sweep the param space](feedback-kill-poc-must-sweep-param-space.md) — a kill-PoC testing ONE convenient value that hits the guard = BIASED kill; sweep the deciding param + assert best-attacker-net; then STILL run kill-gate
-- [DeSyn on-chain inert shell, off-chain frontier](desyn-onchain-inert-shell-offchain-frontier.md) — on-chain fund class = inert phantom-accounting shell → null; REAL EV off-chain + session-gated (Splice Canton custodial BFLA); re-open on authed session
-- [Injective funding-manip #345 SUBMITTED](injective-funding-selfcross-345-submitted.md) — Cantina Medium, self-crossed limit orders pin funding to cap on thin perps; normal-trade in-scope, synthetic OOS; lessons (mark=pure-oracle, OI≠orders)
-- [Protocol: fortress-null hunt](protocol-fortress-null-hunt.md) — executable protocol; AXIOM P(class-bug survives 5 audits)≈0 → living finding = seam composition nobody owns; 13 blocks; +companions dispute-post-soumission & sourcing-cibles (day-0 target DIET, EV gated, SKIP first-class)
-- [Polymarket V2 on-chain fortress](polymarket-v2-onchain-fortress.md) — full V2 deep-read = fortress; value↔oracle trace conserves; only anomaly = migration double-YES revert (DoS); GAP = AutoRedeemer source; live EV off-chain
-- [Polymarket web = live #197-class sibling](polymarket-web-relayer-preprod-int.md) — relayer-v2-preprod-int still unauth /transactions+/relay-payload (prod=401); pool DISJOINT (2 vs 38 signers) ~$30k → incomplete-remediation Low/Med; web infra subdomains in-scope
-- [Aztec L1 SC: earned fortress-null](aztec-l1-sc-earned-fortress-null.md) — Cantina $50k crit/low TVL; 25-agent missed-surface sweep closed over-declared-fortress gap; survivor EH-3 hand-verified NULL; residual only circuit-side/off-chain
-- [Perena USD* fresh tranche surface](perena-usdstar-fresh-tranche-surface.md) — Cantina Solana; deployed Bankineco binary hides un-audited junior/senior tranche system (real EV) surface-map missed; ~$10M TVL, one mid-tier audit
-- [Polygon Labs web: solo-null, authed backlog](polygon-labs-web-solo-null-authed-backlog.md) — H1 LOW; 17-agent live sweep = solo unauth null; 3 April drafts NON-PAYABLE — DON'T submit; live EV = session-gated faucet OAuth token-in-redirect
-- [Trace the flow, don't confirm the template](feedback-trace-the-flow-not-confirm-the-template.md) — a confirmation/differential harness built to prove bug-type-X is blind to the anomaly that doesn't match X; trace one real value hop-by-hop at the seam FIRST
-- [Monad node bounty: triaged GO, deep pass deferred](monad-node-bounty-triage-go.md) — Cantina $1M L1 node; firmaudit GO; 2 P1 survivors (parallel-exec merge-determinism + JIT↔interpreter pricing), shared root = reserve-balance/pricing; user-reachable Crit; $100 deposit gate
-- [RootstockLabs PowHSM: gate-defeat not theft](rootstock-powhsm-recount-gate-defeat-not-theft.md) — Immunefi $200K; crypto core null; post-audit re-count flips found_best_block (transient) but does NOT commit best_block (theft REFUTED); Low; 'verify it moves' caught over-claim
-- [Wickr/AWS Wickr Phase0 SKIP](wickr-aws-phase0-skip.md) — H1 live&paying but SKIP: client=dead products, crypto=dup-fortress, AWS-Wickr=no-pay VDP; only payable = admin.wickr.com web BFLA, gated behind uncertain solo-provisioning
-- [Grunt (3F Labs) Cantina intake](grunt-3flabs-intake.md) — 14K LOC SC fortress, 4 audits; OOS=confession-map; in-scope adversary=UNTRUSTED-only; breadth-map workflow w/ dedicated seam phase
-- [Cosmos H1 AI-prohibition — proceed as usual](cosmos-h1-ai-prohibition-proceed-as-usual.md) — explicit AI-report ban doesn't change approach (manual self-triage + human-owned reports satisfy it); real filter = eligibility gates (rep>150/signal>1/valid>50%)
-- [Metric OMM (Sherlock) — thief re-hunt = executed fortress-null](metric-omm-sherlock-rehunt.md) — oracle-anchored bin AMM; thief posture PRODUCED a real 99.99%-drain PoC (F-2 timelock zero-floor→same-block swap) but DESIGNATED known-issue (Zellic/README-OOS) → killed honestly; NO-GO re-source; ~/Desktop/BUGS/metric-sherlock/
+- [Intuition (Immunefi $100k) — C/D are C4 dups](intuition-immunefi-c-d-are-c4-dups.md) — prior "confirmed HIGH" both published C4 [05]/[07]=OOS; live path = C4-uncovered surfaces (Critical dig)
+- [Corpus match → pull the discovery_how](feedback-corpus-match-pull-the-discovery-how.md) — on any corpus match, grab the reproducible METHOD not just the pattern label
+- [deBridge (Immunefi $200k) — Gate fortress-null](debridge-immunefi-gate-manual-poke-null.md) — legacy Gate 4 seams manual-poked null; DLN OOS; Rule-5 found undeployed isContract fix (known/OOS)
+- [version() match ≠ code match — selector-discriminate](feedback-version-match-is-not-code-match-use-selector-discriminator.md) — a commit can change logic w/o bumping version; grep deployed bytecode for a selector the commit added/removed
+- [Ammalgam DLEX core — unhealable freeze](ammalgam-dlex-core-blind-null-couteux.md) — 'TS' assert traps lender funds; LOW EV (attacker self-locks)
+- [Mezo (Cantina) — BTC bridge-out seam, PoC-pending](mezo-cantina-breadth-map-btc-bridgeout-commit-seam.md) — dual-ledger desync under nested precompiles
+- [Vercel OSS — turborepo codemod RCE](vercel-oss-turborepo-codemod-rce.md) — @turbo/codemod yarnPath RCE, incomplete CVE-2026-45772 fix, verified 2.10.4
+- [Default posture: thief not fortress-prover](feedback-default-posture-thief-not-fortress-prover.md) — STANDING; "where does money leave, what reaches it?"
+- [Privy (H1) — NO-GO](privy-bbp-crypto-auth-defended.md) — embedded-wallet defended; harness kept
+- [Ondo Perps (Cantina web) — NO-GO](ondoperps-web-api-verified-seam.md) — free surface null; live EV = funds-gated trade-accounting
+- [Rheo (Size+VLV) — earned-null](rheo-size-vlv-earned-null.md) — 9-audit dup-fortress; dead-shares block inflation
+- [Reachability = kill-gate not severity-mod](feedback-reachability-is-kill-gate-not-severity-modifier.md) — unresolved = NOT READY at ANY tier; tell = "submit with a caveat"
+- [Alchemy Modular Account V2 — fortress-null](alchemy-ma2-fortress-null.md) — ERC-6900/4337, 13 surfaces; re-open on new code
+- [Symbiotic V2 delta — earned-null](symbiotic-v2-delta-pass1.md) — value-conservation defended; re-open on new commit/token
+- [LI.FI delta + fee-config — earned-null](lifi-delta-seam-earned-null.md) — 603-commit delta null; fee-config BFLA PARKED web-tier
+- [Fortress protocol = mandatory-read hook](protocole-forteresse-mandatory-hook.md) — a Skill call carrying "lecture OBLIGATOIRE" = comply
+- [Protocole Forteresse v2](protocole-forteresse-v2.md) — CP1→G2→G3 seam→G4 darkside→CP5-7→G8 PoC→G12
+- [OKX Labs $1M — earned-null](okx-labs-breadth-map-2026-07-05.md) — 9-repo DEX/wallet swept; real EV off-chain (OOS)
+- [Wallet (@wallet/Telegram) BFLA — SUSPENDED](wallet-tg-telegram-bfla-engagement.md) — custodial TON; harness awaits 2 throwaway sessions
+- [Verify before working, no theater](feedback-verify-before-working-no-theater.md) — execute to confirm state; never fabricate/narrate
+- ["Guard holds" from tracing IS novel-reading](feedback-refuted-by-tracing-the-guard-is-novel-reading.md) — a defensive assert = NEON SIGN of the un-imagined state
+- [Audited: hunt invariant not class](feedback-audited-target-hunt-invariant-not-class.md) — per-function class checklists on N-audit code = predetermined null
+- [Agent fan-out recreates the blind spot](feedback-agent-fanout-recreates-audit-blindspot.md) — workflow for BREADTH; trace the seam SOLO
+- [Kiln On-Chain V1 — fortress-null](kiln-onchain-v1-earned-fortress-null.md) — dead-husk premise falsified; 7/8 null + 8th dup
+- [Corpus-coverage: lead, don't improvise](feedback-corpus-coverage-gate-lead-dont-improvise.md) — corpus = completeness backstop, never the verdict; poke FIRST
+- [Polymarket fresh surface = Perps + RFQ](polymarket-fresh-surface-perps-rfq.md) — prior dossiers null; high-EV seams need wallet onboarding
+- [Apparatus is packaging, not discovery](feedback-apparatus-is-packaging-not-discovery.md) — poke D'ABORD; never answer a miss with more machinery
+- [Aave V3 Aptos — SC fortress-null](aave-aptos-sc-fortress-null.md) — 13 seam-checks faithful; live EV = off-chain frontend/API
+- [Closure-bias: expand voies, hunt seams](feedback-closure-bias-expand-voies-hunt-seams.md) — re-running disconfirmers to PROVE null = meta-goal flipped
+- [Skill infra topology](skill-infrastructure-topology.md) — skills load ~/.claude/skills only; sync-skills.sh
+- [Surgical reports, fight to the end](doctrine-surgical-reports-fight-to-the-end.md) — verify every load-bearing claim; dispute wrongful closes surgically
+- [Defense-shadow / confession doctrine](doctrine-defense-shadow-confession.md) — each dev defense = aveu; bug in the adjacent-unplayed shadow
+- [Seam rattachement IS the value](doctrine-seam-rattachement-is-the-value.md) — the intersection is the org blind spot; anchor scope from the start
+- [One interrupt ≠ broad no-probe rule](feedback-direct-disclosure-no-live-infra-probe.md) — a single interrupt scopes that action, not a standing rule; ask
+- [OpenAPI ≠ full API surface](feedback-openapi-is-not-the-full-api-surface.md) — auth/SIWE/nonce live undocumented on the bare host
+- [Web corpus (Solodit-for-web) goal](project-web-corpus-solodit-equivalent.md) — deferred: structured WEB/API findings corpus
+- [EV = severity × p_bounty](ev-gate-check-program-responsiveness-not-just-severity.md) — dormant sponsor = SKIP regardless of ceiling
+- [dYdX — validator ≠ payer](dydx-bounty-sponsor-disengaged.md) — Cantina validates, dYdX disengaged ~1yr; p_bounty≈0
+- [Boros tooling calibration](boros-tooling-calibration.md) — workflow=coverage; corpus --methods>--route; cheapest disconfirmer first
+- [Injective exchange firmaudit — null](injective-exchange-firmaudit-parked.md) — single-margin null; 1 dormant Medium HELD; EV only OOS cross-margin
+- [Injective EVM precompiles — fortress](injective-evm-precompiles-crossvm-fortress.md) — bank precompile over-claim killed by unbiased PoC
+- [Injective downtime→post-only — null](injective-downtime-postonly-earned-null.md) — NEXT = oracle-write, txfees, authz-fork
+- [Authz is split across layers](feedback-authz-split-across-layers.md) — authz = AND of entrypoint + ValidateBasic + keeper leaf
+- [Workflow agents = coverage not verdict](feedback-workflow-agents-coverage-not-verdict.md) — reliable on mechanism/file:line, not severity/reachability
+- [Compliance-bypass: score on exposure](feedback-compliance-control-bypass-severity-frame.md) — commit fund-loss floor, argue regulatory ceiling
+- [Midas — fortress-null both chains](midas-program-closed-fortress-null.md) — Solana dormant Low (Pyth .conf ≤0.3%); re-open on volatile-feed→PYTH
+- [Symbiotic Cantina $500K — fortress-null](symbiotic-cantina-fortress-null.md) — 19 contracts, 24 agents, 0 survivors; wrong diet
+- [Reserve — dup-fortress + HELD 6.0.0](reserve-program-closed-dup-fortress.md) — DTF 6.0.0 CONFIRMED HIGH gov-manip, unsubmitted; FIRE on deploy
+- [Target diet is the binding constraint](feedback-target-diet-is-the-binding-constraint.md) — money won/lost at sourcing; pull funds-at-risk FIRST
+- [Pre-launch: hunt the path not the value](feedback-prelaunch-audit-hunt-the-path-not-the-current-value.md) — the finding = the path that steals when FUNDED
+- [Depth pays only where ore remains](feedback-depth-is-an-edge-only-where-ore-remains.md) — fresh/off-chain/access-gated; don't drill picked-clean cores
+- [Verify the fix against real usage](feedback-verify-the-recommended-fix-against-real-usage.md) — run the disconfirmer on the FIX too
+- [Injective web bounty rug-pull signal](injective-cantina-web-bounty-rugpull-signal.md) — never close a dispute the instant they concede
+- [Over-production IS the LLM tell](feedback-report-size-must-match-finding-size-overproduction-is-the-llm-tell.md) — verdict set by FIRST post and STICKY
+- [Kill-PoC must sweep the param space](feedback-kill-poc-must-sweep-param-space.md) — one convenient value hitting the guard = BIASED kill
+- [DeSyn — off-chain frontier](desyn-onchain-inert-shell-offchain-frontier.md) — REAL EV off-chain + session-gated; re-open on authed session
+- [Injective funding-manip #345 SUBMITTED](injective-funding-selfcross-345-submitted.md) — Cantina Medium; self-crossed orders pin funding to cap
+- [Fortress-null AXIOM](protocol-fortress-null-hunt.md) — P(class-bug survives 5 audits)≈0; living finding = seam nobody owns
+- [Polymarket V2 on-chain fortress](polymarket-v2-onchain-fortress.md) — value/oracle conserves; GAP = AutoRedeemer source; EV off-chain
+- [Polymarket web — #197-class sibling](polymarket-web-relayer-preprod-int.md) — relayer-v2-preprod-int unauth; pool DISJOINT ~$30k
+- [Aztec L1 SC — fortress-null](aztec-l1-sc-earned-fortress-null.md) — missed-surface sweep closed over-declared fortress; residual circuit/off-chain
+- [Perena USD* fresh tranche surface](perena-usdstar-fresh-tranche-surface.md) — deployed binary hides un-audited junior/senior tranche system
+- [Polygon Labs web — solo-null](polygon-labs-web-solo-null-authed-backlog.md) — April drafts NON-PAYABLE; live EV = faucet OAuth token-in-redirect
+- [Trace the flow, don't confirm the template](feedback-trace-the-flow-not-confirm-the-template.md) — a bug-type-X harness is blind to the anomaly that isn't X
+- [Monad node — triaged GO](monad-node-bounty-triage-go.md) — 2 P1 (parallel-exec determinism, JIT-vs-interp pricing); $100 deposit gate
+- [Rootstock PowHSM — gate-defeat not theft](rootstock-powhsm-recount-gate-defeat-not-theft.md) — re-count flips found_best_block, no commit; Low
+- [Grunt (3F Labs) intake](grunt-3flabs-intake.md) — 14K LOC, 4 audits; OOS = confession-map; adversary = UNTRUSTED only
+- [Cosmos H1 AI-prohibition — proceed](cosmos-h1-ai-prohibition-proceed-as-usual.md) — manual self-triage satisfies it
+- [Arcadia — asset-managers null](arcadia-finance-asset-managers-executed-null.md) — post-audit code but solver-gated + 0 balance; core untouched
+- [Metric OMM — fortress-null](metric-omm-sherlock-rehunt.md) — real 99.99%-drain PoC but DESIGNATED known-issue; killed honestly
+- [TruFin — LIVE Injective unbonding-freeze](trufin-immunefi-injective-unbonding-freeze.md) — max_entries=7 shared: $5 freezes $702K exit
+- [GMTrade — deployed builds are OLD](gmtrade-gmx-solana-deployed-build-baseline.md) — store = audited commit; July "fresh surface" NOT deployed
+- [Scope asset dates ≠ build dates](feedback-scope-asset-dates-are-not-build-dates.md) — derive+hash the deployed commit yourself BEFORE picking a surface
+- [Derived artefacts are part of the diff](feedback-derived-artefacts-are-part-of-the-diff.md) — a body retraction leaves the claim alive in fix-section + rejection-matrix
+- [Enzyme Onyx $200K — null](enzyme-onyx-immunefi-earned-null.md) — CCIP+issuance/NAV survived; harness-bias: stale TOTAL inflated fork price
+- [Immunefi corpus + auto-fire](immunefi-corpus-wiring.md) — PAYER-assigned severity (W5); never merge density with solodit
+- [VDP recon: security.txt is thin](vdp-recon-securitytxt-thin-primitive.md) — 5% of universe; p_bounty low by construction
+- [NUVA — NO-GO wrong payer](nuva-immunefi-no-go.md) — 2 PROVEN defects unsubmittable; live EV = session-gated web
+- [Starknet (Immunefi $250K) — OPEN](starknet-immunefi-open-target.md) — scope/payer/funds correct; open = WithdrawalLimit, token enrollment, Starknet OS
+- [Audit ack = liability not asset](feedback-audit-acknowledgment-is-a-liability-not-an-asset.md) — if strongest framing is "your audit flagged this", STOP and read exclusions
+- [Lombard BTCoc strategy — null](lombard-strategy-tranche-oos-strategy-contract.md) — PoI covers unlisted 0xf14F678d; residual = mid-epoch PPS-reconciliation
+- [Lombard Solana cluster — NULL](lombard-solana-cluster-executed-null.md) — 7 programs sound (consortium threshold-sig root); RE-SOURCE
+- [Lombard off-chain/web map](lombard-offchain-web-surface-map.md) — FREE web null/OOS; PAYABLE ore session-gated (claimer sig + SIWE + BFF RPC)
+- [Hermetica hBTC $100K — NO-GO](hermetica-hbtc-immunefi-executed-null.md) — deposit cap shuts untrusted entry; clarinet harness kept
+- [Zest V2 (Stacks) — no-go](zest-v2-stacks-next-target.md) — delta = oracle-pointer swaps + flashloan liq (excluded); residual = untrusted writer on get-stx-per-ststx
+- [Hardening ≠ verifying](feedback-hardening-is-not-verification.md) — 6 hardening rounds left 3 falsehoods; mechanical pre-submit pass finds them
+- [A "known issue" note = dup fossil](feedback-a-known-issue-note-is-a-dup-fossil.md) — a dated "known & accepted" note in the target's OWN repo = already reported
+- [grunt fee-on-loss — CLOSED dup $0](grunt-fee-on-loss-verified-ready.md) — cluster of 4+ (mine #76); closed on dup + scope bullet
+- [OOS bullet describing your finding = tombstone](feedback-oos-bullet-describing-your-finding-is-its-tombstone.md) — if your longest section rebuts a scope bullet, the bullet wins
+- [Absorbable findings die regardless of quality](feedback-absorbable-findings-die-regardless-of-quality.md) — clause/dup/known-class/trust-role = 4 payer classify-without-engaging outs
+- [WebFetch truncates Immunefi scope](feedback-webfetch-summarizer-truncates-immunefi-scope.md) — count mismatch is the tell; read the rendered page (browser)
+- [Livepeer L1Migrator $40K — ACTIVE](livepeer-l1migrator-fresh-scope-engagement.md) — new stake-only migrator 0x2a69; hunt L1↔L2 inflation + LPT issuance-on-L1
+- [Royco Day (Cantina $30K) — EntryPoint reentrancy](royco-day-cantina-entrypoint-reentrancy.md) — attacker oracle poke() reenters executeDeposit; PUBLIC_ROLE entry
+- [Sei Giga executor $500K — 4 voies open](sei-giga-executor-engagement.md) — fresh = giga/executor; Giga-vs-V2 divergence OOS
+- [Decentraland case-bug class → analog targets](decentraland-casebug-class-immunefi-targets.md) — normalization-desync signed-auth; targets ENS/0x/galagames
+- [ENS Track B — fortress-null](ens-trackb-dcl-class-fortress-null.md) — 5 seams pierced; RE-SOURCE to galagames (topological twin)
+- [ENS Audit Comp #92483 — CONFIRMED CRITICAL](ens-audit-comp-migration-role-assignee-critical.md) — migration grants ROLE_SET_RESOLVER to unvalidated subgraph assignee; honest-High report self-upgraded Insight->Critical (dup #89314, reward pending)
+- [No AI attribution on public artifacts](feedback-no-ai-attribution-on-public-artifacts.md) — no Co-Authored-By/AI on commits/PRs/reports; grep before push
+- [Ethena web/app — free-surface null](ethena-web-immunefi-freesurface-null.md) — payable ore SIWE-session-gated (api IDOR/PII, whitelabel portal)
+- [Ethena EVM SC core — fortress-null](ethena-immunefi-evm-sc-core-fortress.md) — PSM+USDtbMinting+StakedENA hardened; ore = TON minters/vault (non-EVM)
+- [Stacks pox-5 $250K — NULL-COÛTEUX](stacks-pox5-immunefi-null-couteux.md) — theft fenced (#7301) + dormant ($0 sBTC); re-arm when sBTC funded
+- [Decentraland comms parcel/sceneId desync](decentraland-comms-parcel-sceneid-desync.md) — kick into ANY scene owning 1 parcel; scope-uncertain host; earned-null
+- [Quantus $20K — 7 assets fortress-null](quantus-immunefi-full-fortress-null.md) — PQ Substrate L1 + Flutter; 4 audits+Lean; 24 agents all null; RE-SOURCE
+- [Raydium CLMM limit_order — null](raydium-immunefi-clmm-limitorder-executed-null.md) — freshest surface fuzzed null; residual = dynamic-fee griefing
+- [Rootstock Flyover — NULL + latent segwit LP-drain](rootstock-flyover-offchain-null-couteux.md) — segwit-refund LP-drain reachability-null (pegin refund P2PKH-zero); trigger armed
+- [Audit the guard, not just the money-path](feedback-audit-the-guard-not-just-the-money-path.md) — captcha/auth/csrf = disjoint surface (fail-open control-flow); grep ≠ read
+- [Spark WEB/APP — NULL-COÛTEUX](spark-web-app-immunefi-intake.md) — SPA sourcemaps null; email-OTP hardened; Bitly takeover false-positive
+- [Mt Pelerin #88293 — CONFIRMED Critical, HOLD](mtpelerin-critical-token-exfil-confirmed.md) — session Bearer leaks via addrcb callback; pipeline 3/4 awaiting Paid
+- [Decentraland #87537 — CONFIRMED Critical, HOLD](decentraland-critical-decodeauthchain-confirmed.md) — case-bug act-as-user; 3/4 awaiting Paid, KYC given
+- [StackingDAO #88777 — SUBMITTED + WATCH](stackingdao-ststxbtc-double-count-live.md) — Critical insolvency submitted; fresh archi NULL; WATCH stbtc supply>0 or new -v3; mediation doc ready (invalid→High)
+- [Paid-report writing calibration ($4K)](feedback-paid-report-writing-calibration.md) — (measured)/(source) tagging; explicit PoC proves/doesn't; no-funds Critical=$4K
+- [Xterio SC core — NULL 12 veins](xterio-immunefi-sc-core-executed-null.md) — 7-audit; oracle TWAP-hardened; real ore = off-chain app.xter.io
+- [1inch SC $500K — executed NULL](1inch-immunefi-crosschain-solana-fresh-surface-null.md) — Fusion+ HTLC EVM↔Solana; 5 cross-VM invariants MATCH; 3 executed disconfirmers null; RE-SOURCE
+- [1inch Aqua/SwapVM $100K — 8-audit FORTRESS](1inch-aqua-swapvm-8-audit-fortress.md) — mis-ranked as virgin; OZ 53 findings + 7 audits; check audit coverage BEFORE ranking "fresh"
+- [Firelight (Immunefi $20K, LIVE→25 Aug)](firelight-immunefi-audit-comp-live-engagement.md) — fresh Flare cover protocol; vault+allocator read-solid; NEXT = IncidentManager waterfall + Checkpoints + oracle
+- [Predicting null before executing = negative posture](feedback-predicting-executed-null-before-executing-is-a-negative-posture.md) — never pre-declare "will be null"; execute as a thief. Merges [[feedback-predicting-the-verdict-is-a-fortress-prover-tell]]
+- [Xterio app.xter.io Web&App — TOP LEAD](xterio-web-app-engagement.md) — source-confirmed stored-XSS-via-metadata (NFT `name`) → ATO; needs server-sanitization PoC
+- [Ref Finance boost-farming — NULL](reffinance-boostfarming-shadow-seam-null.md) — NEAR AMM $250k; shadow free_shares enforced; $99.9k/4yr fortress; re-source
+- [StakeWise Immunefi SC — V2-legacy null](stakewise-immunefi-sc-v2-legacy-null.md) — SC scope is stale V2 husk; V3 $900M hard-OOS (isPrimacyOfImpact:false); executed NULL-COÛTEUX
+- [Pyth Staking web (Immunefi) — NULL](pyth-staking-web-immunefi-null.md) — static+dynamic fortress; static Solana dApp, no backend, no attacker-input→tx path; RE-SOURCE
+- [StakeWise Web&App fan-out — NULL (recevability)](stakewise-web-fanout-null-recevability.md) — single-asset app.stakewise.io; 8-Opus-agent fan-out all NULL; FC01=perfect-dead-on-SE+OOS-delivery case study
+- [The Graph SC (Immunefi $50K) — corpus fortress-null](thegraph-immunefi-sc-corpus-fortress-null.md) — 42 audits, zero delta; 3 top corpus classes applied+executed, all handled; RE-SOURCE
+- [Origin Protocol web scope — executed NULL-COÛTEUX](originprotocol-web-scope-fortress-null.md) — app.originprotocol.com single asset; tx recipient/spender pinned to connected/hardcoded; deployed bundle MORE hardened than stale source (Rule-5); payable ore = excluded SC scope
+- [/nexus skill — veine-mère différentiel + 3-stall doctrine](nexus-skill-differential-foil.md) — foil = oracle emprunté (Phase 0); classe le stall (sans-gradient/cul-de-sac-mesuré/accès-muré) AVANT null/creuse/re-source; deps FOIL-ROUTING + manufacture-foil.sh
+- [Decentraland offchain-marketplace xseam delta](decentraland-offchain-marketplace-xseam-delta.md) — SC scope (5 assets) EXECUTED NULL-COÛTEUX; cash-out=OZ M-01 acked, sig-keying=known, value=conserving; RE-SOURCE to Web&App
+- [Sky PAU facets firmaudit — NULL-COÛTEUX](sky-pau-facets-firmaudit-null.md) — $10M 15+-audit fortress; THREAT_MODEL declares allocator untrusted+bounds loss ⇒ facet-audit finding class pre-absorbed; only rate-limit-bypass/perma-freeze/un-acked-floor-gap remain; read threat-model docs BEFORE deep read
+- [main-not-release guard diff = 0-day window](feedback-main-not-release-guard-diff-heuristic.md) — guard on main absent from release/vX.Y.x = public dated window; verify by CONTENT (cherry-picks over-report); cosmos/evm #1176 96-day window
+- [cosmos/evm ghost-cache DISTINCT from GHSA-7g4w](cosmos-evm-ghost-cache-distinct-from-ghsa-missed-vesting-surface.md) — commitWithCtx != SubBalance; missed locked-vs-spendable vesting-delegation surface ($5.7M); Gate-5 defender-inversion
+- [cosmos/evm nil-pubkey mempool DoS — PARKED](cosmos-evm-nil-pubkey-mempool-dos-parked.md) — valid guard-escape crash but recheck path is opt-in (max-txs>=0) + experimental (XRPL EVM excludes it); re-arm when an in-scope chain enables it; GHSA drafted
+- [cosmos/evm locked-scaling latent — PARKED](cosmos-evm-locked-scaling-latent-parked.md) — fix reconstructs balance as spendable(18dec)+locked(base, unscaled); burns vesting locked on 6-dec chains, but all prod chains are 18-dec (base==extended) ⇒ materiality-zero; re-arm on a 6-dec chain
+- [Tenbin (Cantina) — fortress-null + re-arm triggers](tenbin-cantina-fortress-null-rearm-triggers.md) — 8-audit SC core, 0 delta; revive only on 4th-line/single-registry/cap<2x/shorter-heartbeat/tGLD-upgrade; real ore OOS off-chain

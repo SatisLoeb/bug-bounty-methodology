@@ -1,0 +1,49 @@
+---
+name: xterio-web-app-engagement
+description: Xterio app.xter.io (Immunefi Web&App) — authed-session engagement; top lead = source-confirmed stored-XSS-via-metadata → ATO; SC core was null (see sibling)
+metadata: 
+  node_type: memory
+  type: project
+  originSessionId: 402be6ec-f201-4666-a2c0-025f51ec6c40
+  modified: 2026-08-15T10:54:12.617Z
+---
+
+Pivot from the null SC core ([[xterio-immunefi-sc-core-executed-null]]) to the in-scope **Web&App asset `app.xter.io`** (Immunefi, Critical bounties incl. XSS-through-metadata, BFLA-on-behalf-of-users, wallet-tx-substitution, ATO). Operator provided a live Google/Particle auth session; hunted via claude-in-chrome + exposed sourcemaps.
+
+**STACK:** Next.js SPA (CloudFront) → backend `api.xter.io` (AWS API Gateway+Lambda), versioned REST `/account|asset|market|proj|message|xgc|airdrop|fans|data /v1/`. Auth = **AWS Cognito** (email/pw + wallet-sig `/account/v1/login/wallet` + federated OAuth via Cognito Hosted UI). Wallet = **Particle Network** embedded/AA (source=2). Auth header = `Authorization: <id_token>` (raw JWT, works ±Bearer).
+
+**CONFIRMED (source, 17MB exposed sourcemaps — every .map = HTTP 200, 226 src files):**
+- **Stored-XSS via metadata → ATO (TOP LEAD, Critical).** `src/pages/home/components/RecentDropItem.tsx` + `FansCreateItem.tsx` + FPGameCard/PartnerGameCard/SearchHot render `dangerouslySetInnerHTML={{__html: needHightLight ? searchToHighLight(name) : name}}`. `searchToHighLight` (src/contexts/global-context/search.ts) does `text.replace(regex, m=>"<em>"+m+"</em>")` with **ZERO HTML-escape**; when needHightLight=false it's **raw `name`**. `name` is user-controlled via `POST /xgc/v1/user/work/new {name}` (FansCreate/xgc AI work) — no client sanitize. Renders on PUBLIC home/fans/search → hits other users. Chains with →
+- **Non-httpOnly auth cookies** `_access_token`/`_id_token`/`_refresh_token` (js-cookie, refresh 180-day, JS-readable via document.cookie) → any XSS = full ATO (steal refresh_token). The XSS amplifier.
+- **UNCONFIRMED link:** server-side sanitization of `name` on `/xgc/v1/user/work/new` — the only gate left. Needs a live store+render PoC = creating content w/ payload on prod (state-modifying + public → OPERATOR GO + benign payload + immediate cleanup). This is the go/no-go.
+
+**LIVE LEADS (ranked, need work/decisions):**
+1. Stored-XSS-metadata → ATO (above) — verify server-sanitization w/ benign PoC.
+2. **SSO OAuth redirect → ATO (Critical).** `/sso?s=` → `getSsoBackUrl(s)` POSTs `/account/v1/oauth2/redirect {s}` → client BLINDLY `location.href = res.location + &code=<oauth code>` (src/pages/sso/service.ts) — **no client SAFE_DOMAINS check** (SAFE_DOMAINS list exists in constant.ts: xter.io/www/app + 3 cloudfront, but only used client-side elsewhere). Exploitable IFF server `/account/v1/oauth2/redirect` doesn't validate the client's redirect_uri (can't see server). Needs OAuth-consumer flow w/ a client_id to test redirect_uri validation.
+3. **BFLA `/xgc/v1/user/work/unpublish/{id}` + rank/{id}** (Critical state-mod on others' content) — destructive-to-test, needs a 2nd account or careful authz probe.
+4. **wp.xter.io subdomain takeover (High).** dangling CNAME → d462ff9d74-hosting.gitbook.io; canonical GitBook "custom domain not configured" 400 fingerprint; docs.xter.io shares same CNAME live. Caveat: modern GitBook may require TXT ownership verification → feasibility unconfirmed (needs a claim attempt).
+
+**MEASURED NULL / weak (executed):**
+- CORS on api.xter.io = safe (ACAO literal `*`, no credentials) → no cross-origin theft.
+- Free unauth surface HARDENED (all user endpoints 401 uniform; no IDOR/openAPI/graphql).
+- Leaked `NEXT_API_KEY=f88b1a14-622b-444e-885b-9e5c50698963` (src/fetchers, "avoid WAF freq-limit") — **NOT an auth bypass** (profile still 401 w/ key); only rate-limit bypass = Low, hard to demo w/o abuse.
+- `/account/v1/profile/{uuid}` IDOR = null (public fields only: username/avatar/about/identity; PII only in token-scoped /user/profile).
+- Sourcemap exposure itself = Informational (but it's the recon key).
+
+**TWO-ACCOUNT BFLA/IDOR PROBE (executed, 2026-08-15):** operator onboarded acct B = uuid 43846812-1081-70ef-f260-566b9d21de38 (Tech Loop, loopt1793@gmail.com); acct A = 03241882-d0e1-7075-ee82-7a5fb80b46fa. Result: **API is CONSISTENTLY TOKEN-SCOPED** — user always derived from the id_token, almost no id-in-param endpoints. Both accounts have 0 xgc works. `/xgc/v1/user/work/new` needs SeasonID+PredictionID+URL (the AI prediction-game flow, non-trivial + likely costs on-chain keys). The ONLY id-keyed authed surface = notifications (`/message/v1/notification/read/{id}`, numeric global ids e.g. 47190960) = low-impact even if IDOR. → **BFLA/IDOR class looks defended by design.** username/about do NOT reach an XSS sink (only entity `name` in FansCreateItem/RecentDropItem does).
+
+**XSS injection reality:** the sink is real+source-confirmed, but the injection point (a FansCreate WORK name or an NFT DROP name) requires participating in the content economy — a work needs SeasonID/PredictionID/URL + on-chain buyKeys, or an NFT drop needs minting. **Setup-heavy PoC**, possibly on-chain-funded. Real-in-principle, expensive to demonstrate.
+
+**wp.xter.io subdomain takeover = DIES on feasibility:** CNAME → d462ff9d74-hosting.gitbook.io is XTERIO'S OWN org-specific GitBook host (docs.xter.io shares it, serves 200). External attacker's GitBook org would map to a different <hash>-hosting host → cannot serve on wp.xter.io. Dangling-inside-Xterio's-org, not externally claimable. Not a demonstrable takeover.
+
+**XSS REACHABILITY = NEGATIVE (executed, definitive 2026-08-15).** Tried to build the injection PoC (operator picked it). The `name` sink is fed by FansCreate/xgc **works**, created only via the Palio predict→generate flow which is GATED on an ACTIVE SEASON. All 3 Palio app_ids (ea9cca96ceea, dcc09aa229e9, bff5dbf8fe27) have NO active season — the only one ("BitArt", season 4, app dcc09aa229e9) ended 1733097600 = **Dec 2024**. Executed proof: `POST /xgc/v1/user/prediction {season_id:4}` → `400 "invalid season id"` (server enforces ended-season gate); `prompt/random` still 200 but prediction/work creation blocked. NFT-drop names = curated launchpad; game/collection names = admin; search hot-terms = aggregated; username/about DON'T hit a sink. → **No reachable untrusted injection point on the deployed app.** The XSS sink is real code but NOT currently demonstrable ("theoretical w/o PoC" = OOS). **LATENT finding — re-open trigger: a new active Palio/xgc season starts** (then create a work with `<img src=x onerror=...>` name → renders raw via FansCreateItem/RecentDropItem to all viewers → steal non-httpOnly token → ATO).
+
+**SSO OAuth redirect ATO = DEFENDED (executed 2026-08-15).** `/account/v1/oauth2/authorize` is Cognito-backed (default_client_id=4p30uhigkn0kqlo1gha9v2uu9j, providers discord/facebook/google/twitterv2): evil redirect_uri → 302 to SAME-ORIGIN `/401?error=...` (never reflects the attacker host; errors don't leak the code). Native `s`-SSO: `/account/v1/oauth2/redirect {s}` → server returns `location` the client blindly follows, BUT `s` is server-minted+opaque (bogus s → invalid_request, can't forge) and derived from the Cognito-validated authorize. xtrader.xterio.net (="Alphawalk") uses its OWN email/Google/Apple auth, NOT the app SSO — so not a consumer to pivot through. No reachable unvalidated-redirect_uri path from outside → measured-defended (residual only: a specific game-consumer registering a wildcard redirect_uri, unevidenced).
+
+**HONEST VERDICT:** both layers (SC + web) are WELL-HARDENED. Free web surface hardened, authed surface token-scoped (BFLA defended), CORS safe, no PII IDOR, api-key not auth-bypass, subdomain-takeover org-locked. The ONE real Critical lead = stored-XSS-via-entity-name → ATO (non-httpOnly tokens), but PoC needs a setup-heavy content-economy injection point. Secondary = SSO oauth2/redirect ATO (server-side redirect_uri validation unseen — needs the OAuth-consumer flow w/ a client_id). My uuid=03241882-... . Composes [[feedback-openapi-is-not-the-full-api-surface]].
+
+**UPDATE 2026-08-27 — two top leads EXECUTED-NULL (server-side validation holds; "verify before working" paid off):**
+- **Stored-XSS: NULL (nickname path).** Client sink RE-VERIFIED live (current prod still `dangerouslySetInnerHTML` of raw name/title). BUT the SERVER entity-encodes: set nickname `TL<b>x7f3a</b>` → raw SSR value returned = `TL&lt;b&gt;x7f3a&lt;/b&gt;` → inert even at the sink. **Account backend (/account/v1) sanitizes user names server-side.** Reverted. NUANCE: tested nickname, NOT the work `name` (/xgc/v1 backend) — that path is campaign-gated ("ENDED", couldn't test) but now low-prob given the account backend sanitizes. Incidental: id_token embedded in page __NEXT_DATA__ (SSR token-in-source).
+- **SSO OAuth open-redirect → ATO: NULL.** `/account/v1/oauth2/redirect` REJECTS arbitrary `s` (403 invalid_request for raw-URL/base64/garbage) → `s` is an opaque server-issued token; redirect target is server-controlled + validated at authorize-time. The client-side missing SAFE_DOMAINS check is NOT exploitable (attacker can't forge `s` or control `location`). Refuted.
+- **wp.xter.io takeover: LOW-CONF** (GitBook CNAME `d462ff9d74-hosting.gitbook.io`, 400 unconfigured, but modern GitBook TXT-verification likely blocks; needs claim-attempt).
+- **PATTERN: Xterio backend is well-defended** (server-side HTML-encoding on names + opaque-token SSO). The source-confirmed CLIENT sinks are real but the SERVER gates hold. The memory's leads were "confirmed source, UNCONFIRMED server gate" — the gate holds on the 2 tested. Remaining untested: BFLA work/unpublish|rank (destructive, needs 2nd account + a work — blocked by campaign gate), work/new{name} XSS (gated). EV of the web engagement substantially lowered.

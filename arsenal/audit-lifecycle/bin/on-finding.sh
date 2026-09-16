@@ -87,6 +87,12 @@ SCOPE CHECK INSTANTIATED:
  file: $SCOPE_FILE
 
 MANDATORY ORDER:
+ 0. DUP-FOSSIL GATE (30s, run FIRST — a dated "known/accepted" note in the target's
+    own repo means a prior report almost certainly exists; corpus checks are blind to
+    private program submissions):
+      $LIFECYCLE_DIR/bin/dup-fossil-check.sh <target-repo> <mechanism-keyword>
+    → exit 1 = fossil found: name a DIFFERENT impact class or DIFFERENT actor, or STOP.
+      "A better PoC / more precise numbers" is not novelty. Novelty is binary.
  1. Fill $SCOPE_FILE:
     - Paste program scope (Step 1)
     - Paste OOS list (Step 2)
@@ -149,6 +155,16 @@ if [ "$STAGE" = "2" ]; then
 
   [ ! -f "$FINDINGS_DIR/${FINDING_ID}-weight-card.md" ] && \
     cp "$BUGS_ROOT/WEIGHT-CARD.md" "$FINDINGS_DIR/${FINDING_ID}-weight-card.md"
+
+  # Immunefi audit-comp precedent — surfaced HERE because this is the moment the three
+  # gates it serves get created (kill-gate Q10 dup, severity-commit floor, weight-card W5).
+  # Keywords come from the stage-1 scope-check one-liner, so nothing extra is typed.
+  # NON-BLOCKING: informational surface, never a gate — it must not be able to stall
+  # the pipeline that 9 skills depend on.
+  if [ ! -f "$FINDINGS_DIR/${FINDING_ID}-immunefi-precedent.md" ]; then
+    bash "$LIFECYCLE_DIR/bin/immunefi-precedent.sh" "$FINDING_ID" "$WORKSPACE" 2>&1 | sed 's/^/[lifecycle] /' || true
+    echo "immunefi-precedent:$NOW:$FINDING_ID" >> "$WORKSPACE/.lifecycle-status"
+  fi
 
   # Adversarial Rebuttal (D9) — semantic survival check before preflight.
   # Encodes lesson from Superform F-001 (2026-05-16): syntactic gates pass,

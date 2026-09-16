@@ -18,3 +18,10 @@ Across the tracked OUTCOMES window (50 rows as of 2026-06-27), the closed outcom
 4. **Corpus-replay-on-our-own-closeouts is a HYGIENE tool, not an income tool** — it found 1 sub-payable dormant Low all session (Solana Pyth-conf). Use it for completeness/learning; never as a revenue strategy.
 
 Links: [[ev-gate-check-program-responsiveness-not-just-severity]] (the per-program EV check this generalizes), [[midas-program-closed-fortress-null]] + [[reserve-program-closed-dup-fortress]] (two of this session's diet-driven nulls), [[doctrine-seam-rattachement-is-the-value]] (the unsaturated-seam profile to source toward).
+
+
+**2026-08-08, this lesson DID NOT BIND.** It was on file before the 3F grunt engagement and the
+target was taken anyway, with a published scope bullet naming the finding's own category. Closed
+duplicate, $0. Record now stands at one payment in 87 outcome rows. Escalated and generalised in
+[[feedback-absorbable-findings-die-regardless-of-quality]] — a category exclusion is a Phase 0 abandon,
+not a section to write, and the tell is needing paragraphs to argue past it.

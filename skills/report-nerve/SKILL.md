@@ -16,6 +16,7 @@ The structural skeleton for production-grade security reports. Derived from the 
 - **Negative space**: state what the finding IS NOT. Honest limitations build credibility faster than overclaiming.
 - **Evidence-first**: every claim followed immediately by the proof. No claim without a curl, a code quote, or a screenshot.
 - **No self-scoring in body**: CVSS goes in form fields only, not in the report body. Describe impact, let the triager score.
+- **Length budget, no addition without removal**: the report body stays under 250 lines. Every revision round that adds a paragraph cuts or compresses another in the same round. See "Length budget" below; this is a structural constraint, not a style preference, because the scaffolding this skill mandates is exactly what makes the ratchet possible.
 
 **Voice baseline**: First person. Technical precision. Direct. No filler. No corporate security jargon. Assume the triager is an engineer.
 
@@ -198,6 +199,49 @@ Three reasons the block lives in a comment, not the body:
 **Note on chill styling**: when chill is applied, the comment phrasing can use lowercase opener, contractions, and dropped formal punctuation, but all 5 structural elements remain. The binding clause stays unhedged (it's an empirical assertion).
 
 ---
+
+## Length budget (structural constraint, enforced through every revision round)
+
+**The report body stays under 250 lines. When a revision round adds a paragraph, another paragraph
+gets cut or compressed in the same round. The budget does not rise.**
+
+This skill mandates scaffolding: killshot, chain factoring, negative space, anti-pattern naming,
+evidence-per-claim, dismissal pre-emptions. Each mandate is correct and each one produces text.
+That makes report-nerve the skill most capable of producing a 400-line document nobody can read,
+one defensible addition at a time.
+
+**Why "no addition without removal" and not "keep it tight":** every addition justifies itself in
+isolation. A review round surfaces a genuine objection, a missing measured number, a correction
+that must propagate, and each is worth its paragraph on the merits. No amount of "be concise" ever
+refuses a paragraph that is individually correct, so the document grows monotonically while every
+step looks like diligence. Pairing each addition with a removal forces the only question that has
+an answer: *is this new paragraph worth more than the weakest one currently in the document?*
+
+Admission test per paragraph: **a cited fact, a measured number, or a disarmed objection.** Text
+that restates something established elsewhere in the document is the first removal candidate, and
+it is the dominant failure mode, because a revision round rarely re-reads what the other sections
+already say. This is the same propagation problem as the derived-artefact rule: a claim revised in
+one section survives in three others.
+
+**One objection gets one paragraph, never a section.** A heading per pre-emption is how a report
+doubles while its author believes they are hardening it. If a pre-emption needs more than a
+paragraph, it is either a real limitation that belongs in negative space, or not worth pre-empting.
+
+Priced honestly: each pre-emption cut is an objection the triager may raise, costing a round-trip
+on a two-week SLA. Take the trade. A legible argument wins more often than an exhaustively
+defended one.
+
+Measured instance (TruFin F-1, 2026-08-05): ~10 operator review rounds, each correctly compressing
+something, moved the body 3889 -> 3760 words. **3%.** Every round added a pre-emption, a live
+readback, a corrected fix analysis, an audit-history answer, and every addition was right. Only an
+explicit paired-removal instruction broke it.
+
+**Prompt tail for revision requests:**
+```
+<tone_preference>
+Budget de longueur respecte. Pas d'ajout sans retrait.
+</tone_preference>
+```
 
 ## Report body template
 
@@ -501,6 +545,11 @@ If W1 yields $0 and W5 yields no paid precedent for the class → severity claim
 
 ## Pre-submission checklist (rigor layer)
 
+0. **Length budget**: body under 250 lines? If this round added a paragraph, did it cut or
+   compress one? A pure-addition round fails: either cut the weakest paragraph now, or state
+   in one line why nothing in the document is weaker than what was just added. Check also for
+   any pre-emption promoted to its own heading, and any paragraph restating something already
+   established elsewhere.
 When `chill` is also applied, this checklist runs IN ADDITION to chill's checklist. The two are concatenated, not alternatives.
 
 ### Universal items (every report)
