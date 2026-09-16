@@ -25,14 +25,16 @@ export const meta = {
 // ---------------------------------------------------------------------------
 const A = args || {}
 if (!A.finders || !A.finders.length) throw new Error('args.finders required (target-specific finder specs)')
-const ONCHAIN = A.onchainDir, PRIMER = A.primerPath, PLAYBOOK = A.playbookPath, STD = A.standardPath
+let ONCHAIN = A.onchainDir                       // may be set by the self-bootstrap phase below
+const PRIMER = A.primerPath, PLAYBOOK = A.playbookPath, STD = A.standardPath
 const CHAIN = A.chainReadCmd || '(no chain-read tool provided)'
 const REGIME = (A.scope && A.scope.regime) || 'unknown'
 const ECON = (A.scope && A.scope.economics) || 'unknown'
 const PRIOR = (A.scope && A.scope.priorRecord) || 'none provided'
 const MINTIER = A.minPayableTier || 'high'
 
-const catf = (files) => (files || []).map(f => `${ONCHAIN}/${f}.clar`).join(' ')
+const EXT = A.fileExt || 'clar'                  // 'clar' for Stacks, 'sol' for EVM, etc.
+const catf = (files) => (files || []).map(f => `${ONCHAIN}/${f}.${EXT}`).join(' ')
 
 const FINDING_SCHEMA = {
   type: 'object',
@@ -129,6 +131,29 @@ Return the full structured verdict (fill the fields your axis covers; leave othe
   else { verdict = 'ACCEPT'; killing = null }
   return { ...f, _gates:g, _verdict:{ verdict, killing_gate:killing, real_tier:realTier }, }
 })
+
+// ---- BOOTSTRAP (optional, self-contained): clone repo + anchor DEPLOYED source ----
+// args.bootstrap = { repoUrl, commit?, addrs:[...], chain?, workdir, evmAnchor?, authHeader? }
+// Given a repo URL + deployed addresses (and NO local onchainDir), one agent clones the repo and
+// runs the evm-anchor tool per address (proxy->impl + Etherscan-v2 verified source to disk), then
+// sets ONCHAIN to the anchored deployed-source dir. Makes the fan-out runnable in ANY environment.
+if (A.bootstrap && !ONCHAIN) {
+  phase('Bootstrap')
+  const b = A.bootstrap
+  const setup = await agent(
+`${b.authHeader || A.authHeader || ''}\nSet up the deployed-code anchor for a bug-bounty fan-out, deterministically. Run in bash, paste REAL output:
+1. Clone in-scope repo: git clone ${b.repoUrl} ${b.workdir}/repo${b.commit ? ` && git -C ${b.workdir}/repo checkout ${b.commit}` : ''}
+2. For EACH deployed address, resolve proxy->impl and pull Etherscan-v2 VERIFIED source to disk:
+   ${(b.addrs||[]).map(a => `${b.evmAnchor||'evm-anchor.sh'} ${a} ${b.workdir}/anchor ${b.chain||1}`).join('\n   ')}
+3. ls the resulting source dirs under ${b.workdir}/anchor and the repo under ${b.workdir}/repo.
+Deployed-code-not-head is MANDATORY: the anchor dir (verified deployed source) is authoritative; the repo is only for diffing the scope commit against deployed. Return the absolute anchor dir to use as the deployed-source dir, the repo path, and each address's resolved impl + ContractName.`,
+    { label:'bootstrap:anchor', phase:'Bootstrap',
+      schema:{ type:'object', additionalProperties:false,
+        properties:{ onchain_dir:{type:'string'}, repo_dir:{type:'string'}, impls:{type:'string'}, notes:{type:'string'} },
+        required:['onchain_dir'] }, effort:'medium' })
+  if (setup && setup.onchain_dir) { ONCHAIN = setup.onchain_dir; log(`Bootstrapped deployed anchor at ${ONCHAIN}`) }
+  else throw new Error('bootstrap failed to resolve an onchain_dir; pass args.onchainDir explicitly')
+}
 
 // ---- FIND ----
 phase('Find')
