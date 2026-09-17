@@ -54,7 +54,7 @@ done
 PBK="$DESKTOP/D-cve/playbook"
 cp "$PBK/playbook-bug-bounty-v1.6.md" "$PBK/finding-acceptance-standard.md" \
    "$PBK/audit-competition-filter-results.md" "$PBK/seam-primitive-sourcing-map.md" \
-   "$PBK/README.md" methodology/ 2>/dev/null || true
+   "$PBK/access-layer.md" "$PBK/README.md" methodology/ 2>/dev/null || true
 cp "$PBK/audit-fanout-template.js" workflows/ 2>/dev/null || true
 cp -r "$PBK/tools/." tools/ 2>/dev/null || true
 
