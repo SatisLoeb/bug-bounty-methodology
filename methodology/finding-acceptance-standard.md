@@ -9,6 +9,20 @@ A finding is PAYABLE only if it passes all THREE axes. Run the gates in the orde
 the cheap killers first — and stop at the first fail (record the killing gate).
 
 ## Order of operations (front-load the killers)
+-1. **Phase -1 — SURFACE SELECTION (before the target even enters the pipeline; the binding constraint).**
+   The corpse-rule is blind to sourcing (a sourcing failure leaves no corpse), so this must be an explicit
+   step, not a reflex. **Pay-surface = the SEAM (the boundary no audit owns), any layer incl. deep SC;
+   dead = HARDENED CORE-MATH.** NOT "web vs SC". Score seam-density on the 5-boundary taxonomy of the
+   record's paid/escalated: signer↔app · session↔callback · deployed-config↔code · periphery↔core ·
+   pool↔pool-on-error-path. `score = seam-density × freshness/venue-open × solo-accessible × (1/dup-risk)`.
+   A thin-seam hardened-core-math target = NO-GO day -1 regardless of layer (corpses: StackingDAO/Euler/
+   Pareto internal = 0 paid after firm effort; 5 paid/escalated all seam-dense — Decentraland signer,
+   Mt Pelerin session, August deployed, Granite periphery↔core, OZ #92486 pool-isolation-error-path).
+   **Supply corollary (measured, venue-landscape 2026-09: public fresh comps ≈ 0):** a selection gate
+   can't score an empty board — route to the ACCESS layer (tier-migration/reciprocity with paid clients,
+   relationship/Upshift-shape, invite-only, pre-mainnet, drift-watch repointed to known seam-dense
+   clients' NEW deployments), not the over-farmed board. Don't spend firm effort on saturated core-math
+   because "it's what's on the board."
 0. **PULL the "Impacts in Scope" list (Phase 0, MANDATORY — the target map).** Copy the program's
    full payable-impact table VERBATIM, every tier (Critical/High/Medium). This is not paperwork: it is
    the list of terminal verbs the hunt must chase. The default failure is the **theft reflex** — hunting

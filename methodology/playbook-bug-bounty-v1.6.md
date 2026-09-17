@@ -6,6 +6,7 @@
 > Le bug, n'importe qui de bon finit par en trouver un. Le **construire pour qu'un triager sceptique n'ait aucune prise** — exécuté, chiffré, blindé contre sa propre preuve — c'est l'autre moitié, et c'est celle qui paie. Ce document est cette moitié-là, rendue permanente.
 
 ### Changelog
+- **v1.6.2 (2026-09-17)** — **Phase -1 — Sélection de surface** (nouvelle §0, AVANT Phase 0). La contrainte liante a quitté l'object-level : ce n'est plus une 6ᵉ gate, c'est le SOURCING. La règle-cadavre est structurellement aveugle au sourcing (un échec de sourcing ne laisse pas de cadavre). Fait de revenu mesuré : 28 SC-core fortresses → 0 payé ; les 5 payés/escaladés sont TOUS seam-denses (Decentraland signer, Mt Pelerin session, August déployé, Granite périphérie↔core, OZ #92486 pool-isolation). Axe corrigé : **seam (n'importe quelle couche, SC inclus) > core-math durci** — PAS "web vs SC". Corollaire supply (mesuré, [[venue-landscape]]) : comps fraîches publiques ≈ 0 → la contrainte est l'ACCÈS, pas la sélection ; Phase -1 route vers la couche accès (tier-migration/réciprocité/invite/pré-mainnet). Voir §0.
 - **v1.6.1 (2026-09-16)** — Phase 0 : **pull la table "Impacts in Scope" VERBATIM = la carte-cible**, feed-la au fanout ET au poke, tiens un impact-ledger (candidat × classe). Né du réflexe-vol : sur Pareto, fanout+manuel ont chassé le VOL et sous-couvert freeze/insolvency/MEV/DoS (near-miss rattrapé par l'opérateur). Voir §1 Phase 0.
 - **v1.6 (2026-09-14)** — Deux raffinements de gates, nés de la classe zero-share Granite (deux findings réels pris par d'autres pendant qu'il tenait la tranche logique — PAS un défaut de vitesse, un défaut de rigueur) :
   - **Gate 4 — dedup PAR SINK, jamais par classe** : « la classe est connue » est un faux-négatif de tombstone ; un patch qui ne garde qu'un sink prouve la classe vivante ailleurs. *(bug #99 borrow.)*
@@ -32,6 +33,32 @@
 **La leçon centrale de la v1.1 :** ta VALIDITÉ est excellente et confirmée à chaque fois — ce n'est jamais là que ça casse. Ça casse sur RECEVABILITÉ et MATÉRIALITÉ. Donc le levier n'est pas une meilleure technique, c'est de **front-loader ces deux axes au Phase 0**, avant de dépenser ton meilleur travail sur un finding que ces gates auraient tué au jour 1.
 
 ---
+
+## 0. Phase -1 — Sélection de surface : OÙ chasser (la contrainte liante, v1.6.2)
+
+**La règle-cadavre a un angle mort structurel.** Elle ne grave que les morts de findings *soumis/construits* ; un échec de *sourcing* ne laisse **aucun cadavre** — juste un hit-rate bas et du silence. Donc le playbook, en s'auto-optimisant sur les seuls cadavres visibles, sur-maintient la zone qui en produit (les gates object-level) et devient **aveugle à sa vraie contrainte : OÙ chasser.** Phase -1 existe pour contrer cet angle mort — l'object-level (trouver + prouver + blinder) est résolu, le prochain cadavre est un cadavre de *sourcing*.
+
+**Le fait de revenu (mesuré, pas opiné).** 28 forteresses SC-core → 71% self-null, **zéro payé**. Les 5 payés/escaladés sont TOUS seam-denses, aucun core-math durci :
+
+| Payé/escaladé | Boundary (le seam, la frontière que nul audit ne possède) | Impact |
+|---|---|---|
+| Decentraland #87537 ($18k) | signer ↔ app | auth bypass |
+| Mt Pelerin #88293 (High) | session ↔ callback | token theft |
+| August/Mezo (39) | déployé-config ↔ code | authority / impl-drift |
+| Granite #92663 (escaladé) | périphérie ↔ core (liq ↔ fraîcheur-oracle) | freeze / bad-debt |
+| OZ #92486 (escaladé) | pool ↔ pool (batch isolation, **error-path**) | freeze + misallocation cross-pool |
+
+**La surface qui paie = le SEAM, OÙ QU'IL SOIT — y compris profond dans le SC.** Ce qui est mort = le **CORE-MATH DURCI** (StackingDAO/Euler/Pareto interne), pas le SC en général. Ne refais PAS le binaire cargo-cult « web vs SC » : Granite et OZ sont du SC qui paie. Voir [[feedback-edge-is-seams-not-web]].
+
+**Score de densité-de-seam (le go/no-go de Phase -1).** Un target n'entre le pipeline que s'il a une frontière non-possédée riche. Cherche les 5 classes ci-dessus + le sous-pattern OZ, le plus scorable : **contrats de batching/pooling/settlement où l'isolation par-unité tient sur le happy-path et casse sur la branche error/refund/failure** (le sibling non-testé, darkside Door A). `score = densité-de-seam × fraîcheur/venue-ouvert × solo-accessible × (1/dup-risk)`. **Seam mince + core-math durci = NO-GO day -1**, quelle que soit la couche. *(Cadavres : StackingDAO/Euler/Pareto = core-math durci, seam mince → 0 payé après effort firme.)*
+
+**Corollaire de supply (mesuré, [[venue-landscape]] 2026-09) : la contrainte n'est pas la sélection, c'est l'ACCÈS.** Comps fraîches ≈ 0 sur les boards publics (Cantina/Sherlock/C4/Immunefi tout farmé ou fermé). Une gate de sélection ne score pas un board vide. Phase -1 route donc en priorité vers la **couche ACCÈS** — la surface hors-board :
+- **Tier-migration / réciprocité** — recontacter les clients qui ont payé (Decentraland : housekeeping gratuit post-payment = actif). Un client payé rouvre du scope.
+- **Relation** (Upshift-shape) — l'engagement vient d'une relation, pas d'un board (48 findings, ack 24h).
+- **Invite-only / pré-mainnet** — s'inscrire (Aerodrome invite-only), surveiller les déploiements avant qu'ils soient publics.
+- **Drift-watch repointé** — au lieu de re-scanner l'étang sur-pêché, surveiller les *nouveaux déploiements/annonces des clients seam-denses connus*.
+
+**Décision Phase -1 :** GO seulement si (a) seam-dense sur la taxonomie ET (b) venue ouvert + accessible (public frais OU accès hors-board). Sinon RE-SOURCE vers la couche accès. **Ne dépense pas d'effort firme sur un core-math durci saturé juste parce que « c'est ce qui est sur le board ».** *(Cette session : Euler/Pareto étaient l'étang sur-pêché, le seul ouvert ; Granite/OZ sont les vrais paris — seam-denses.)*
 
 ## 1. Phase 0 — go/no-go AVANT tout travail profond
 
@@ -159,6 +186,12 @@ Un mécanisme **réel et in-scope** peut mourir parce que le **vecteur de décle
 - **Decentraland #87537** — case-sensitive signer check → actions authentifiées au nom d'autrui. **Critical, payé $18k.** Client exemplaire (réciprocité → tu creuses plus, et c'est rationnel). Housekeeping gratuit post-payment = actif tier-migration.
 - **Mt Pelerin #88293** — token de session livré à un callback attaquant. Claimé Critical, re-rated **High** sur un discount d'exploitabilité *correct*, concédé gracieusement. Premier reporter.
 - **Royco #1** — réentrance EntryPoint. Validé, hot-patché verbatim. Likelihood Low tenue sur un rebuttal *correct* (`PUBLIC_ROLE` d'un script OOS). Concédé — **Medium payé.**
+
+**Escaladés (en attente projet, seam-denses — anchors de Phase -1) :**
+- **Granite #92663 (SC/Clarity, escaladé)** — le prix choisi par le compte jugé : une position insolvable sort son collatéral et gèle sa propre liquidation, en choisissant quel prix Pyth-Lazer genuine (fenêtre 300s) gate l'opération. Seam **périphérie ↔ core** (liq-permissionless ↔ fraîcheur-oracle). Impact freeze/bad-debt, PAS core-math. SC qui paie.
+- **OZ #92486 (SC, escaladé)** — `BatcherConfidential` paie un batch avec les fonds d'un autre sur *toute* livraison d'unwrap échouée, puis gèle la victime pour toujours. Seam **pool ↔ pool** (isolation de batch cassée sur la **branche error**, le sibling non-testé). Impact **freeze + misallocation cross-pool** (classe non-vol). SC qui paie. → sous-pattern scorable Phase -1 : batching/pooling/settlement où l'isolation tient sur happy-path, casse sur error/refund.
+
+**Les 5 payés/escaladés, taggés par CLASSE DE SEAM (pas par couche) — la base de Phase -1 :** signer↔app (Decentraland), session↔callback (Mt Pelerin), déployé-config↔code (August/Mezo), périphérie↔core (Granite), pool↔pool-error-path (OZ). Zéro core-math durci. C'est l'axe de sélection, corpse-ancré.
 
 **Rejetés (les gates, apprises cher) :**
 - **StackingDAO #88777** — double-count + insolvency, escaped-guard, immuable, absent des 5 audits grepés. Passé Gates 1-4. **Fermé invalide sur la MAGNITUDE** (PoC à 50%, immatériel à l'échelle) → **origine de Gate 5.** Deux closes ; le second (borné-à-ta-part + DAO-recoverable via `withdraw-tokens`) a fragilisé même le High theft. Médiation/parking en cours.
