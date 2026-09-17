@@ -1,5 +1,11 @@
 # Finding Acceptance Standard — the playbook as a gate-runner
 
+> **STAGE 2 of 2. This is the FILTER half. It runs on what `generative-spine.md` (STAGE 1) produced —
+> it never runs alone.** Every organ here is a REJECT organ; a method made only of these has the empty set
+> as its optimum. Generation comes first (invent the attacks the dev missed); these gates then validate them;
+> a NO-GO is admissible only with the kill-list the generative stage produced (recorded in `recall-ledger.md`,
+> the recall term). If you find yourself here without having generated first, stop and go to the spine.
+
 Operational decision procedure derived from `playbook-bug-bounty-v1.6.md`. This is the standard
 the fan-out applies to ACCEPT / DOWNGRADE / REJECT every candidate finding. It does not replace
 the playbook; it turns it into a checklist agents (and I) run at intake, front-loading
