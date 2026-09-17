@@ -4,9 +4,21 @@
 contrôle ») portée sur N axes, chaque axe rendu en **requête de sourcing exécutable** :
 `primitive → signature-de-cible → impact-landing → mur recevabilité → où-chasser-low-dup → différentiel`.
 Source = triple croisement (recherche opérateur × recherche assistant × 7-agent mine). Data de référence,
-consultée par Phase -1 (playbook §0) + `intake`/`wide`/`xsurface-prioritize`. **PAS des gates** : ce sont des
-HYPOTHÈSES à tester d'abord (garde Maslow), pas des conclusions. Une entrée graduera au playbook §4 quand un
-cadavre tombera. **Garde dup** : 5 sont de la variable-mal-gardée pure → signature-dup connue → ne composent
+consultée par Phase -1 (playbook §0) + `intake`/`wide`/`xsurface-prioritize`.
+
+> **STATUT : TABLE D'HYPOTHÈSES DE SOURCING, EN OBSERVATION — AUCUNE des 9 branches n'est validée.** Même
+> statut que le dup-density-log ou l'audit-count-par-classe : utile, consultable, non-prouvée. Distinction
+> CRITIQUE : **cadavre-de-PRIMITIVE ≠ cadavre-de-SOURCING.** Les cadavres cités (RSK/Leather/ENS/Granite/OZ)
+> prouvent que la *primitive* (la variable-mal-gardée, §4, 3 cadavres) trouve des bugs. Ils NE prouvent PAS
+> que la *signature-de-sourcing* d'une branche route vers une cible PAYABLE — c'est un cran plus amont, sans
+> cadavre. La convergence des 3 sources = trois hypothèses d'accord (aucune n'a testé), PAS une validation.
+> **Un cadavre-de-sourcing (l'unité de falsifiabilité de cette couche) = une cible que la map a scorée
+> haute-EV, sur laquelle tu as dépensé de l'effort GO, morte pour une raison que la map aurait dû prévoir**
+> (pas de programme payable rattaché / la primitive ne s'instancie pas en prod, Gate 5 #6 / dup-magnet
+> déguisé). Une branche gradue de « hypothèse » à « veine » après UN cadavre-de-sourcing testé jusqu'au bout,
+> pas avant. Ne cite jamais une branche comme « le funnel » — ce sont 9 paris classés par mur, pas 9 acquis.
+
+**Garde dup** : 5 sont de la variable-mal-gardée pure → signature-dup connue → ne composent
 qu'où le dup est bas (non-EVM, fork-tails, relationnel).
 
 ## TIER 1 — mains prouvées, mur BAS, chasse d'abord (convergence des 3 sources)
@@ -68,6 +80,6 @@ qu'où le dup est bas (non-EVM, fork-tails, relationnel).
 
 ## Ordre de priorité (ta ligne + le mur)
 1. **P4 (variantes insolvency/double-spend)** & **P2** — mains prouvées, mur le plus bas.  2. **P1** (+ bonus Solana) & **P5** — prouvées, low-dup non-EVM.  3. **P9 + C0** — les ajouts du croisement.  4. **P6** (recense la prod d'abord).  5. **P3** (recevabilité D'ABORD).  6. **P8** seulement si le programme la paie.
-**Le pari divergent** : **A1 Stacks cycle-edge** (accès déjà en main, mémoire-aligné epoch-4.1-dormant, fork=Critical).
+**Le "pari" divergent A1 Stacks cycle-edge — DÉMOTÉ : une hypothèse à 3 murs déjà payés, pas un pari.** Séduisant (accès en main, divergent) mais **l'accès ne surmonte AUCUN des 3 murs que ton dossier stacks-nested porte déjà** : (1) **matrice DoS Stacks** — un cycle-edge mono-nœud tombe en Low ; il faut un vrai B3 multi-rôles (miner+signer séparés), pas un desync mono-nœud ([[stacks-dos-matrix-bxr-grid]]) ; (2) **format PoC 4-nœuds** exigé, ton harness simnet ne passe pas ; (3) **epoch-4.1-dormant = Gate 5 #6** : la forme n'existe pas en prod → realized impact ZÉRO jusqu'à l'epoch ([[stacks-fresh-drift-epoch41-dormant]]). RE-LIS stacks-nested AVANT d'en faire un GO — tu as payé ces 3 murs une fois là-bas. La "fork=Critical variant" doit prouver B3-multi-rôle + tourner en 4-nœuds + une forme live, sinon c'est un Low mono-nœud sur une forme absente.
 
 *Maintenir : une primitive graduе au playbook §4 quand elle produit un cadavre. Une entrée sort si un finding meurt de sa mauvaise signature-de-cible (couche accès falsifiable, comme les gates).*
