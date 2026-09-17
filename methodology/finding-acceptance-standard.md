@@ -15,6 +15,10 @@ the cheap killers first — and stop at the first fail (record the killing gate)
    dead = HARDENED CORE-MATH.** NOT "web vs SC". Score seam-density on the 5-boundary taxonomy of the
    record's paid/escalated: signer↔app · session↔callback · deployed-config↔code · periphery↔core ·
    pool↔pool-on-error-path. `score = seam-density × freshness/venue-open × solo-accessible × (1/dup-risk)`.
+   **Concrete scorable tell = the guarded-wrong-variable primitive (playbook §4) as a SELECTION signal:**
+   at a boundary, a correct guard on variable X with the adjacent attacker-controlled variable Y ungated.
+   A target where you can already spot a guarded sibling next to an attacker-controlled field scores high —
+   it's the 3/3 mechanism (ENS/Granite/RSK), the best predictor of a paying surface.
    A thin-seam hardened-core-math target = NO-GO day -1 regardless of layer (corpses: StackingDAO/Euler/
    Pareto internal = 0 paid after firm effort; 5 paid/escalated all seam-dense — Decentraland signer,
    Mt Pelerin session, August deployed, Granite periphery↔core, OZ #92486 pool-isolation-error-path).
