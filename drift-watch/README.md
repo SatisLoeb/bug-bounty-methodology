@@ -42,3 +42,19 @@ the new tip. Until then, leave it — the diff baseline..tip IS the fresh slice 
 - **What**: self-contained `git ls-remote` on the 15-repo daily set (baselines embedded in the routine prompt = `daily-watch.today.tsv`; evk-periphery dropped 2026-09-15 — only Securitize in scope, not cheaply filterable via ls-remote), compares tips, and on any actionable drift writes ONE Gmail DRAFT to loopt1793@gmail.com (compare-URL + re-arm triggers). Silent on no-drift. Draft-only (connector has no autonomous send). stacks-core tip-changes suppressed unless a literal epoch-4.1 height appears.
 - **Prompt source of truth**: `cloud-routine-prompt.txt`. To change the watched set / baselines: edit the prompt + re-baseline `daily-watch.today.tsv`, then `RemoteTrigger update trig_01J8z1dJDsjqJHtjYnbyi2ca`.
 - **Re-baseline after acting on a drift**: bump that repo's tip in the routine prompt so it stops re-alerting.
+
+## A5 fresh-surface watch (added 2026-09-17) — `fresh-surface-watch.sh`
+The HEAD-drift watch above monitors ALREADY-MAPPED stock (re-engagement). Once that stock is
+exhausted (every target a fortress/NO-GO — the state on 2026-09-17), HEAD-churn is mostly noise.
+The access-layer's A5 channel needs FRESH surface, so this second watcher adds two signals the
+HEAD watch is blind to:
+- **A5a NEW-REPO**: `gh repo list` per seam-dense org (`fresh-surface/orgs.txt`) vs baseline →
+  a new repo = a new product = fresh (often Tier-0) surface. Baselines in `fresh-surface/repos.<org>.baseline`.
+- **A5b IMPL-DRIFT**: reads each watched proxy's EIP-1967 impl slot (`fresh-surface/proxies.tsv`)
+  vs baseline (`fresh-surface/impl.<id>`) → an impl change = fresh DEPLOYED code. Born from the
+  2026-09-17 Lombard A1 pass: deployed != repo, so HEAD watching misses deployments/upgrades. The
+  Lombard impls are baselined at their CURRENT (older, drifted) state → the next upgrade (incl. prod
+  finally shipping the repo fee-fix/rate-limits) fires an alert to re-diff.
+
+Run: `./fresh-surface-watch.sh` (check) · `./fresh-surface-watch.sh --baseline` (re-freeze after acting).
+Extend A5b by adding rows to `fresh-surface/proxies.tsv` (id⇥proxy⇥chainid) for any proxied target.

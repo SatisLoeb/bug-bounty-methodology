@@ -5,7 +5,7 @@ metadata:
   node_type: memory
   type: project
   originSessionId: c639357a-aca4-4017-84b4-5a00b153de69
-  modified: 2026-09-15T08:37:13.845Z
+  modified: 2026-09-17T08:28:23.406Z
 ---
 
 Drift-watch is the operator's answer to "programmes limités + concurrence rude": instead of fresh sourcing, monitor the already-mapped stock (~/Desktop/drift-watch/, 121 repos baselined) for post-verdict code changes that RE-ARM a known seam, so the operator is FIRST when new code lands.
@@ -17,3 +17,5 @@ Drift-watch is the operator's answer to "programmes limités + concurrence rude"
 **Fresh money-path drift as of 2026-09-15 full sweep** (candidate pre-loaded engagements — still need live-bounty + audit-comp gate before engaging): Euler oracle-adapter (new ChainlinkInfrequentNanosecondOracle) + evk-periphery; Reserve CowSwapFiller; Coinbase AuthCaptureEscrow; OKX RFQ-PMM; Nado Clearinghouse; Yield Basis AMM. Granite core-v1 is DRIFT+TRIG but known (the submitted finding is being remediated there — see [[granite-clarity-findings]]).
 
 **How to maintain**: after acting on a drift, bump that repo's tip in `cloud-routine-prompt.txt` + `daily-watch.today.tsv` and `RemoteTrigger update`. stacks-core drift is suppressed unless a literal epoch-4.1 height appears ([[stacks-fresh-drift-epoch41-dormant]]). NO-GO repos (alchemix 527-comp, termmax saturated, pendle fortress) stay watched because a NEW mechanism can re-arm them.
+
+**A5 ADDITION 2026-09-17** (`drift-watch/fresh-surface-watch.sh` + `fresh-surface/`, local, baselined+tested): the HEAD-watch above monitors already-mapped stock; once that's ALL exhausted (every target a fortress/NO-GO — [[coinbase-venue-exhausted]], [[project-lombard-finance-audit]]), HEAD-churn is mostly noise. This adds the access-layer's A5 FRESH-surface signals — **A5a NEW-REPO** (`gh repo list` per seam-dense org in `fresh-surface/orgs.txt` vs baseline = a new product = fresh, often Tier-0, surface) and **A5b IMPL-DRIFT** (EIP-1967 impl slot of proxies in `fresh-surface/proxies.tsv` vs `fresh-surface/impl.<id>` = fresh DEPLOYED code, born from the Lombard A1 deployed-not-head lesson). Lombard core impls baselined at their current OLDER state → the next upgrade (incl. prod shipping the repo fee-fix/rate-limits) fires an alert, operationalizing the Lombard A1 parked lead. **PENDING (needs operator go): hook `fresh-surface-watch.sh` into the cloud routine — currently local-only.**
