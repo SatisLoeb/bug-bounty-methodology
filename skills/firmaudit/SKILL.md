@@ -4,6 +4,18 @@ description: >-
   Firm-grade deep security audit in immortal mode — no time limit, no token limit, audit-firm quality, zero LLM garbage. Runs Phase 0 Target Intelligence (scripted via phase0-intel.sh) → Phase S Seam Thesis (name the boundary nobody owns: audited-code↔deployed-config / contract↔Safe-topology / on-chain↔off-chain-operator / spec↔impl / lang-A↔lang-B binding — the region where vulns accumulate because no review covers the handoff; biases triage) → Phase T top-down Triage (threat-model → path graph → reachability → recevability scope/dup/edge-fit/payable-impact[any class, not just loss=$X] → T6d SATURATION GATE + IMPACT-LEDGER → GO / RE-SOURCE-to-payable-surface; kills unwinnable targets day-1) → Phase A Audit-Conditions Extraction (read audit PDFs as a map of accepted conditions, fuse threshold, on-chain⇒cast_call) → Phase R Active-Recon Execution (RUN every probe, never note) → adaptive plan executed as the 4-PASS fan-out (Pass 1 primary on seam paths → Pass 2 expansion authority-chain/secrets/shadow-surface → Pass 3 mirror-invariant V_in-vs-V_out [the Critical-forming pass] → Pass 4 chain construction) with dig→adversarial-verify→operator-hand-verify per pass. The single skill for any new high-value target/contest (Cantina/C4/Sherlock/HackerOne/HackenProof/direct). Use when the user wants a deep professional engagement and does NOT want a fast pass — and ALSO whenever the question is "is this target worth my time / where do I start / which surface first". Reads exploit-primitive-mindset + gravedigger + mrrobbot + upshift/upshift2 as REFERENCE; does NOT auto-orchestrate them. Trigger on "/firmaudit", "firm-grade audit", "audit digne des grandes firms", "mode immortel", "vaut le coup / par où commencer / quelle surface", or when the user pastes the FIRM-AUDIT-PROMPT.
 ---
 
+## 🔦 BLIND-SPOT SWEEP — run at EVERY "this surface looks clean" moment (reflex, non-negotiable)
+The feeling "I understand this, it's clean, I'll move on" IS the blind spot closing (2nd Maxim:
+understanding = agreeing with the dev = blind exactly where HE was). At that exact moment do NOT move on —
+run the sweep on the file/surface you just cleared:
+    ~/arsenal/tools/blind-sweep.sh <file> [--symbol <sink> --repo <root>]
+It drags the six INVERSION axes into the light: (1) failure-branch exits, (2) guarded-WRONG-variable,
+(3) the full sink-set of a class (dedup per sink), (4) an un-enumerated surface (breadth before depth),
+(5) become-the-actor reachability, (6) dirty-numbers. Then run the two spotlight-movers it can't do for
+you: a FOIL diff (invfuzz / tools/fork-diff.sh) and an EXECUTION on the real code. The un-looked-at is
+found by PROCEDURE, not insight. Ref: methodology/BLIND-SPOT-SWEEP.md + recall-ledger RC-02.
+
+
 # /firmaudit — Firm-Grade Deep Audit, Immortal Mode
 
 ## 🦴 SPINE — the load-bearing skeleton (obey this even when the 500 lines below truncate under context pressure)

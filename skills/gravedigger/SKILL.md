@@ -3,6 +3,18 @@ name: gravedigger
 description: Systematic deep security research methodology. Use when conducting comprehensive security assessments of DeFi protocols, web applications, or smart contracts. Encodes the complete investigation workflow from reconnaissance through attack chain construction and disclosure handoff.
 ---
 
+## 🔦 BLIND-SPOT SWEEP — run at EVERY "this surface looks clean" moment (reflex, non-negotiable)
+The feeling "I understand this, it's clean, I'll move on" IS the blind spot closing (2nd Maxim:
+understanding = agreeing with the dev = blind exactly where HE was). At that exact moment do NOT move on —
+run the sweep on the file/surface you just cleared:
+    ~/arsenal/tools/blind-sweep.sh <file> [--symbol <sink> --repo <root>]
+It drags the six INVERSION axes into the light: (1) failure-branch exits, (2) guarded-WRONG-variable,
+(3) the full sink-set of a class (dedup per sink), (4) an un-enumerated surface (breadth before depth),
+(5) become-the-actor reachability, (6) dirty-numbers. Then run the two spotlight-movers it can't do for
+you: a FOIL diff (invfuzz / tools/fork-diff.sh) and an EXECUTION on the real code. The un-looked-at is
+found by PROCEDURE, not insight. Ref: methodology/BLIND-SPOT-SWEEP.md + recall-ledger RC-02.
+
+
 # GraveDigger — Systematic Deep Security Research
 
 ## PATTERN BANK — the WEB CORPUS + H1-HUNTING-PATTERNS (web/API), NOT the SC corpus (G-4 fix 2026-06-23; web-corpus added 2026-06-27)

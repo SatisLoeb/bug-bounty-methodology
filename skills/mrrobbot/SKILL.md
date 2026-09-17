@@ -3,6 +3,18 @@ name: mrrobbot
 description: Adaptive security audit framework for smart contracts and web targets. Combines gravedigger recon with the 4-phase adaptive deep audit methodology. Use for bounties >$50K. Phases expand/contract based on signal — not a fixed checklist.
 ---
 
+## 🔦 BLIND-SPOT SWEEP — run at EVERY "this surface looks clean" moment (reflex, non-negotiable)
+The feeling "I understand this, it's clean, I'll move on" IS the blind spot closing (2nd Maxim:
+understanding = agreeing with the dev = blind exactly where HE was). At that exact moment do NOT move on —
+run the sweep on the file/surface you just cleared:
+    ~/arsenal/tools/blind-sweep.sh <file> [--symbol <sink> --repo <root>]
+It drags the six INVERSION axes into the light: (1) failure-branch exits, (2) guarded-WRONG-variable,
+(3) the full sink-set of a class (dedup per sink), (4) an un-enumerated surface (breadth before depth),
+(5) become-the-actor reachability, (6) dirty-numbers. Then run the two spotlight-movers it can't do for
+you: a FOIL diff (invfuzz / tools/fork-diff.sh) and an EXECUTION on the real code. The un-looked-at is
+found by PROCEDURE, not insight. Ref: methodology/BLIND-SPOT-SWEEP.md + recall-ledger RC-02.
+
+
 # MrRobbot — Adaptive Security Audit Framework
 
 ## PATTERN BANK — corpus/pattern-scan = candidate SURFACER, the CHECK MATRIX is the AIM (M-2 fix, 2026-06-23)
