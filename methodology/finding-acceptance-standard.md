@@ -9,6 +9,16 @@ A finding is PAYABLE only if it passes all THREE axes. Run the gates in the orde
 the cheap killers first — and stop at the first fail (record the killing gate).
 
 ## Order of operations (front-load the killers)
+0. **PULL the "Impacts in Scope" list (Phase 0, MANDATORY — the target map).** Copy the program's
+   full payable-impact table VERBATIM, every tier (Critical/High/Medium). This is not paperwork: it is
+   the list of terminal verbs the hunt must chase. The default failure is the **theft reflex** — hunting
+   only "direct theft / extraction" and under-covering the other payable classes (permanent freezing,
+   protocol insolvency, MEV→freeze/insolvency, temporary freezing, SC-inoperable/DoS, griefing). Feed the
+   FULL list to every finder and every manual poke as the hunt-direction, and keep an **impact-ledger**
+   (candidate × impact-class): a class with zero hunters is an un-hunted axis, not a null. *(Pareto near-
+   miss 2026-09-16: fanout + manual proved THEFT fair and nearly closed NO-GO, having never run the
+   permanent-freeze / insolvency / DoS axis as a first-class target — the richest surface on an epoch/
+   liveness-heavy protocol. Granite finding A itself was a FREEZE, not a theft.)*
 1. Phase 0 economics + regime (go/no-go for the whole target).
 2. Gate 4 (dup / known-issue / OUR OWN prior record) — primary source.
 3. Gate 5 (materiality at deployed scale) — the real tier.

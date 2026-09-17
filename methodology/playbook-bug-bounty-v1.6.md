@@ -6,6 +6,7 @@
 > Le bug, n'importe qui de bon finit par en trouver un. Le **construire pour qu'un triager sceptique n'ait aucune prise** — exécuté, chiffré, blindé contre sa propre preuve — c'est l'autre moitié, et c'est celle qui paie. Ce document est cette moitié-là, rendue permanente.
 
 ### Changelog
+- **v1.6.1 (2026-09-16)** — Phase 0 : **pull la table "Impacts in Scope" VERBATIM = la carte-cible**, feed-la au fanout ET au poke, tiens un impact-ledger (candidat × classe). Né du réflexe-vol : sur Pareto, fanout+manuel ont chassé le VOL et sous-couvert freeze/insolvency/MEV/DoS (near-miss rattrapé par l'opérateur). Voir §1 Phase 0.
 - **v1.6 (2026-09-14)** — Deux raffinements de gates, nés de la classe zero-share Granite (deux findings réels pris par d'autres pendant qu'il tenait la tranche logique — PAS un défaut de vitesse, un défaut de rigueur) :
   - **Gate 4 — dedup PAR SINK, jamais par classe** : « la classe est connue » est un faux-négatif de tombstone ; un patch qui ne garde qu'un sink prouve la classe vivante ailleurs. *(bug #99 borrow.)*
   - **Gate 3 — teste en NOMBRES SALES** : le nombre rond cache structurellement les classes précision/arrondi/off-by-one. *(bug #80206.)*
@@ -39,6 +40,7 @@ Objectif n°1 : **tuer les cibles ingagnables au jour 1** plutôt que de scorer 
 **Hygiène du programme**
 - Listé / financé / récemment mis à jour / assets réellement in-scope.
 - **Régime Impact vs Rules.** *Primacy of Impact* = l'impact gouverne (souvent restreint aux tiers Critical/High). *Primacy of Rules* = l'asset doit être listé, conditions strictes. Détermine ta charge de preuve.
+- **PULL la table "Impacts in Scope" VERBATIM (v1.6.1 — la carte-cible, obligatoire).** Copie toutes les classes payables, chaque tier. Ce n'est pas de la paperasse : c'est la liste des VERBES TERMINAUX que la chasse doit poursuivre. L'échec par défaut = le **réflexe-vol** : ne chasser que « direct theft / extraction » et sous-couvrir les autres classes payées (permanent freezing, protocol insolvency, MEV→freeze/insolvency, temporary freezing, SC-inoperable/DoS, griefing). Passe la liste ENTIÈRE à chaque finder et à chaque poke manuel comme direction de chasse, et tiens un **impact-ledger** (candidat × classe-d'impact) : une classe à zéro chasseur = un axe non-chassé, pas un null. *(Pareto near-miss 2026-09-16 : fanout + manuel ont prouvé le VOL fair et ont failli clore NO-GO sans jamais chasser l'axe permanent-freeze / insolvency / DoS en cible première — la surface la plus riche sur un protocole epoch/liveness. Granite finding A était lui-même un FREEZE, pas un vol.)*
 
 **Économie (le no-go le plus fréquent)**
 - Max bounty, table de tiers, **planchers (min)**, token de paiement.

@@ -32,6 +32,14 @@ const REGIME = (A.scope && A.scope.regime) || 'unknown'
 const ECON = (A.scope && A.scope.economics) || 'unknown'
 const PRIOR = (A.scope && A.scope.priorRecord) || 'none provided'
 const MINTIER = A.minPayableTier || 'high'
+// The program's full "Impacts in Scope" table, VERBATIM = the hunt's target map (every payable
+// terminal verb, not just theft). Pull it at Phase 0 and feed it to every finder + the materiality
+// gate. Absent = the theft-reflex failure mode (Pareto near-miss): warn loudly.
+const IMPACTS = A.impactsInScope ||
+  'WARNING: args.impactsInScope NOT provided. Hunt EVERY payable class, not just theft: direct theft, ' +
+  'PERMANENT freezing of funds, PROTOCOL INSOLVENCY, MEV->freeze/insolvency, temporary freezing, ' +
+  'SC-inoperable / DoS / resource-exhaustion, griefing. Do not tunnel on extraction.'
+if (!A.impactsInScope) log('WARN: args.impactsInScope missing — finders told to hunt all payable classes generically; pull the program impact table for precision.')
 
 const EXT = A.fileExt || 'clar'                  // 'clar' for Stacks, 'sol' for EVM, etc.
 const catf = (files) => (files || []).map(f => `${ONCHAIN}/${f}.${EXT}`).join(' ')
@@ -78,6 +86,9 @@ const finderPrompt = (spec) =>
 LENS: ${spec.lens}
 FOCUS: ${spec.focus}
 Enumerate attacker-reachable entrypoints, build the call graph, and prove exploits with concrete numbers. Report ONLY what survives your own refutation, mapped to an in-scope impact. Empty is a valid answer. Return raw structured data.
+PAYABLE IMPACTS TO CHASE (the target map — do NOT tunnel on theft):
+${IMPACTS}
+For your surface, chase EVERY applicable class above, not just extraction: can an unprivileged actor cause PERMANENT freezing (funds/receipts unclaimable, a state that bricks deposits/withdrawals), PROTOCOL INSOLVENCY (claims > real assets via accounting drift, not only via theft), a DoS / SC-inoperable (a permissionless input that makes a core function always revert), or temporary freezing / griefing? A freeze or insolvency with no theft is fully payable here. Map each candidate to its impact class.
 DIRTY-NUMBERS MANDATE (v1.6): drive EVERY numeric proof with realistic non-round values — prices carrying cents, non-divisible amounts, prime quantities, decimals != the market's — never round illustrative numbers. Rounding / off-by-one / precision classes only bite when there is a remainder; a round number structurally HIDES the whole class (everything passes, nothing signals). For any division / share-conversion / valuation sink, show the exact integer arithmetic (the division, both floors) at a dirty value. FOIL: if the dev tests in round dollars, that is his blind spot — hunt it.`
 
 // The three playbook killers, run adversarially per finding.
@@ -90,7 +101,9 @@ Check: registrations / active flags / allowlists / escrow or position lists / co
 `AXIS RECEVABILITÉ. Read the standard: \`cat ${STD}\` and playbook: \`cat ${PLAYBOOK}\`. Run: Gate1 actor-separation (create-vs-ride; reachability-premise must live in in-scope judged code); Gate2 (escaped vs missing guard — lead only if escaped); Gate3 (does the PoC construct or reach; external premise closed in PRIMARY SOURCE; and was the mechanism driven in DIRTY numbers, not round values that hide the precision class?); Gate4 dup/known-issue in PRIMARY SOURCE for the EXACT sink AND against OUR OWN prior record below — DEDUP PER SINK, NEVER PER CLASS: "the class is known" is a false-negative tombstone; a patch/audit guarding only ONE sink of the class proves the class is alive at the other sinks (read each in primary source); entry-vector wall for regime=${REGIME}. Set each gate and the killing_gate if any fails.
 Regime: ${REGIME}. OUR PRIOR RECORD on this target (a match = self-dup, do NOT re-spend): ${PRIOR}` },
   { key:'materialite-redteam', ask:
-`AXIS MATÉRIALITÉ (Gate 5, six checks) — the most frequent killer. Compute magnitude at DEPLOYED scale with a SEPARATE calc (real supply/pool/attacker-position/window read on-chain via ${CHAIN}), NOT the PoC's illustrative numbers. Apply the program economics: ${ECON} (esp. any %-funds-at-risk cap × the in-scope contract's live TVL, and the pause window). Write the engineer's best refutation (by-design / bounded / self-limiting / DAO-recoverable / immaterial-at-scale) and answer it. Do check #6: if the impact needs a FORM, census prod on-chain for real instances. Output gate5_real_tier and the killing_check if it caps below ${MINTIER}.` },
+`AXIS MATÉRIALITÉ (Gate 5, six checks) — the most frequent killer. First map the finding to its PAYABLE IMPACT CLASS from the program table:
+${IMPACTS}
+Tier it against that class (a permanent freeze / insolvency / DoS is tiered on its OWN class, not discounted because "no theft"). Then compute magnitude at DEPLOYED scale with a SEPARATE calc (real supply/pool/attacker-position/window read on-chain via ${CHAIN}), NOT the PoC's illustrative numbers. Apply the program economics: ${ECON} (esp. any %-funds-at-risk cap × the in-scope contract's live TVL, and the pause window). Write the engineer's best refutation (by-design / bounded / self-limiting / DAO-recoverable / immaterial-at-scale) and answer it. Do check #6: if the impact needs a FORM, census prod on-chain for real instances. Output gate5_real_tier and the killing_check if it caps below ${MINTIER}.` },
 ]
 
 const auditFinding = (f) => parallel(KILLERS.map(k => () =>
