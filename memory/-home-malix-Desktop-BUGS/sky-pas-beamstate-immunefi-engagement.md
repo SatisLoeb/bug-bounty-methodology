@@ -157,6 +157,35 @@ Avec zéro default et maxChange 1.2/hop 16h, le cBeam Grove peut aujourd'hui, se
 3. Tout `addInitControllerActions(data, address(0))` → calldata exécutable sur tous les controllers pairés (sélecteurs de facets identiques entre diamonds).
 4. Dé-pause du Timelock → le flux DELAYED s'active réellement (Core Council peut alors proposer seul, délai + cancellers comme seule garde).
 
+---
+
+# PASSE 3 (2026-09-20) — Target PAS_TIMELOCK (src/timelock/Timelock.sol @ 947e71c)
+
+**Cadrage** : Timelock.sol + Bytes32LinkedList.sol inchangés depuis l'audit ChainSecurity (V1) ET le submodule OZ identique entre le commit audité et HEAD (`a83d9aa` = OZ 5.5.0, vérifié par `git ls-tree`) → dup maximal sur l'interne. Le travail frais = valider mécaniquement ce que l'audit n'a fait qu'en lecture : l'invariant de la couche de tracking ajoutée par-dessus OZ, et les interleavings de reentrance.
+
+## Vérifié mécaniquement (nouveaux tests, verts)
+
+- **Invariant miroir `_operationIds.exists[id] ⟺ op Pending/Ready côté OZ` + `count` + payloads stockés** : structurellement étanche (OZ 5.5 n'écrit `_timestamps` que via `_schedule`/`cancel`/`_afterCall`, chacun apparié atomiquement à l'op de liste dans les overrides ; `schedule`/`execute` single désactivés = pas de chemin non apparié) et **fuzz-validé** : invariant Foundry, 64 runs × 100 de profondeur (~6 400 appels séquencés schedule/cancel/re-schedule/execute/warp), zéro violation. Conséquence : le scénario "remove-failed → op exécutable ni annulable" est inatteignable.
+- **Reentrance sur la MÊME op** (plus fort que le CS-SKYPAS-001 acknowledged, qui ne couvre que le cross-op) : re-exécuter `executeBatch(A)` depuis un target de A — inner revert propagé OU avalé — fait toujours reverter le frame externe via `_afterCall` (état Done ≠ Ready) → **full unwind, aucune double-exécution possible, aucun état à moitié exécuté, liste intacte**. Idem `cancel(A)` re-entré pendant `execute(A)`. 3 tests dédiés verts.
+- Cycle `schedule → cancel → re-schedule (même id) → execute` : miroir maintenu à chaque étape.
+- Bytes32LinkedList relu en entier : sentinelle `bytes32(0)` correcte (un id est un keccak, jamais 0), cas tête/queue/élément-unique corrects, pas d'underflow de count. + 22 tests existants du repo.
+- Constructor : OZ 5.5 self-grant `DEFAULT_ADMIN_ROLE` à `address(this)` → correctement révoqué ; ban des self-calls checké sur chaque `targets[i]` au scheduling ; `updateDelay` inatteignable par proposal (exige `msg.sender == address(this)`). Access control des overrides préservé (super porte les onlyRole).
+
+## Chemins tués (known/design)
+
+- Reentrance cross-op pendant exécution → **CS-SKYPAS-001, acknowledged** dans le rapport (targets = BeamState en pratique, trustés).
+- Course execute-vs-cancel à la frontière Ready (executor permissionless peut front-runner un cancel) → inhérent au design "permissionless execution", mitigé par le mécanisme de pause (bloquer l'exécution, puis unpause+cancel atomique par l'admin — rationale commentée inline) + posture SECURITY.md (cancellers disponibles à court préavis). Known/design.
+- Cancel bloqué pendant pause ; op devenue Ready pendant une pause = exécutable dès l'unpause → documenté inline avec la parade (cancel atomique post-unpause).
+- Pauser qui DoS le timelock → trust-excluded (SECURITY.md).
+- `updateDelayImmediately` → admin = PauseProxy, fully trusted.
+- Ops à value / batch vide / arrays désalignés → comportements OZ standards, sans surprise.
+
+## VERDICT PASS 3 : NO-GO bounty sur PAS_TIMELOCK
+
+Code inchangé depuis l'audit, OZ inchangé, aucun finding recevable — et les deux angles que l'audit n'avait pas testés mécaniquement (miroir de tracking, double-exec même-op) sont maintenant prouvés sains par fuzz/tests. Détail de posture : le Timelock est **en pause depuis genesis**, donc toute cette surface est dormante jusqu'au W4 (dé-pause) — déjà surveillé par les deux moniteurs (routine CCR + kit Cowork on-chain).
+
+Bilan programme après 3 targets (PAS_STATE, PAS_CONFIGURATOR, PAS_TIMELOCK) : le seul chemin vivant reste **P-01 en watch**, armable par la spell d'onboarding Osero (premières defaults de prod). Le code PAS lui-même est propre ; l'ore de ce programme est dans les évolutions de configuration, pas dans le code déployé.
+
 ## DÉCISION GLOBALE
 
 **NO-GO bounty sur cette target seule.** BeamState @ HEAD est un registre serré : zéro surface non authentifiée, trust model qui exclut explicitement les acteurs privilégiés malveillants, et un rapport ChainSecurity dont les Notes couvrent déjà tous les footguns structurels. L'unique survivant (P-01) est un vrai défaut de cohérence sémantique, PoC-prouvé, mais gated par une misconfig de gouvernance → sous le seuil payable d'Immunefi. Options : (a) l'envoyer comme note de hardening (gratuit, réputation), (b) le garder en watch — il devient exploitable/payable seulement si un default `(max, slope>0)` apparaît on-chain un jour (vérification passive : lire `initRateLimits` sur le BeamState déployé quand l'adresse sera publique). **Si on veut du payable sur Sky/PAS, la surface à travailler est le delta post-audit du Timelock (#12/#13) et l'intégration PASAuthorizeInPAU côté PAU réel — pas BeamState.**
