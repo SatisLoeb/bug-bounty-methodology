@@ -1,6 +1,6 @@
 ---
 name: sky-pas-beamstate-immunefi-engagement
-description: "Sky PAS (Immunefi $10M) — passes 1+2 exécutées 2026-09-20 sur commit 947e71c (BeamState + Configurator + delta Timelock/PASAuthorizeInPAU vs PAU live); 1 survivant PoC-prouvé (gap unlimited-slope) en watch, état live genesis cartographié (Grove seul cBeam, zéro defaults, timelock en pause); fenêtre suivante = spell d'onboarding Osero fin sept 2026 (premières defaults de prod, namespace de clés partagé cross-Star)"
+description: "Sky PAS (Immunefi $10M) — CLOS 2026-09-20 en mode WATCH dormant : 4/4 targets core auditées (BeamState, Configurator, Timelock, Mom) @ 947e71c, 0 soumissible, 1 chemin vivant (P-01 unlimited-slope, PoC vert) armable par les futures defaults de prod ; 2 moniteurs quotidiens actifs (spells watch 08:00 UTC + go/no-go artifact 13:04 UTC) + kit Cowork en secours ; réveil sur W1-W4"
 metadata:
   node_type: memory
   type: project
@@ -206,8 +206,44 @@ Bilan programme après 3 targets (PAS_STATE, PAS_CONFIGURATOR, PAS_TIMELOCK) : l
 
 Rien à extraire : contrat de-risk-only, trust-gated aux deux entrées, audité, figé depuis sa création. Fin du scope PAS core (4/4 targets auditées).
 
-## DÉCISION GLOBALE
+## DÉCISION GLOBALE (fin de passe 1 — remplacée par la CLÔTURE ci-dessous)
 
-**NO-GO bounty sur cette target seule.** BeamState @ HEAD est un registre serré : zéro surface non authentifiée, trust model qui exclut explicitement les acteurs privilégiés malveillants, et un rapport ChainSecurity dont les Notes couvrent déjà tous les footguns structurels. L'unique survivant (P-01) est un vrai défaut de cohérence sémantique, PoC-prouvé, mais gated par une misconfig de gouvernance → sous le seuil payable d'Immunefi. Options : (a) l'envoyer comme note de hardening (gratuit, réputation), (b) le garder en watch — il devient exploitable/payable seulement si un default `(max, slope>0)` apparaît on-chain un jour (vérification passive : lire `initRateLimits` sur le BeamState déployé quand l'adresse sera publique). **Si on veut du payable sur Sky/PAS, la surface à travailler est le delta post-audit du Timelock (#12/#13) et l'intégration PASAuthorizeInPAU côté PAU réel — pas BeamState.**
+**NO-GO bounty sur cette target seule.** BeamState @ HEAD est un registre serré : zéro surface non authentifiée, trust model qui exclut explicitement les acteurs privilégiés malveillants, et un rapport ChainSecurity dont les Notes couvrent déjà tous les footguns structurels. L'unique survivant (P-01) est un vrai défaut de cohérence sémantique, PoC-prouvé, mais gated par une misconfig de gouvernance → sous le seuil payable d'Immunefi. (Les pistes "delta Timelock / PASAuthorizeInPAU" évoquées ici ont été exécutées en passes 2-3 : rien de recevable.)
 
 TEMPS BRÛLÉ: ~1 session. Coût évité: des jours sur P-02→P-09, tous morts en known/trust avant lecture profonde.
+
+---
+
+# CLÔTURE DE L'ENGAGEMENT (2026-09-20) — passage en mode WATCH dormant
+
+## État final
+
+**4/4 targets PAS core auditées, 0 finding soumissible aujourd'hui, 1 chemin vivant en watch (P-01).**
+
+| Target | Verdict | Preuve |
+|---|---|---|
+| PAS_STATE | NO-GO | Threat model complet, 9 chemins tués (known ChainSecurity / trust model) |
+| PAS_CONFIGURATOR | **P-01 en watch** | PoC Foundry vert (gap unlimited-slope post-#15, non couvert par l'audit) — non soumissible tant que la précondition n'existe pas on-chain |
+| PAS_TIMELOCK | NO-GO | Invariant de tracking fuzz-prouvé (~6 400 séquences), double-exec même-op prouvée impossible, OZ identique au commit audité |
+| PAS_MOM | NO-GO | 6 chemins morts, de-risk-only, trust-gated aux deux entrées |
+
+Conclusion : le code déployé est propre ; **l'ore est dans les évolutions de configuration** (spells). Conditions de réveil = W1–W4 + P-01-état + zeroing + changements d'admin, toutes définies dans ce dossier.
+
+## Inventaire des moniteurs actifs (vérifié via list_triggers à la clôture)
+
+1. **`trig_01QNtYtsK6jjKgv3M2rzByTi` — "Sky PAS spells watch"** (08:00 UTC, se réveille dans la session d'audit `session_01JmCgEZ5HZ4mf4xs4Hqgouu` avec tout le contexte) : repos de spells via `tools/sky-pas-watch.sh` (git ls-remote, PRs incluses), état commité dans ce repo (`sky-pas-watch-state.txt`, baseline 614 refs).
+2. **`trig_01Liv1vnqELwCyhFvosuL7x3` — "Sky PAS Watch — verdict go/no-go quotidien"** (13:04 UTC, sessions fraîches, créée par Malik post-kit) : pipeline artifact `claude.ai/artifact/31tV5G36pHhCqBLpPMAmW5` couvrant **on-chain (RPC Tenderly) + repos**, état persisté dans l'artifact, notifications push, brouillon de rapport auto sur GO (jamais de soumission auto). Dernier run : SUCCEEDED.
+3. **Kit Cowork local** (`sky-pas-cowork-kit.md` + `tools/sky-pas-onchain-watch.sh`) : disponible en secours si le canal artifact/Tenderly casse un jour — non requis tant que le moniteur 2 tourne.
+
+**Chevauchement assumé** : les moniteurs 1 et 2 couvrent tous deux les repos de spells (mécanismes et états indépendants : git-repo vs artifact ; 2 points de mesure/jour ; modes de panne disjoints). Redondance délibérée sur un programme à $10M — si un seul canal est voulu, désactiver le 1 (le 2 est le plus complet).
+
+## Livrables (tous sur branche `claude/sky-pas-state-audit-shdcpl`)
+
+- Ce dossier (threat model, 4 passes, watch conditions W1–W4)
+- `poc-sky-pas-timelock-adversarial.t.sol` (invariant fuzz + tests reentrance Timelock)
+- PoC P-01 inline dans le dossier (2 tests, verts sur `947e71c`)
+- `tools/sky-pas-watch.sh` + baseline, `tools/sky-pas-onchain-watch.sh` + kit Cowork
+
+## Ce qui rouvre le dossier
+
+La routine 1 ou 2 remonte W1/P-01-armé → refaire l'analyse adversariale contre l'état on-chain exact, puis soumission Immunefi (PAS_STATE/PAS_CONFIGURATOR, commit `947e71c`) après validation de Malik. Tout le reste (W2/W3/W4/zeroing/admin) = analyse + verdict, pas de soumission réflexe. Événement clé attendu : **spell Sky Core d'onboarding Osero** (premières defaults de prod, ~fin sept 2026).
