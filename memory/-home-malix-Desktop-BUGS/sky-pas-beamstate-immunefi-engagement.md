@@ -186,6 +186,26 @@ Code inchangé depuis l'audit, OZ inchangé, aucun finding recevable — et les 
 
 Bilan programme après 3 targets (PAS_STATE, PAS_CONFIGURATOR, PAS_TIMELOCK) : le seul chemin vivant reste **P-01 en watch**, armable par la spell d'onboarding Osero (premières defaults de prod). Le code PAS lui-même est propre ; l'ore de ce programme est dans les évolutions de configuration, pas dans le code déployé.
 
+---
+
+# PASSE 4 (2026-09-20) — Target PAS_MOM (src/PASMom.sol @ 947e71c)
+
+**Passe courte, proportionnée à la cible** : 106 lignes, mom Maker standard, **un seul commit dans toute l'histoire du repo** (PR #2, pré-audit), couvert par ChainSecurity §2.2.4 avec 0 findings, inchangé depuis → dup maximal, surface minuscule. 9/9 tests unitaires verts.
+
+## Chemins déroulés — tous morts
+
+- **P-M1 anonyme → stop/pause** : `auth` = owner OU `authority.canCall(src, this, sig)`. Owner = PauseProxy (hand-over atomique dans le deploy tx : `new PASMom` + `setOwner`, le deployer ne garde rien — vérifié dans PASDeploy). Authority = MCD_ADM (Chief), sémantique hat (`caller == hat`, prouvée sur fork mainnet par le test d'intégration contre le vrai Chief). Unreachable sans majorité de gouvernance.
+- **P-M2 hat/owner compromis** : les deux seules actions sont `stop()` (halt Configurator) et `pause()` (halt Timelock) — **direction de-risk uniquement**, aucune capacité d'extraction ni de reconfiguration. Impact = griefing des ops, réversible par spell (PauseProxy est ward de BeamState → `start` direct ; unpause = DEFAULT_ADMIN). Un hat malveillant = majorité de gouvernance compromise = game over de toute façon. Trust-excluded.
+- **P-M3 sur-privilège** : Mom est ward complet de BeamState (rely dans initMom) et PAUSER du Timelock, alors que son code n'expose que stop/pause — pas de delegatecall, pas d'exec arbitraire, donc le sur-privilège est inerte. Nit least-privilege (un rôle avec le seul sig `stop` suffirait), informational, déjà noté en passe 1.
+- **P-M4 `setOwner(0)`/`setAuthority(0)`** : onlyOwner, classe erreur de gouvernance. `setAuthority(0)` laisse le chemin owner ; `setOwner(0)` laisse le chemin hat. Pas de brick total possible en une erreur.
+- **P-M5 swap d'authority vers un canCall malveillant** : onlyOwner (PauseProxy). Trusted.
+- **P-M6 idempotence d'urgence** : `stop()` idempotent (flag) ; `pause()` sur timelock déjà pausé revert (EnforcedPause OZ) — sans conséquence, l'objectif est déjà atteint. Note : timelock pausé depuis genesis → `Mom.pause()` reverterait AUJOURD'HUI, comportement attendu.
+- Pas de mom sur les chaînes remote → SECURITY.md l'assume explicitement (multisigs à la place). Known.
+
+## VERDICT PASS 4 : NO-GO bounty sur PAS_MOM
+
+Rien à extraire : contrat de-risk-only, trust-gated aux deux entrées, audité, figé depuis sa création. Fin du scope PAS core (4/4 targets auditées).
+
 ## DÉCISION GLOBALE
 
 **NO-GO bounty sur cette target seule.** BeamState @ HEAD est un registre serré : zéro surface non authentifiée, trust model qui exclut explicitement les acteurs privilégiés malveillants, et un rapport ChainSecurity dont les Notes couvrent déjà tous les footguns structurels. L'unique survivant (P-01) est un vrai défaut de cohérence sémantique, PoC-prouvé, mais gated par une misconfig de gouvernance → sous le seuil payable d'Immunefi. Options : (a) l'envoyer comme note de hardening (gratuit, réputation), (b) le garder en watch — il devient exploitable/payable seulement si un default `(max, slope>0)` apparaît on-chain un jour (vérification passive : lire `initRateLimits` sur le BeamState déployé quand l'adresse sera publique). **Si on veut du payable sur Sky/PAS, la surface à travailler est le delta post-audit du Timelock (#12/#13) et l'intégration PASAuthorizeInPAU côté PAU réel — pas BeamState.**
