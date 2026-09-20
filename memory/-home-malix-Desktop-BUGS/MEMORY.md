@@ -1,3 +1,4 @@
+- [Aera TransferBlacklistHook Arbitrum (Immunefi $500K) — pré-lecture GO, source NON lu](aera-transfer-blacklist-hook-arbitrum-immunefi.md) — hook `view` appelé sur chaque mint/burn/transfert + oracle Chainalysis ; H1-H8 avec kill-conditions + `tools/aera-hook-anchor.sh` ; classe réaliste ≤ High freeze, pas le plafond
 - [Intuition (Immunefi $100k) — C/D are C4 dups](intuition-immunefi-c-d-are-c4-dups.md) — prior "confirmed HIGH" both published C4 [05]/[07]=OOS; live path = C4-uncovered surfaces (Critical dig)
 - [Corpus match → pull the discovery_how](feedback-corpus-match-pull-the-discovery-how.md) — on any corpus match, grab the reproducible METHOD not just the pattern label
 - [deBridge (Immunefi $200k) — Gate fortress-null](debridge-immunefi-gate-manual-poke-null.md) — legacy Gate 4 seams manual-poked null; DLN OOS; Rule-5 found undeployed isContract fix (known/OOS)
