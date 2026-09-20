@@ -1,6 +1,6 @@
 ---
 name: sky-pas-beamstate-immunefi-engagement
-description: "Sky PAS BeamState.sol (Immunefi $10M) — audit profond exécuté 2026-09-20 sur commit 947e71c; 1 survivant PoC-prouvé (gap sémantique unlimited-slope, post-audit #15) mais précondition = misconfig gouvernance → probablement non payable; tout le reste tué par known-issues ChainSecurity + trust model"
+description: "Sky PAS (Immunefi $10M) — passes 1+2 exécutées 2026-09-20 sur commit 947e71c (BeamState + Configurator + delta Timelock/PASAuthorizeInPAU vs PAU live); 1 survivant PoC-prouvé (gap unlimited-slope) en watch, état live genesis cartographié (Grove seul cBeam, zéro defaults, timelock en pause); fenêtre suivante = spell d'onboarding Osero fin sept 2026 (premières defaults de prod, namespace de clés partagé cross-Star)"
 metadata:
   node_type: memory
   type: project
@@ -116,6 +116,46 @@ contract PoC_UnlimitedSlopeGap is Test {
 }
 ```
 Résultat : `2 passed` (forge 1.5.1, solc 0.8.24, commit `947e71c`).
+
+---
+
+# PASSE 2 (2026-09-20) — Delta Timelock post-audit (#12/#13) + PASAuthorizeInPAU vs état réel du PAU
+
+**Fait nouveau côté programme** : `PAS_CONFIGURATOR` est une target Immunefi officielle distincte (ajoutée 2026-09-01) → P-01 (qui vit dans le code du Configurator) est formellement dans le scope du programme. Ne change pas la sévérité (précondition inchangée), change la recevabilité formelle.
+
+## État réel de production (établi via spells publics — RPC/Etherscan/Blockscout tous bloqués par le proxy egress)
+
+Spell Sky Core **2026-08-27** (`spells-mainnet/archive/2026-08-27-DssSpell`, dépendances PAS vendorées au commit audité `947e71c`) :
+- `PAS_STATE` `0x1A1879E66547F90bfF87D45A5b0335950E019E02`, `PAS_CONFIGURATOR` `0xb7E61Df6CAb0A51E9A5dab1A7DD3f942dDe5b929`, `PAS_TIMELOCK` `0xB50a06Af02dDE44dB6EA7ee729403848c2B35293`, `PAS_MOM` `0xD44B8d01D5207aA792C666d0A712A1A161CD6171`, `PAS_CORE_COUNCIL` `0x148eF923d764CBdc1597CcADBbbC66499C1A1432` (tous au chainlog v1.20.20).
+- **1 seul cBeam** : Grove `0x91dC2F6DbB8Adf76d373A54D408EDd7D736046C4`, pairé avec `GROVE_RATE_LIMITS` `0xE016Ae733A77Ba77E7907aAA749394Fc5e75C0e1` et `GROVE_CONTROLLER` (diamond) `0xbf83F5974B932c7D842254042717D6A2706CE5eE`.
+- hop général **16 h**, maxChange général **1.2 WAD**. **AUCUNE default `initRateLimits`, AUCUNE calldata controller approuvée** (le spell n'appelle pas `initLimitsAndControllerData`). **Timelock démarré EN PAUSE** (`pauseTimelock` avec MCD_PAUSE_PROXY en pauser temporaire).
+- Spell Grove **2026-08-27** (`grove-labs/grove-spells`) : `PASAuthorizeInPAU.authorize` → le Configurator détient **DEFAULT_ADMIN_ROLE sur `PAU_ACCESS_CONTROLS` `0x4F6d1704700cd494DD4cd9bF59c0C39DA1Bc9164` et `PAU_RATE_LIMITS` `0xE016…`** du Grove Diamond PAU. Le Grove SubProxy garde son propre DEFAULT_ADMIN_ROLE (révocation possible).
+- Spells 2026-09-10 et spell en préparation (`src/DssSpell.sol`) : **zéro action PAS** → l'état live = l'état genesis ci-dessus.
+
+## Verdicts de la passe 2 — tout vérifié, aucun finding recevable nouveau
+
+- **L2PASSpell.init sans access control** : sain. Modèle d'exécution = delegatecall du governance proxy/relay (confirmé par le test, mock delegatecall). Un appel direct s'exécute avec l'identité du spell, qui n'a aucun ward → revert au premier call auth'd. Pas de front-run des paramètres `coreCouncil`/`cancellers`/`pausers`.
+- **`pauseTimelock` (#13)** : grant PAUSER → pause → revoke, atomique dans le spell. L'hypothèse "admin pas dans pausers" est commentée ; même violée, l'admin est role-admin (DEFAULT_ADMIN_ROLE) et se re-grant à volonté → auto-réparable, pas un finding.
+- **Timelock.sol** : inchangé depuis l'audit ChainSecurity (dup max sur son interne). Re-vérifié quand même : ban des self-calls checké sur chaque `targets[i]` au scheduling (OZ 5.5.0 : `updateDelay` exige `msg.sender == address(this)`, inatteignable), `_revokeRole(DEFAULT_ADMIN_ROLE, address(this))` au constructor, `schedule`/`execute` single désactivés, exécution permissionless intentionnelle (`EXECUTOR_ROLE = address(0)`), cancel bloqué pendant pause (documenté, rationale inline), re-schedule d'un id exécuté impossible (état OZ Done ≠ Unset). Rien.
+- **Suppression des wrappers (#12)** : Core Council = PROPOSER + CANCELLER directement sur le Timelock. Le pouvoir du Timelock se limite à son rôle DELAYED sur BeamState → un Core Council malveillant qui schedule de l'arbitraire = note 8.3 ChainSecurity mot pour mot (known + trust "very highly trusted" + cancellers).
+- **PASAuthorizeInPAU vs PAU réel** : le RateLimits du `sky-ecosystem/diamond-pau` (stack Grove ET Osero) est une **copie identique** du RateLimits Spark — mêmes signatures, même struct 4 champs, unlimited ssi `maxAmount == max` slope ignoré. Aucun drift d'implémentation ; les hypothèses d'interface du Configurator sont correctes contre le PAU réellement déployé. AccessControls = 46 lignes (OZ AccessControl + `setRoleAdmin`), blast radius du grant auto-documenté dans le NOTE du fichier. Le pouvoir est **dormant** : ni AccessControls ni RateLimits ne sont whitelistés comme "controllers" dans BeamState, et zéro calldata approuvée.
+- **P-01 contre l'état live** : les clés unlimited Grove existantes sont posées via `setUnlimitedRateLimitData` → slope 0 → protection #15 active. Zéro default enregistrée → l'état conditionnel `(max, slope>0)` n'existe pas aujourd'hui. P-01 reste **watch, pas live**.
+
+## Blast radius live du cBeam Grove (quantifié, trust-excluded mais à connaître)
+
+Avec zéro default et maxChange 1.2/hop 16h, le cBeam Grove peut aujourd'hui, seul : (a) ratchetter toute clé bounded Grove de +20 %/16 h — composé ≈ ×1.31/jour, ×45 en 2 semaines, sans plafond absolu (les defaults qui serviraient de plafond n'existent pas ; seule borne = monitoring + Mom.stop + Core Council) ; (b) **mettre à zéro n'importe quelle clé bounded — porte à sens unique via Configurator** : depuis (0,0), toute augmentation revert (plafond = max(def=0, current=0, current×1.2=0)), récupération uniquement par spell hebdo (SubProxy a gardé DEFAULT_ADMIN_ROLE sur RateLimits) ou dé-pause du Timelock + délai. Les deux sont couverts par le trust model (cBEAM multisig "mostly trusted", scénario retraits explicitement listé dans SECURITY.md) → non recevables Immunefi.
+
+## Prochaine fenêtre réelle : onboarding Osero (2e Star)
+
+- Spell Osero **2026-09-24** en review (`osero-io/osero-spells` PR #4) : même stack diamond-pau, `PASAuthorizeInPAU.authorize` vers le MÊME Configurator sur `OSERO_ACCESS_CONTROLS` `0x791D2a017532CfAD881c446e6bF93BbC3c0778b2` et `OSERO_RATE_LIMITS` `0xE9a78f34fe497e2186f81B8c014cd93B308BC62a`.
+- La spell Sky Core suivante fera le premier `initLimitsAndControllerData` de production ("register Osero RateLimits and Controller, configure the approved defaults, register/pair the confirmed cBEAM" — hors du payload Osero).
+- **Vérifié par hash : Grove et Osero partagent le namespace de clés** (`keccak256("LIMIT_USDS_MINT")` = `0xcb0537d5…` = la clé Osero ; constantes identiques dans diamond-pau). Donc une default générale `initRateLimits[key][address(0)]` ou une calldata approuvée en slot général `[hash][address(0)]` s'applique aux DEUX Stars d'un coup — l'amplification de SECURITY.md et le warning README deviennent concrets pour la première fois.
+
+**WATCH conditions précises sur la prochaine spell Sky (dans `spells-mainnet`, PR ~fin septembre 2026) :**
+1. Tout `addInitRateLimits` avec `maxAmount == type(uint256).max && slope > 0` → arme P-01 (soumettre alors, l'état devient atteignable sans misconfig supplémentaire).
+2. Tout `addInitRateLimits(key, address(0), …)` (slot général) → cross-Star, vérifier l'effet sur la clé homonyme de l'AUTRE Star (surtout si elle y est unlimited-protégée : la default générale DÉSACTIVE la protection #15 sur l'autre Star — chemin documenté côté README mais une instanciation cross-Star involontaire serait soumissible comme misconfig live, à triager alors).
+3. Tout `addInitControllerActions(data, address(0))` → calldata exécutable sur tous les controllers pairés (sélecteurs de facets identiques entre diamonds).
+4. Dé-pause du Timelock → le flux DELAYED s'active réellement (Core Council peut alors proposer seul, délai + cancellers comme seule garde).
 
 ## DÉCISION GLOBALE
 
