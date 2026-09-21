@@ -13,6 +13,7 @@
 - [Alchemy Modular Account V2 — fortress-null](alchemy-ma2-fortress-null.md) — ERC-6900/4337, 13 surfaces; re-open on new code
 - [Symbiotic V2 delta — earned-null](symbiotic-v2-delta-pass1.md) — value-conservation defended; re-open on new commit/token
 - [LI.FI delta + fee-config — earned-null](lifi-delta-seam-earned-null.md) — 603-commit delta null; fee-config BFLA PARKED web-tier
+- [0x Settler SC ($1M) — surface-prioritize NOT-P0](zerox-settler-immunefi-sc-surface-prioritize.md) — engineered fortress (no funds at rest, witness-bound metatx, onlySolver intent, 6-audit); edge = post-Jan26 src/core delta + per-chain restricted-target drift ONLY; timebox-WATCH else NO-GO dup-fortress
 - [Fortress protocol = mandatory-read hook](protocole-forteresse-mandatory-hook.md) — a Skill call carrying "lecture OBLIGATOIRE" = comply
 - [Protocole Forteresse v2](protocole-forteresse-v2.md) — CP1→G2→G3 seam→G4 darkside→CP5-7→G8 PoC→G12
 - [OKX Labs $1M — earned-null](okx-labs-breadth-map-2026-07-05.md) — 9-repo DEX/wallet swept; real EV off-chain (OOS)
