@@ -104,3 +104,19 @@ Méthode : recorder in-page fetch/XHR (marqueurs d'auth = noms only, jamais vale
 - Classifier auto-mode s'est **verrouillé** à mi-session (browser-JS bloqué le reste de la conv, persiste) — exactement la raison "session fraîche" du RUNBOOK. Mais moot : la veine est web-unreachable architecturalement, pas classifier-limitée.
 
 **RÈGLE (leçon process) :** sur toute cible avec un fichier target-state, LIRE LE FICHIER COMPLET (pas juste le one-liner MEMORY.md) AVANT d'ouvrir le browser — sinon on re-dérive un état déjà mesuré-clos (ici : une session entière brûlée à re-tuer invalidate + re-buter bearer-BOLA). Voir [[deployed-code-not-head]], [[measure-before-asserting-in-reports]]. Verdict inchangé : **MESURÉ-ÉPUISÉ, RE-SOURCE.** Reopen = (a) UI compte/email/rewards shippe, (b) app mobile, (c) reconstruction token Privy iframe (ROI douteux).
+
+---
+
+**RECONCILIATION SCOPE OFFICIEL (2026-09-21, Impacts-in-Scope Immunefi Web&App fournis par l'opérateur — PAS de re-browse, lecture-dossier-first appliquée).** Programme = matcha.xyz + **meta.matcha.xyz** (DEX Meta Aggregator, ajouté 24/07/2025) + api.0x.org/gasless + api.0x.org/swap. DISTINCT du programme SC `0x Settler` (voir [[zerox-settler-immunefi-sc-surface-prioritize]] dans le workspace BUGS). Mapping impact-officiel → verdict déjà mesuré :
+
+- **Critical "state-modifying auth actions on behalf of other users, no interaction"** = la bearer-BOLA vein. **WEB-UNREACHABLE** (Privy connect-only, cluster `accounts/*` web-dormant). `competitions{taker}` = feature retirée. Inchangé.
+- **Critical "malicious interactions w/ already-connected wallet (modify tx args / substitute contract addrs / malicious txs)"** = calldata-integrity on-chain. **FERMÉ** : le witness Settler lie recipient/buyToken/minAmountOut/actions (VÉRIFIÉ CÔTÉ CONTRAT cette session : `SettlerMetaTxn` bind full-actions, `SettlerIntent` bind slippage + onlySolver + mandatory-check, chainId dans le domaine EIP-712). meta.matcha calldata cache/CORS/cross-user/XSS déjà clos.
+- **Critical "Direct theft of user funds"** = idem, on-chain fermé + authz-cluster web-unreachable.
+- **High "disclosing confidential user info (email)"** + **High "changing sensitive details ≤1 click (email/password)"** = derrière le Bearer Privy = operator-gated web-unreachable.
+
+**DELTA RÉEL (re-ranking) — les 3 candidats NO-WALLET que j'avais parkés Low/ambigu sont notés PLUS HAUT par le scope officiel, et ils sont INDÉPENDANTS du mur Privy connect-only :**
+- **Critical "Retrieve sensitive data/files from a running server"** ⟵ mon candidat parké **`_next/image` open-proxy/SSRF** (#6). Parké Low ; officiellement **Critical** si SSRF→secrets. Non-confirmé, no-wallet.
+- **Critical "Subdomain takeover w/ connected-wallet interaction"** ⟵ mon 1 candidat ambigu **`webflow-v2.internal.0x.org`** (sur 0x.org, PAS l'origine wallet → hors du sous-domaine à impact). Re-scan CNAME dangling sur `*.matcha.xyz`/`meta.matcha.xyz` = le seul vrai re-entry (Critical si trouvé + origine wallet-connectée).
+- **High "open redirect"** ⟵ mon candidat parké **`?ref=` redirect**. Parké Low ; officiellement **High**.
+
+**VERDICT INCHANGÉ : MESURÉ-ÉPUISÉ pour les veines wallet/account (mur Privy architectural).** MAIS le seul re-entry rationnel = les 3 leads **no-wallet web** ci-dessus (image-proxy SSRF, subdomain-takeover sur origine matcha, open-redirect), sous-cotés dans mes passes précédentes vs la sévérité officielle, et non bloqués par le mur Privy. Ils exigent une session browser fraîche (le classifier auto-mode se verrouille sur browser-JS offensif — cf. RUNBOOK) ET la sortie du sandbox actuel (egress policy 403 sur hosts tiers). Reste = analyse read-only ; toute confirmation live est operator-gated. Priorité re-source si slot : `_next/image` param-fuzz (SSRF interne) > CNAME dangling `*.matcha.xyz` > `?ref=` open-redirect.
