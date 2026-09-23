@@ -566,7 +566,7 @@ sky-ecosystem/spells-mainnet refs/pull/57/head 717f4d253085fd25cdc2758754dcda055
 sky-ecosystem/spells-mainnet refs/pull/570/head 570e9c44d230a2b2cd0ecad3f50d8caffb5c1a85
 sky-ecosystem/spells-mainnet refs/pull/571/head ed67ddb3444d15dd5cb7eeee8fe9babac6c100cc
 sky-ecosystem/spells-mainnet refs/pull/572/head 996f5cc611c548ae15cc5e3d12f69181466bb70b
-sky-ecosystem/spells-mainnet refs/pull/573/head 340301638068ba73196d2e70127af8da41a30ebd
+sky-ecosystem/spells-mainnet refs/pull/573/head ff045f2669297aee584ff768823ed5ef1b23eb60
 sky-ecosystem/spells-mainnet refs/pull/574/head b06b98ed0022573d21453a9bbd1ca1d4aea8c9f4
 sky-ecosystem/spells-mainnet refs/pull/58/head 7c85ab1d0d4abfc9503572e12ab0efe7eb0be43a
 sky-ecosystem/spells-mainnet refs/pull/59/head ebf00554721cba8a739186a9cba5878a0fb74f73
