@@ -81,7 +81,7 @@ osero-io/osero-spells refs/pull/1/head eb2dc3bd8b65ae875bfc61449ad8427206aff6c3
 osero-io/osero-spells refs/pull/2/head f71aa26ea3be4fd671dcdc44d0ff700a4c79f5ce
 osero-io/osero-spells refs/pull/3/head b5ed93a91f8b3ed0ba485f07590cbfc5f7c42029
 osero-io/osero-spells refs/pull/4/head bb8c002ec1a02dd3091692f103645e1f4197ace3
-osero-io/osero-spells refs/pull/5/head 49b70e7755ecd596510a8cf67c726cc97c0fd667
+osero-io/osero-spells refs/pull/5/head 08820b5ef09667284e32b3b4bebe22431b23b491
 sky-ecosystem/spells-mainnet HEAD 50ea24e8605a31e283100b9f59f873404d939b87
 sky-ecosystem/spells-mainnet refs/pull/1/head 78772feaa1d8e67b2fb870c304084c1c44e1976a
 sky-ecosystem/spells-mainnet refs/pull/10/head ec91268f6bf8a3e6cbbb8cb503b4215fdc6ffa79
@@ -566,8 +566,9 @@ sky-ecosystem/spells-mainnet refs/pull/57/head 717f4d253085fd25cdc2758754dcda055
 sky-ecosystem/spells-mainnet refs/pull/570/head 570e9c44d230a2b2cd0ecad3f50d8caffb5c1a85
 sky-ecosystem/spells-mainnet refs/pull/571/head ed67ddb3444d15dd5cb7eeee8fe9babac6c100cc
 sky-ecosystem/spells-mainnet refs/pull/572/head 996f5cc611c548ae15cc5e3d12f69181466bb70b
-sky-ecosystem/spells-mainnet refs/pull/573/head ff045f2669297aee584ff768823ed5ef1b23eb60
+sky-ecosystem/spells-mainnet refs/pull/573/head 72ac1859782623bc6ae2728a06592acc6c2e7c95
 sky-ecosystem/spells-mainnet refs/pull/574/head b06b98ed0022573d21453a9bbd1ca1d4aea8c9f4
+sky-ecosystem/spells-mainnet refs/pull/575/head 75f056fb047e77d89343613d22cae314f17386f6
 sky-ecosystem/spells-mainnet refs/pull/58/head 7c85ab1d0d4abfc9503572e12ab0efe7eb0be43a
 sky-ecosystem/spells-mainnet refs/pull/59/head ebf00554721cba8a739186a9cba5878a0fb74f73
 sky-ecosystem/spells-mainnet refs/pull/6/head c0601579ae0a497d8975a04baa423c09a230b6f0
