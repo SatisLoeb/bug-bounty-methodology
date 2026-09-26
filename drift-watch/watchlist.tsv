@@ -91,7 +91,7 @@ BUGS.public-allocator	BUGS/public-allocator	morpho-org/public-allocator	main	51f
 BUGS.rapidoc-spring-boot	BUGS/rapidoc-spring-boot	PlaytikaOSS/rapidoc-spring-boot	main	2c79647	2022-06-07	yes	contracts/,src/	
 BUGS.request-finance-recon	BUGS/request-finance-recon	SatisLoeb/request-finance-recon	master	7a72ac2	2026-03-09	yes	contracts/,src/	
 BUGS.reserve-fillers	BUGS/reserve-fillers	reserve-protocol/trusted-fillers	main	aed6172	2026-03-20	yes	contracts/,src/	
-BUGS.reserve-governor-audit.repo	BUGS/reserve-governor-audit/repo	reserve-protocol/reserve-governor	main	dc27a68	2026-09-26	yes	contracts/	
+BUGS.reserve-governor-audit.repo	BUGS/reserve-governor-audit/repo	reserve-protocol/reserve-governor	main	246fc582d	2026-09-26	yes	contracts/	
 BUGS.sbtc-audit	BUGS/sbtc-audit	stacks-network/sbtc	main	9bea9fd	2026-08-04	yes	contracts/,src/	
 BUGS.sdks	BUGS/sdks	morpho-org/sdks	main	cdba338	2026-03-19	yes	contracts/,src/	
 BUGS.shapeshift-recon.unchained	BUGS/shapeshift-recon/unchained	shapeshift/unchained	develop	fd48a7bc	2026-04-06	yes	contracts/,src/	

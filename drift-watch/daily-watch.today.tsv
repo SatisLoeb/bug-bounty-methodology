@@ -14,7 +14,6 @@ D-cve.strata.repo	Strata-Markets/contracts	tranches	2be97f9b2
 D-cve.tenbin.repo	tenbinlabs/tenbin-contracts	master	1cc87102a
 D-cve.termstructure.termmax-contract-v2	term-structure/termmax-contract-v2	main	e314f3f84
 D-cve.cosmos.evm	cosmos/evm	main	bb9b0e969
-BUGS.reserve-governor-audit.repo	reserve-protocol/reserve-governor	main	dc27a68
 BUGS.reserve-index-dtf	reserve-protocol/reserve-index-dtf	main	7d97c8070
 BUGS.symbiotic-v2.core	symbioticfi/core	main	25a065a3d
 BUGS.alchemy-ma2.repo	alchemyplatform/modular-account	develop	ab9c0c247
