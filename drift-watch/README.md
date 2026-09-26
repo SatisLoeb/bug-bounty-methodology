@@ -58,3 +58,24 @@ HEAD watch is blind to:
 
 Run: `./fresh-surface-watch.sh` (check) · `./fresh-surface-watch.sh --baseline` (re-freeze after acting).
 Extend A5b by adding rows to `fresh-surface/proxies.tsv` (id⇥proxy⇥chainid) for any proxied target.
+
+## A6 on-chain value watch (added 2026-09-26) — `onchain-value-watch.sh`
+HEAD-drift (ls-remote) and impl-drift (EIP-1967) are blind to on-chain ECONOMIC state
+(funding/supply/TVL). Several HELD/PARKED findings re-arm only on a value crossing:
+- StackingDAO #88777 (SUBMITTED Critical insolvency): ststxbtc-token-v2 pool growth,
+  the dormant redesign token going >0 (cutover imminent), and a tracking/token-v3 deploy (404->200).
+- StackingDAO second-pass: stbtc-token supply >0 => the pre-launch stBTC surface is LIVE.
+- Stacks pox-5 (NULL-COÛTEUX): get-total-sbtc-staked >0 => dormant-theft class re-arms.
+Runs LOCALLY (Hiro reads; cloud egress blocked, same as A5). `./onchain-value-watch.sh` (check) ·
+`--baseline` (re-freeze after acting). State in `onchain/stacks-values.baseline` (gitignored).
+
+## Daily-set onboarding 2026-09-26 — 9 re-arm targets (rows 19-27)
+Added to watchlist.tsv + triggers.tsv + daily-watch.today.tsv (+ cloud-routine-prompt.txt rows 19-27):
+reserve-governor (HELD veto-dilution HIGH, baselined at the verdict-freeze dc27a68 so it fires the
+~47-commit drift), reserve-index-dtf, symbiotic-v2 core, alchemy modular-account, avalanche libevm,
+rootstock LPS, midas evm+solana, stackingdao contracts. Each trigger regex is the recorded seam.
+
+`daily-local.sh` (cron 07:05 UTC, log-only) is the LOCAL backstop that ls-remote-checks rows 19-27
+(`daily-watch.new.tsv`) + runs onchain-value-watch.sh, until the CLOUD routine is consolidated to 27.
+To consolidate: the deployed prompt is ready in cloud-routine-prompt.txt (single-TASK, 27 rows) —
+apply with RemoteTrigger update on trig_01J8z1dJDsjqJHtjYnbyi2ca, then daily-local becomes pure backup.
