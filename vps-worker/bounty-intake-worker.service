@@ -1,0 +1,10 @@
+[Unit]
+Description=Bounty Intake queue worker (headless Claude Code)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=%h/bug-bounty-methodology/vps-worker
+ExecStart=%h/bug-bounty-methodology/vps-worker/worker.sh
+TimeoutStartSec=1200
