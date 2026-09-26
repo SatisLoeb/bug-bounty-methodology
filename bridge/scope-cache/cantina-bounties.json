@@ -1,6 +1,6 @@
 {
  "count": 5,
- "fetched_at": "2026-09-26T18:00:01Z",
+ "fetched_at": "2026-09-26T18:30:04Z",
  "items": [
   {
    "allowedSeverities": [
@@ -2790,7 +2790,7 @@
     "end": null,
     "start": "2026-04-12T22:00:00Z"
    },
-   "totalFindings": 980,
+   "totalFindings": 981,
    "totalRewardPot": "5000000",
    "url": "https://cantina.xyz/bounties/ff945ca2-2a6e-4b83-b1b6-7a0cd3b94bea"
   },
@@ -3068,7 +3068,7 @@
     "end": null,
     "start": "2025-07-08T14:00:00Z"
    },
-   "totalFindings": 1676,
+   "totalFindings": 1677,
    "totalRewardPot": "5000000",
    "url": "https://cantina.xyz/bounties/55316f42-3c5e-4746-9bd0-0f18dcbc344b"
   }
