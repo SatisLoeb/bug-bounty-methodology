@@ -1,0 +1,20 @@
+# pr-watch.sh config — id / remotes(,owner/repo[@branch]) / mode(pr|head) / globs(,) / trigger_regex / dossier
+# mode pr = HEAD + toutes les PR heads (pré-merge ; réserver aux repos petits/gouvernance)
+# mode head = HEAD (ou @branch) seulement — gros repos ; la baseline de VERDICT reste dans watchlist.tsv (gelée)
+# Onboarder une target locale = ajouter UNE ligne ici (les repos sont publics ; tes notes restent locales).
+sky-pas	sky-ecosystem/spells-mainnet,osero-io/osero-spells,grove-labs/grove-spells	pr	src/,deploy/	addInitRateLimits|addInitControllerActions|initLimitsAndControllerData|setCBeamFor|addCBeam|PAS_TIMELOCK|unpause|PASAuthorizeInPAU|PAS_CONFIGURATOR|BeamState	memory/-home-malix-Desktop-BUGS/sky-pas-beamstate-immunefi-engagement.md
+spend-permissions	coinbase/spend-permissions	pr	src/	SpendPermission|approve|revoke|_useSpendPermission|PermissionManager|nonce	memory/-home-malix-Desktop-BUGS/
+ens-contracts	ensdomains/ens-contracts@staging	head	contracts/	resolver|DNSSEC|wildcard|NameWrapper|registrar|renew	memory/-home-malix-Desktop-BUGS/ens-trackb-dcl-class-fortress-null.md
+euler-vault-kit	euler-xyz/euler-vault-kit	pr	src/	liquidate|checkLiquidation|getQuote|RiskManager|convertToAssets|checkAccountStatus	memory/-home-malix-Desktop-BUGS/
+euler-price-oracle	euler-xyz/euler-price-oracle	pr	src/	adapter|getQuote|scale|staleness|Oracle	memory/-home-malix-Desktop-BUGS/
+granite-core-v1	GraniteProtocol/core-v1	pr	contracts/	is-valid|time-delta|verify-update|monotonic|last-seen|remove-collateral|borrowed-block|liquidat	memory/-home-malix-Desktop-BUGS/granite-*
+pendle-core-v2	pendle-finance/pendle-core-v2-public	head	contracts/	SY|PT|YT|redeem|exchangeRate|router	memory/-home-malix-Desktop-BUGS/
+reserve-fillers	reserve-protocol/trusted-fillers	pr	contracts/,src/	CowSwapFiller|filler|TokenJar|settle|preHook|postHook	memory/-home-malix-Desktop-BUGS/
+sbtc	stacks-network/sbtc	head		signer|withdraw|deposit|threshold|rotate	memory/-home-malix-Desktop-BUGS/
+spark-psm	marsfoundation/spark-psm	pr	src/	swap|previewSwap|convertTo|rateProvider|deposit	memory/-home-malix-Desktop-BUGS/
+alchemix-v3	alchemix-finance/v3	head	src/	mint|liquidate|harvest|repay|transmuter	memory/-home-malix-Desktop-BUGS/
+lombard-evm	lombard-finance/evm-smart-contracts	pr	contracts/	Mailbox|handler|msgRecipient|ratio\(|getRate\(|_mint|Bascule	memory/-home-malix-Desktop-BUGS/
+stacks-core	stacks-network/stacks-core	head		epoch_4_1.*height|Epoch41.*=.*[0-9]|STACKS_EPOCH_4_1|activation_height.*4_1	memory/-home-malix-Desktop-BUGS/
+strata	Strata-Markets/contracts@tranches	pr	contracts/tranches/	AccountingLib|RoundingGuard|minimumJrtSrtRatio|_effectiveAt|cancelUIMultiplier|oraclePaused	memory/-home-malix-Desktop-BUGS/
+tenbin	tenbinlabs/tenbin-contracts	pr	src/	Oracle|Controller|constraint|mint|redeem|signature|approval|EIP712	memory/-home-malix-Desktop-BUGS/
+termmax-v2	term-structure/termmax-contract-v2	head	contracts/	badDebt|gt|slippage|redeem|liquidate	memory/-home-malix-Desktop-BUGS/

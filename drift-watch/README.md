@@ -58,3 +58,19 @@ HEAD watch is blind to:
 
 Run: `./fresh-surface-watch.sh` (check) · `./fresh-surface-watch.sh --baseline` (re-freeze after acting).
 Extend A5b by adding rows to `fresh-surface/proxies.tsv` (id⇥proxy⇥chainid) for any proxied target.
+
+## PR-watch (2026-09-26) — couche pré-merge généralisée, état auto-avançant
+
+Généralisation du pipeline Sky PAS à toute la watchlist. Complémentaire du drift-check classique,
+PAS un remplacement : `watchlist.tsv` garde la **baseline de VERDICT gelée** (ancre de re-engagement) ;
+`pr-watch` maintient un état **"déjà vu" auto-avançant** (pas de ré-alerte quotidienne du même drift)
+et voit les **PR heads avant merge** (critique sur les repos de spells/gouvernance).
+
+- `tools/pr-watch.sh [id-filter]` — config `drift-watch/pr-watchlist.tsv`, état `drift-watch/state/<id>.refs`
+  (commité). Exit 0/2/10. Sur changement : shallow-fetch de la ref + grep des triggers (hors tests/archives).
+- Tourne dans la routine cloud quotidienne 08:00 UTC (`trig_01QNtYtsK6jjKgv3M2rzByTi`, session d'audit Sky PAS).
+- **Onboarder une target (y compris locale, pas encore dans le repo)** : ajouter UNE ligne au TSV
+  (id, owner/repo[@branch][,autre], mode pr|head, globs, regex de triggers, dossier). Les repos surveillés
+  sont publics — seules tes notes restent locales ; le dossier peut suivre au prochain sync. Premier run = baseline silencieuse.
+- mode `pr` = petits repos / gouvernance (pré-merge) ; mode `head` = gros repos (stacks-core, pendle, ens…),
+  où le signal post-merge suffit et où lister des milliers de PR refs serait du bruit.
