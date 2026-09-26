@@ -22,3 +22,6 @@ drift-watch/.deployed-prompt.txt
 drift-watch/ALERT-*.txt
 drift-watch/daily-local.log
 drift-watch/daily-local.cron.log
+vps-worker/.env
+vps-worker/worker.log
+vps-worker/drift-proposals.tsv

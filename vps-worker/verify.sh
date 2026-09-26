@@ -2,8 +2,9 @@
 # Run this ONCE on the VPS before enabling the timer. Confirms the 3 prerequisites.
 set -uo pipefail
 cd "$(dirname "$0")"
+[ -f .env ] || { [ -f .env.example ] && cp .env.example .env && echo "[.env created from .env.example — edit if needed]"; }
 [ -f .env ] && { set -a; . ./.env; set +a; }
-: "${ARTIFACT_URL:?set ARTIFACT_URL in .env}"
+: "${ARTIFACT_URL:?set ARTIFACT_URL in .env (copy .env.example)}"
 PERM="${CLAUDE_PERM_FLAGS:---permission-mode acceptEdits}"
 echo "[1/3] claude CLI present"
 command -v claude >/dev/null && claude --version || { echo "  FAIL: install Claude Code (npm i -g @anthropic-ai/claude-code)"; exit 1; }
