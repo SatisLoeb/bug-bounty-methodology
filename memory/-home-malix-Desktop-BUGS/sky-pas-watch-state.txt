@@ -75,7 +75,8 @@ grove-labs/grove-spells refs/pull/79/head aa2c9c81e16d9a6c617f5aabc697ebeca752de
 grove-labs/grove-spells refs/pull/8/head 7ad4248a640f01e69fa62b0fdf3e02e57db63ab9
 grove-labs/grove-spells refs/pull/80/head d084e4346d4a2d387bd9b152e2d8f502b30dcebe
 grove-labs/grove-spells refs/pull/81/head 4b5e1b404533e63d54835fbcb5a70b1102167756
-grove-labs/grove-spells refs/pull/82/head 0f892c8a1ab39c9b8ecab431ba77d90e9e7a86f2
+grove-labs/grove-spells refs/pull/82/head bbe3c5896151d3158011b1ff17de5fb4188374d1
+grove-labs/grove-spells refs/pull/83/head 62d4a44d76abad3628e8d7c421a33ed2f80cc478
 grove-labs/grove-spells refs/pull/9/head 416e429d84d14b8d84ee4e045435768253ad1c6d
 osero-io/osero-spells HEAD a2d21436cd02ac04f9c374e506debbd5df78205d
 osero-io/osero-spells refs/pull/1/head eb2dc3bd8b65ae875bfc61449ad8427206aff6c3
@@ -83,7 +84,7 @@ osero-io/osero-spells refs/pull/2/head f71aa26ea3be4fd671dcdc44d0ff700a4c79f5ce
 osero-io/osero-spells refs/pull/3/head b5ed93a91f8b3ed0ba485f07590cbfc5f7c42029
 osero-io/osero-spells refs/pull/4/head bb8c002ec1a02dd3091692f103645e1f4197ace3
 osero-io/osero-spells refs/pull/5/head 08820b5ef09667284e32b3b4bebe22431b23b491
-sky-ecosystem/spells-mainnet HEAD 3982314374da47886295aede7305cbb6a8cbb4fb
+sky-ecosystem/spells-mainnet HEAD 17926e1879ca79d017c7e42525825907d8f673b1
 sky-ecosystem/spells-mainnet refs/pull/1/head 78772feaa1d8e67b2fb870c304084c1c44e1976a
 sky-ecosystem/spells-mainnet refs/pull/10/head ec91268f6bf8a3e6cbbb8cb503b4215fdc6ffa79
 sky-ecosystem/spells-mainnet refs/pull/100/head ad97573b30260b3e8117087af09853ba13cb35f1
