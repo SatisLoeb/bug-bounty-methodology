@@ -5,5 +5,15 @@ D-cve.termstructure.termmax-contract-v2	contracts/	Vault|Order|Curve|badDebt|gea
 D-cve.stacks.stacks-core	stackslib/src/core	epoch_4_1.*height|Epoch41.*=.*[0-9]|STACKS_EPOCH_4_1|activation_height.*4_1
 D-cve.alchemix-v3.repo	src/	_forceRepay|_resolveRepaymentFee|_mytSharesDeposited|earmark|redeem
 BUGS.granite-audit.core-v1	.	liquidat|price|earmark|bad.?debt|borrowable|repay|oracle
-L.zest.zest-v2-contracts	.	.
-M.zest-protocol-v2.repo	.	.
+L.zest.zest-v2-contracts	.	get-stx-per-ststx|data-stx-v1|oracle|price|ratio|set-.*oracle|freeze-all|whitelist-fll|v0-5-market|v0-6
+M.zest-protocol-v2.repo	.	get-stx-per-ststx|data-stx-v1|oracle|price|ratio|set-.*oracle|freeze-all|whitelist-fll|v0-5-market|v0-6
+D-cve.cosmos.evm	.	precompile|x/erc20|x/vm|statedb|balance_handler|ante|mempool|Bech32StringFromHexAddress
+BUGS.reserve-governor-audit.repo	contracts/	getPastOptimisticTotalSupply|vetoThreshold|depositAndDelegate|_delegateOptimistic|AverageVotes|proposalThreshold|optimistic
+BUGS.reserve-index-dtf	contracts/	Folio|rebalance|version|Governance|Deployer|initialize|6\.0\.0
+BUGS.symbiotic-v2.core	src/	adapter|totalAssets|CutoffMidas|Settlement|getRoundData|VaultV2|oracle|MIN|MAX|new .*token
+BUGS.alchemy-ma2.repo	src/	execute|validation|installValidation|hook|NativeTokenLimit|performCreate|transferSigner|module
+BUGS.avalanche.libevm	.	OverrideNewEVMArgs|CanCreateContract|PreprocessingGasCharge|StateAccount|RLP|hook|precompile|gas
+BUGS.rootstock.lps	.	BtcRefundAddress|DecodeAddress|get_pegin_quote|captcha|acceptQuote|refund
+BUGS.midas.contracts-evm	contracts/	stable|_getTokenRate|feed|PYTH|Switchboard|band|update_feed|addPaymentToken
+BUGS.midas.contracts-solana	programs/	get_price_in_base_9|conf|PYTH|update_feed|FeedState|mint_instant
+BUGS.stackingdao.contracts	.	tracking-v3|token-v3|stbtc|reserve|refresh-position|get-total-supply|migrate

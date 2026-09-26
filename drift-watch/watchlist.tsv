@@ -91,7 +91,7 @@ BUGS.public-allocator	BUGS/public-allocator	morpho-org/public-allocator	main	51f
 BUGS.rapidoc-spring-boot	BUGS/rapidoc-spring-boot	PlaytikaOSS/rapidoc-spring-boot	main	2c79647	2022-06-07	yes	contracts/,src/	
 BUGS.request-finance-recon	BUGS/request-finance-recon	SatisLoeb/request-finance-recon	master	7a72ac2	2026-03-09	yes	contracts/,src/	
 BUGS.reserve-fillers	BUGS/reserve-fillers	reserve-protocol/trusted-fillers	main	aed6172	2026-03-20	yes	contracts/,src/	
-BUGS.reserve-governor-audit.repo	BUGS/reserve-governor-audit/repo	reserve-protocol/reserve-governor	DETACHED	dc27a68	2026-04-28	yes	contracts/,src/	
+BUGS.reserve-governor-audit.repo	BUGS/reserve-governor-audit/repo	reserve-protocol/reserve-governor	main	dc27a68	2026-09-26	yes	contracts/	
 BUGS.sbtc-audit	BUGS/sbtc-audit	stacks-network/sbtc	main	9bea9fd	2026-08-04	yes	contracts/,src/	
 BUGS.sdks	BUGS/sdks	morpho-org/sdks	main	cdba338	2026-03-19	yes	contracts/,src/	
 BUGS.shapeshift-recon.unchained	BUGS/shapeshift-recon/unchained	shapeshift/unchained	develop	fd48a7bc	2026-04-06	yes	contracts/,src/	
@@ -191,3 +191,11 @@ nexus-atomic-research.repos.xmr-btc-swap	nexus-atomic-research/repos/xmr-btc-swa
 web.source.ens-app-v3	web/source/ens-app-v3	ensdomains/ens-app-v3	main	eec575e	2026-08-27	no	contracts/,src/	
 web.source.ensdomains-landing	web/source/ensdomains-landing	ensdomains/ens.domains	master	037cfca	2020-07-14	no	contracts/,src/	
 web.source.ens-metadata-service	web/source/ens-metadata-service	ensdomains/ens-metadata-service	master	83b3bf6	2026-06-26	no	contracts/,src/	
+BUGS.reserve-index-dtf	BUGS/reserve-index-dtf	reserve-protocol/reserve-index-dtf	main	7d97c8070	2026-09-26	no	contracts/	
+BUGS.symbiotic-v2.core	BUGS/symbiotic-v2-delta/src/core	symbioticfi/core	main	25a065a3d	2026-09-26	no	src/	
+BUGS.alchemy-ma2.repo	BUGS/modular-account-audit	alchemyplatform/modular-account	develop	ab9c0c247	2026-09-26	no	src/	
+BUGS.avalanche.libevm	BUGS/avalanche-immunefi-2026-09/libevm	ava-labs/libevm	main	ab188047d	2026-09-26	no	.	
+BUGS.rootstock.lps	L/rsk/liquidity-provider-server	rsksmart/liquidity-provider-server	master	50ade6215	2026-09-26	no	.	
+BUGS.midas.contracts-evm	BUGS/midas-eth-audit/contracts	midas-apps/contracts	main	c9bfcf0c7	2026-09-26	no	contracts/	
+BUGS.midas.contracts-solana	BUGS/midas-sol-audit/contracts-solana	midas-apps/contracts-solana	main	58381c285	2026-09-26	no	programs/	
+BUGS.stackingdao.contracts	BUGS/stackingdao-pocs/contracts	StackingDAO/contracts	main	a8d7d2a2d	2026-09-26	no	.	

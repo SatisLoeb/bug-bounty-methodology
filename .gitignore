@@ -14,3 +14,7 @@ tracking/
 OUTCOMES.jsonl
 QUEUE.jsonl
 INCOME-LOG.md
+drift-watch/onchain/
+drift-watch/fresh-surface/
+drift-watch/*.bak-*
+drift-watch/*.log
