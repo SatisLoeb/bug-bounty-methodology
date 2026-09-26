@@ -1,6 +1,6 @@
 {
  "count": 5,
- "fetched_at": "2026-09-26T19:00:02Z",
+ "fetched_at": "2026-09-26T19:30:03Z",
  "items": [
   {
    "allowedSeverities": [
@@ -3068,7 +3068,7 @@
     "end": null,
     "start": "2025-07-08T14:00:00Z"
    },
-   "totalFindings": 1677,
+   "totalFindings": 1678,
    "totalRewardPot": "5000000",
    "url": "https://cantina.xyz/bounties/55316f42-3c5e-4746-9bd0-0f18dcbc344b"
   }
