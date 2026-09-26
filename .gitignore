@@ -18,3 +18,7 @@ drift-watch/onchain/
 drift-watch/fresh-surface/
 drift-watch/*.bak-*
 drift-watch/*.log
+drift-watch/.deployed-prompt.txt
+drift-watch/ALERT-*.txt
+drift-watch/daily-local.log
+drift-watch/daily-local.cron.log
