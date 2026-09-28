@@ -116,3 +116,49 @@ sur mainnet, ou authority-gated (update_config: caller==config.authority). Tout 
 (claim, subscribe, payment, swap, IPAM, AMF) commenté/désactivé => non atteignable via l'ABI
 déployée. Aucun chemin de valeur atteignable par un attaquant externe. Ce programme n'est de
 toute façon pas dans le scope Immunefi ci-dessus.
+
+## MAJ v3 — table de sévérité Immunefi + scope Web&App + reachability réseau
+
+### Mapping valeur terminale -> sévérité Immunefi (impacts in-scope publiés)
+  Critical : theft of user funds (at-rest/in-motion), permanent freezing of funds,
+             protocol insolvency, unauthorized minting, manipulable RNG, gov manipulation.
+  High     : temporary freezing of funds, theft/permanent-freeze of unclaimed yield.
+  Medium   : griefing (pas de profit mais dommage), block stuffing, unbounded gas,
+             contrat inopérant par manque de fonds.
+  Low      : ne délivre pas le rendement promis mais sans perte de valeur.
+  (La liste template mentionne NFTs/royalties — non pertinents ici ; ignorer.)
+
+### Sévérité attendue par chemin (numérateur du scoring)
+  P-01 taux manipulé -> mispricing downstream :
+        - si extraction de fonds / insolvency        => CRITICAL
+        - si ripcord bloque un taux légitime -> gel   => HIGH (temp) / CRITICAL (permanent)
+  P-02 share-price faux -> withdraw à taux gonflé      => CRITICAL (theft / insolvency)
+  P-03 bypass borrower-auth -> drain vault             => CRITICAL (direct theft)
+  P-04 USD.tel :
+        - mint non autorisé                            => CRITICAL (unauthorized minting)
+        - pause non réversible -> gel permanent        => CRITICAL (permanent freezing)
+        - pause griefing temporaire                    => HIGH (temp freeze) / MEDIUM (grief)
+
+### Scope Web & App (nouveau) — probablement le meilleur ratio reachability
+  Le programme a une catégorie "Web & App" en plus de "Smart Contract". Les deux hôtes live :
+    - api.infrastructure.finance  == infrafi-api (le PUBLISHER du taux, cœur de T3)
+    - app.infrastructure.finance  == frontend
+  Implication : l'autorisation de publication du taux (T3) est peut-être testable côté WEB
+  (bypass d'auth sur l'endpoint de publication, faille de validation côté API) — souvent
+  reachability plus haute et dup plus basse que le versant on-chain. À prioriser si la liste
+  Web&App confirme ces endpoints in-scope. [Liste Web&App non encore fournie.]
+
+### Reachability réseau depuis CETTE session : NULLE
+  curl vers api./app./docs.infrastructure.finance = 403 CONNECT tunnel (egress proxy).
+  BscScan, Solana RPC : bloqués. GitHub : ok (mais code in-scope pas open-source).
+  => Toute la phase de reachability/PoC doit se faire depuis un réseau non bloqué. Ce dossier
+     est le plan de tir ; il ne peut pas être exécuté ici.
+
+### Ordre d'attaque recommandé (quand artefacts/réseau dispo)
+  1. api.infrastructure.finance : mapper l'API (endpoints, auth, chemin de publication du taux).
+     Chercher : qui peut POSTer un taux ? signature/clé vérifiée ? rejeu ? borne staleness ?
+  2. Contrat BNB (b...0778744c1) sur BscScan : auth de setRate, staleness, ripcord, single-signer.
+     Croiser avec (1) : le contrat fait-il confiance à un signer que l'API expose/mal protège ?
+  3. Vaults Loopscale (IDL) : câblage share-price/deal-valuation + enforcement whitelist borrower
+     qui soit CONFIG InfraFi (in-scope) et non natif Loopscale (hors scope).
+  4. USD.tel Token-2022 : mint authority + pause authority holders, réversibilité de la pause.
