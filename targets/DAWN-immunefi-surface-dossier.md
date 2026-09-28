@@ -162,3 +162,74 @@ toute façon pas dans le scope Immunefi ci-dessus.
   3. Vaults Loopscale (IDL) : câblage share-price/deal-valuation + enforcement whitelist borrower
      qui soit CONFIG InfraFi (in-scope) et non natif Loopscale (hors scope).
   4. USD.tel Token-2022 : mint authority + pause authority holders, réversibilité de la pause.
+
+## MAJ v4 — scope Web&App confirmé : le seam devient atteignable en boîte noire
+
+### Targets Web&App (in-scope)
+  T5  api.infrastructure.finance — surface publique de infrafi-api, consommée par le dashboard.
+      Endpoints listés (TOUS GET) : /project, /project/metrics, /nav/*, /vault/solana/nav, /health.
+      => CORRECTION v3 : pas d'endpoint public de PUBLICATION. Le "rate-publishing" (T3) se fait
+         côté backend (infrafi-api signe et poste vers BNB), pas via un POST public. Donc
+         "bypass d'auth sur endpoint publish" N'EST PAS le chemin. Le chemin web est ci-dessous.
+  T6  app.infrastructure.finance — dashboard Next.js capital-provider : wallet connect,
+      flows deposit/redeem, affichage NAV/exchange-rate.
+
+### Impacts Web&App notables (nouveau numérateur)
+  Critical : RCE, récupération de fichiers sensibles (/etc/shadow, DB pwd, **blockchain keys**),
+             DoS de l'app, actions authentifiées à la place d'autres users, direct theft of
+             user funds, interactions malveillantes avec un wallet déjà connecté (substitution
+             d'adresse de contrat / de params de tx), XSS via metadata, perte de fonds sans
+             action user, FUITE DE CLÉ PRIVÉE menant à accès aux fonds.
+  High     : injection statique persistante, divulgation d'info confidentielle user,
+             subdomain takeover.
+  Medium/Low : reflected injection, open redirect, cookie bombing, etc.
+
+### INSIGHT CENTRAL — les deux scopes se rejoignent sur "ce que infrafi-api publie"
+  T3 (SC) : le contrat BNB fait CONFIANCE à un taux "published by infrafi-api".
+  T5 (web): infrafi-api est exposé publiquement.
+  Le finding le plus précieux = prendre le CONTRÔLE de ce que infrafi-api publie. Trois legs
+  du MÊME joyau, par ordre de reachability :
+    LEG-A (web, le plus atteignable) : fuite de la clé de signature du publisher via RCE / LFI /
+           SSRF / path-traversal sur api.infrastructure.finance -> l'attaquant signe et poste un
+           taux arbitraire au contrat BNB -> mispricing / insolvency downstream.
+           Impact web = CRITICAL ("blockchain keys" / "private key leakage") ET réalise T3.
+           1re sonde concrète : le WILDCARD `/nav/*` (mappe-t-il un segment vers un
+           fichier/route -> traversal/SSRF ?), puis /project/metrics et /health (leak d'info,
+           versions, chemins, stack).
+    LEG-B (SC) : manipuler la NAV que /vault/solana/nav LIT au moment de la requête (si valeur
+           on-chain influençable / spot manipulable) et que le publisher pousse sans validation
+           indépendante -> dépend de ce que le contrat BNB revalide (sanity/ripcord). Le couple
+           (ce que l'API publie) x (ce que BNB revalide) EST le seam.
+    LEG-C (SC) : côté contrat BNB, staleness/ripcord/single-signer sur setRate (source BscScan).
+
+### Deuxième axe web : app.infrastructure.finance (flow deposit/redeem)
+  WALLET-01 : interaction malveillante avec wallet connecté (substitution d'adresse de contrat
+    ou de params de tx dans le flow redeem/deposit), via XSS, dépendance compromise, ou une
+    valeur NAV empoisonnée pilotant le calcul de redeem -> le wallet signe une tx malveillante
+    -> direct theft. Impact CRITICAL. dup web3-frontend = MED, edge-fit MED.
+  DoS-01 : "taking down the application" (Critical web) sur api/app via requête non bornée
+    (/nav/* , /project/metrics) -> feed de taux stoppé -> selon la gestion staleness du contrat
+    BNB, gel du vault (ripcord) -> temp/permanent freezing (chaîne web-DoS -> SC-freeze).
+
+### RE-TIERING (le blocage n'est plus "closed-source", c'est UNIQUEMENT l'egress de cette session)
+  LEG-A  api.infrastructure.finance -> clé publisher -> contrôle du taux : P0-candidat.
+         Boîte noire, endpoints GET publics, aucune source ni accès privilégié requis — juste
+         de l'egress HTTP. Value CRITICAL, dup LOW, edge-fit HIGH. #1.
+  WALLET-01 app deposit/redeem wallet-interaction : P1 (value CRITICAL, dup MED).
+  LEG-B/LEG-C seam NAV-publish / BNB revalidation : P1 (besoin IDL vault + source BscScan).
+  P-03 borrower-auth, P-04 USD.tel mint/pause : P2 (boundary/admin-trust à lever d'abord).
+
+### Reachability depuis cette session : toujours NULLE (egress 403 sur api/app/docs/bscscan/RPC).
+  Mais la nature du blocage a changé : ce n'est plus "il faut du code privé", c'est "il faut une
+  connexion". Un hunter sur un réseau normal peut commencer le black-box sur
+  api.infrastructure.finance IMMÉDIATEMENT, en commençant par le wildcard /nav/*.
+
+### PLAN DE TIR (ordre exécutable dès qu'il y a du réseau)
+  1. api.infrastructure.finance : énumérer /project /project/metrics /nav/* /vault/solana/nav
+     /health. Sur /nav/* tester traversal/segment injection/SSRF ; sur /health & /metrics lire
+     versions, chemins, fuites. Objectif : toute primitive lecture-fichier/SSRF/RCE -> clé signer.
+  2. app.infrastructure.finance : auditer le flow redeem/deposit (source d'adresse de contrat,
+     construction des params de tx, injection de la valeur NAV dans le calcul, XSS/CSP).
+  3. Contrat BNB (BscScan) : auth setRate, borne staleness, ripcord, single-signer -> croiser (1).
+  4. Vaults Loopscale (IDL) : câblage share-price/deal-valuation + whitelist borrower CONFIG
+     InfraFi (in-scope) vs natif Loopscale (hors). USD.tel : mint/pause authority + réversibilité.
