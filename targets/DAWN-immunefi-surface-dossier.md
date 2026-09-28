@@ -1,106 +1,118 @@
-# TARGET DOSSIER — Dawn (Immunefi) | xsurface-prioritize
+# TARGET DOSSIER — Dawn / InfraFi (Immunefi) | xsurface-prioritize
 
-TARGET: Dawn Internet (Andrena) — DePIN broadband sur Solana
+TARGET: Dawn Internet (Andrena) — surface financière InfraFi (infrastructure.finance)
 PLATFORM: Immunefi — https://immunefi.com/bug-bounty/dawn/information/
-ON-CHAIN PROGRAM (source): DAWN-Foundation/dawn @ db5396c (2026-09-18), Anchor 0.32.1
-MAINNET PROGRAM ID: DawnxS4Adzh591GmqiDNfrSZBS4ENdQ9VDRStRJJ8qt7
-DATE: 2026-09-28
+DATE: 2026-09-28 (v2 — scope Immunefi réel intégré)
 
-## LIMITE DE VÉRIFICATION (à lire en premier)
-- immunefi.com et depinhub.io sont bloqués par le proxy d'egress de cette session.
-  => Je n'ai PAS pu lire le scope Immunefi officiel : liste exacte des assets-in-scope,
-     table de récompenses, KYC, ni si le scope couvre l'off-chain (firmware routeur,
-     backend API, pipeline oracle "proof-of-bandwidth" des challenger nodes Jito).
-- Tout ce qui suit sur la surface ON-CHAIN est vérifié en lisant le source du programme.
-  Tout ce qui touche le scope Immunefi est marqué [NON VÉRIFIÉ].
+## CORRECTION MAJEURE vs v1
+Le scope Immunefi ne porte PAS sur le programme Solana `dawn` (analysé en v1, minimal-deploy,
+NO-GO — voir §ANNEXE). Le scope réel est la couche **InfraFi** : un vault de crédit sur
+Loopscale (Solana) dont le taux de change / prix de part est publié cross-chain vers un
+contrat récepteur sur BNB Chain, plus le stablecoin USD.tel. C'est exactement le WATCH
+off-chain (oracle/rate pipeline) signalé en v1.
 
-## FAIT DÉCISIF — LE PROGRAMME DÉPLOYÉ EST UN "MINIMAL DEPLOY"
-Le module `#[program] mod dawn` (programs/dawn/src/lib.rs) n'expose que 5 instructions vivantes :
-  1. init_token            (init one-time : TokenConfig PDA + mint DAWN PDA-owned)
-  2. init_fee_accounts     (init one-time : PDAs fee/dao/validator/medallion)
-  3. initialize_config     (init one-time : PDA seed fixe b"config", fixe authority=caller)
-  4. init_metadata         (init one-time : metadata Metaplex)
-  5. update_config         (gardé : constraint caller.key() == config.authority)
+## SCOPE OFFICIEL (4 targets, texte Immunefi fourni par l'utilisateur — autoritatif)
+  T1  Loopscale credit vault (Solana, addr ...LQ9vZkSh, ajouté 21/09/2026)
+  T2  Loopscale credit vault (Solana, addr ...yXAwuXSn, ajouté 11/08/2026)
+      In scope: config & intégration du vault InfraFi — deposit/withdraw, borrow/repay,
+      intégration de la deal-valuation ; autorisation du borrower ; sémantique
+      exchange-rate / share-price que DAWN lit ET publie. IDL Anchor fetchable on-chain.
+      HORS SCOPE: internals du protocole/programme Loopscale.
+  T3  Contrat InfraFi sur BNB Chain (addr b...0778744c1, ajouté 15/07/2026)
+      Reçoit/valide/stocke le taux de change publié par infrafi-api ; sanity checks ;
+      consommation oracle downstream. In scope: autorisation de publication du taux,
+      staleness/validation, tout chemin pour poster un taux manipulé ou ripcord-bloqué.
+  T4  USD.tel — stablecoin M0 wrapped-M, Solana Token-2022 extension Pausable (15/07/2026)
+      In scope: config du mint InfraFi et opération de la pause-authority.
 
-TOUT le reste est COMMENTÉ (bloc "// --- DISABLED: ... DAWN-minimal-deploy-squads ---") :
-claim, subscribe / subscribe_for, extend / extend_for, add_l2/l3_plan, service_agreement,
-add_device(_for), add_device_model, verify_device_location, tout AMF (register_auth_method,
-register_credential(_for), revoke_credential, register/revoke_connection), tout IPAM
-(init_root_ip_block, allocate_ip, lease_subscriber_ip(_for), revoke_ip).
-Le code de ces handlers est compilé (`#[allow(dead_code)]`) mais N'EST PAS un point d'entrée
-=> non atteignable via l'ABI du programme déployé.
+## ARCHITECTURE (docs.infrastructure.finance + texte scope)
+  Depositors -> Vault crédit sur Loopscale (Solana) -> part sUSD.infra (taux = NAV/parts).
+  DAWN = SEUL borrower whitelisté, via multisig Squads V4, emprunte le capital du vault.
+  infrafi-api (off-chain, closed-source) lit l'exchange-rate on-chain -> PUBLIE vers le
+  contrat BNB -> le contrat BNB valide (staleness, sanity, "ripcord"/circuit-breaker) et
+  stocke -> consommation oracle downstream.
+  Loopscale value les sous-jacents via Pyth (decompose les LP). USD.tel = USD.infra (peg $1).
+
+## LIMITE DE VÉRIFICATION (honnête)
+  - immunefi.com, docs.infrastructure.finance, explorers/RPC : bloqués par l'egress proxy.
+  - Le code in-scope n'est PAS open-source : l'org GitHub `infrafi` est une COLLISION DE NOMS
+    (protocole de collatéralisation de nodes DePIN OORT/Helium, NodeVaultUpgradeable — RIEN
+    à voir : grep loopscale/usd.tel/susd/squads/ripcord = 0). NE PAS auditer github.com/infrafi.
+  - Donc la reachability (gate q2) est NON CONFIRMÉE depuis cette session. Conséquence skill :
+    aucun chemin ne peut être P0 tant que la reachability n'est pas vérifiée sur artefact réel.
 
 ## ASSETS (valeur terminale)
-  A1: pools de tokens DAWN détenus par le programme (fee_pool/dao/validator/medallion) — vol de fonds
-  A2: mint DAWN (autorité = TokenConfig PDA) — mint non autorisé
-  A3: intégrité paiement/récompense (claim/payment/swap) — vol / bad accounting
-  A4: [NON VÉRIFIÉ] pipeline off-chain proof-of-bandwidth (challenger nodes) — fabrication de récompenses
-  A5: [NON VÉRIFIÉ] firmware/hardware routeur Dawn R1 — RCE device, usurpation d'identité device
+  A1: principal du vault (capital des depositors InfraFi) — perte directe si borrower-auth
+      contournée ou share-price manipulée à la sortie.
+  A2: consommateurs downstream du taux publié sur BNB — mispricing si taux manipulé/stale
+      accepté (c'est ici que vit "oracle manipulation -> drain" ; magnitude = ce qui consomme).
+  A3: détenteurs sUSD.infra — intégrité du prix de part (mint/redeem au mauvais taux).
+  A4: peg/supply USD.tel — mint non autorisé ou abus/DoS de la pause-authority.
 
-## POINTS D'ENTRÉE VIVANTS & FRONTIÈRES DE CONFIANCE (on-chain, réels)
-  - initialize_config : caller non contraint MAIS `init` sur PDA seed fixe => 1 seule fois.
-    Sur un mainnet live ($18M levés, protocole opérationnel) le PDA config existe déjà
-    => ré-init revert (Anchor `init` échoue si le compte existe). Front-run = non atteignable.
-  - init_token / init_fee_accounts / init_metadata : mêmes PDAs one-time déjà consommés.
-  - update_config : caller == config.authority (multisig Squads d'après les docs). Anon bloqué.
-  - Frontière API : config.api_authority = clé qui agit "au nom des users" — pertinente
-    UNIQUEMENT pour les instructions *_for, qui sont désactivées.
+## CHEMINS CANDIDATS (top-down, avant lecture profonde)
+  P-01  Manipulation du taux cross-chain (JOYAU)
+        attaquant -> influence l'exchange-rate lu par infrafi-api sur Solana OU fait accepter
+        au contrat BNB un taux manipulé / stale / contournant le ripcord -> mispricing
+        downstream -> extraction.
+        scope: EXPLICITEMENT in-scope (T3 : "any path to posting a manipulated or
+        ripcord-blocked rate", rate-publishing authorization, staleness/validation).
+        edge-fit: HIGH (oracle cross-chain, peer-trust du publisher, staleness, ripcord =
+        glue bespoke). dup: LOW. value: HIGH (si consommation downstream matérielle).
+        reachability: NON CONFIRMÉE (besoin source BNB + auth infrafi-api). => TIER P1.
+  P-02  Sémantique share-price / deal-valuation
+        La NAV du vault inclut le prêt DAWN. Si la valuation d'un deal peut être forcée
+        (mark stale, write-down de défaut manqué, timing d'accrual d'intérêts) -> le
+        share-price publié est faux -> withdraw à prix gonflé draine, ou dépôts dilués.
+        frontière: doit rester dans l'INTÉGRATION/config InfraFi (le wording "deal-valuation
+        integration" garde ça in-scope), PAS dans la valuation interne Loopscale (hors scope).
+        edge-fit: HIGH. dup: LOW-MED. value: HIGH. reachability: NON CONFIRMÉE. => TIER P1.
+  P-03  Bypass d'autorisation du borrower
+        DAWN seul borrower whitelisté via Squads V4. Chemin laissant un principal non
+        whitelisté emprunter, ou emprunter hors du gate multisig -> drain direct du vault.
+        frontière: l'angle in-scope est la CONFIG InfraFi de cette autorisation ; si le check
+        est purement natif Loopscale -> risque HORS SCOPE.
+        edge-fit: MED-HIGH. dup: MED. value: HIGH. reachability: NON CONFIRMÉE. => TIER P1/P2.
+  P-04  Config mint / pause-authority USD.tel (Token-2022 Pausable)
+        mint non autorisé (qui détient la mint authority ?), DoS via pause (geler transfers ->
+        bloquer redemptions/liquidations), ou état de pause non réversible. M0 wrapped-M : un
+        bug de config du mint peut casser le wrap 1:1.
+        exclusion: si l'unique chemin est "la pause-authority pause méchamment" = admin-trust
+        => DROP. Angle in-scope non trivial: MISCONFIG laissant un non-admin mint/pause, ou
+        pause impossible à lever. edge-fit: MED. dup: MED. => TIER P2.
 
-## ACTEURS
-  - Anonyme : peut signer init_* / update_config mais tous échouent (déjà init / authority-gated).
-  - authority (multisig) : update_config. Hors scope (admin-trust).
-  - api_authority : agit pour les users sur les variantes *_for. Désactivées => inerte.
-
-## CHEMINS CANDIDATS
-  P-01: anon -> initialize_config -> devient authority -> draine via update_config
-        reachability (q2): UNREACHABLE. PDA config déjà initialisé sur mainnet ; `init` revert.
-        => DROP.
-  P-02: anon -> claim/subscribe/payment/swap -> vol de fonds (A1/A3)
-        reachability (q2): UNREACHABLE. Handlers non exposés (commentés dans mod dawn).
-        => DROP pour la surface DÉPLOYÉE. Voir WATCH.
-  P-03: anon -> IPAM/AMF -> détournement IP / credential (integrité)
-        reachability (q2): UNREACHABLE. Handlers désactivés. => DROP.
-  P-04: [NON VÉRIFIÉ] falsification métriques challenger -> récompenses fabriquées (A4)
-        scope-exclusion: dépend du scope Immunefi ; logique off-chain probablement hors du repo.
-        => WATCH / à qualifier une fois le scope Immunefi lisible.
-
-## SURFACE LATENTE (WATCH — vaut une lecture quand les instructions seront réactivées)
-Quand le "minimal deploy" s'ouvrira, la vraie surface à valeur haute est déjà écrite :
-  - app/subscription/payment.rs (391 l.) — flux du token de paiement (USD.tel), fees.
-  - app/claim.rs (353 l.) — claim de récompense, lockup 24h, CPI Raydium.
-  - utils/swap.rs — prix calculé depuis les SOLDES SPOT des vaults Raydium
-    (pool.token_price_x32 sur vault_0/vault_1 instantanés) => surface manipulation de prix /
-    sandwich. Garde au call-site : min_dawn_out + deadline (MAX_DEADLINE_OFFSET_SECONDS).
-    Edge à tester quand actif : robustesse de la borne slippage vs prix spot manipulable,
-    cohérence du tri mint/vault (sort_accounts) sous pool malveillant/fake.
-  - variantes *_for + api_authority : seam d'autorisation déléguée (qui peut agir pour qui).
-
-## GATES (skill)
-  - 6a scope-exclusion : le seul chemin on-chain réel restant (init front-run) est UNREACHABLE ;
-    le reste est admin-trust (update_config) => exclusion DURE. Off-chain [NON VÉRIFIÉ].
-  - 6b dup : surface déployée triviale et publique (repo public, un seul programme) => dup faible
-    mais parce qu'il n'y a rien à trouver, pas parce qu'on a un edge.
-  - 6c edge-fit : Rust/Anchor + Raydium CPI + pricing spot = edge-fit HIGH... mais sur du code
-    NON DÉPLOYÉ => valeur atteignable nulle aujourd'hui.
+## EXCLUSIONS À GARDER EN TÊTE (gate 6a)
+  - Internals programme/protocole Loopscale => HORS SCOPE (frontière dure). Tout finding
+    enraciné là meurt quelle que soit l'impact.
+  - Signers Squads / pause-authority "se comportant mal" = admin-trust => DROP sauf misconfig
+    atteignable par un non-admin.
+  - Arbitrage cross-chain / MEV comme seul impact => DROP.
 
 ## DÉCISION GLOBALE
-NO-GO sur la surface ON-CHAIN DÉPLOYÉE aujourd'hui : les 5 instructions vivantes sont soit des
-init one-time déjà consommés, soit authority-gated. Aucun chemin de valeur atteignable par un
-attaquant externe. Un bug trouvé dans claim/payment/swap/ipam/amf porte sur du code non exposé
-par l'ABI déployée => "not deployed / théorique" => mort en recevabilité, sauf si le scope
-Immunefi rémunère explicitement le code destiné au déploiement (à confirmer).
+GO CONDITIONNEL — allocation de recherche sur le SEAM oracle/rate-publishing (P-01, P-02),
+PAS sur le programme on-chain dawn (tué en v1). Valeur et edge réels, dup faible, c'est le
+type de cible que le skill privilégie. MAIS reachability entièrement non confirmée depuis
+cette session (code in-scope closed-source ; explorers/RPC bloqués). Donc P1 "vaut un PoC"
+contingent à l'obtention des artefacts, pas P0.
 
-CONDITIONNEL / WATCH :
-  1. Off-chain (challenger nodes proof-of-bandwidth, backend API, firmware Dawn R1) : c'est là
-     qu'est la vraie valeur ET la vraie nouveauté. Va/no-go IMPOSSIBLE à trancher tant que le
-     scope Immunefi n'est pas lisible. ACTION : lire le scope depuis un réseau non bloqué.
-  2. Réactivation des instructions désactivées : surveiller le repo/déploiement. Quand
-     subscribe/claim/payment repassent en `#[program]`, re-trigger le skill : payment.rs +
-     swap.rs (pricing spot) deviennent P0-candidats à edge-fit HIGH.
+CONVERSION P1 -> P0 (à faire depuis un réseau non bloqué) :
+  1. BscScan : source vérifiée du contrat BNB (b...0778744c1) -> lire auth de publication,
+     fenêtre de staleness, logique ripcord, modèle de signer (single ECDSA = peer-trust ?).
+  2. Solana RPC : IDL Anchor des deux vaults Loopscale (...LQ9vZkSh, ...yXAwuXSn) -> config
+     du vault : enforcement du whitelist borrower, comptes share-price/exchange-rate, câblage
+     deal-valuation. Confirmer ce qui est config InfraFi (in-scope) vs natif Loopscale (hors).
+  3. infrafi-api : comment le publisher s'authentifie auprès du récepteur BNB (clé, signature).
+  4. USD.tel Token-2022 mint (Solana) -> détenteurs mint authority + pause authority, config.
 
 TEMPS ALLOUÉ (honnête) :
-  - On-chain déployé : 0 (clos).
-  - Confirmation active minimale : ~30 min — vérifier via RPC Solana que (a) le binaire déployé
-    à DawnxS4... correspond bien à ce source minimal, (b) le PDA config est initialisé. (egress
-    RPC bloqué dans cette session.)
-  - Décision réelle du programme : conditionnée à la lecture du scope Immunefi (off-chain).
+  - Programme on-chain dawn : 0 (clos, cf. annexe).
+  - InfraFi rate-seam : GO pour la phase de reachability (~0.5–1 j) dès que les 4 artefacts
+    ci-dessus sont lisibles. Décision P0 profonde conditionnée à ce que la reachability passe.
+
+## ANNEXE — v1 : programme on-chain `dawn` = NO-GO (toujours valide, mais HORS scope Immunefi)
+DAWN-Foundation/dawn @ db5396c, program-id mainnet DawnxS4Adzh591GmqiDNfrSZBS4ENdQ9VDRStRJJ8qt7.
+Minimal-deploy : seules 5 instructions vivantes (init_token, init_fee_accounts,
+initialize_config, init_metadata, update_config) ; toutes des init one-time déjà consommées
+sur mainnet, ou authority-gated (update_config: caller==config.authority). Tout le reste
+(claim, subscribe, payment, swap, IPAM, AMF) commenté/désactivé => non atteignable via l'ABI
+déployée. Aucun chemin de valeur atteignable par un attaquant externe. Ce programme n'est de
+toute façon pas dans le scope Immunefi ci-dessus.
