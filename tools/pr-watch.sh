@@ -73,7 +73,7 @@ while IFS=$'\t' read -r id remotes mode globs regex dossier; do
     git -C "$dir" remote remove origin 2>/dev/null; git -C "$dir" remote add origin "https://github.com/${remote}"
     if git -C "$dir" fetch -q --depth 2 origin "$sha" 2>/dev/null; then
       # shellcheck disable=SC2086
-      hits="$(git -C "$dir" grep -nIE "$regex" "$sha" -- $spec 2>/dev/null | grep -viE '/(test|tests|archive|mocks?)/' | head -25 || true)"
+      hits="$(git -C "$dir" grep -nIE "$regex" "$sha" -- $spec 2>/dev/null | grep -viE '\.t\.sol:|/(test|tests|archive|mocks?)/' | head -25 || true)"
       if [[ -n "$hits" ]]; then
         echo "--- TRIGGER-HITS $remote $ref ($sha) ---"; echo "$hits"
       else
