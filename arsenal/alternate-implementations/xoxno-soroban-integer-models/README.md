@@ -8,3 +8,6 @@ Not a PoC and not an exploit; a verification aid for re-opening the target on a 
 - `xoxno_math.py`, `sim.py`, `hypotheses.py`, `targeted.py`, `search.py`, `accrual.py` — pool/share/index math.
 - `xoxno_model.py`, `xoxno_fuzz.py`, `xoxno_fuzz2.py` — pool ops model + fuzz (~1.6M cases).
 - `liq_model.py`, `scenarios.py`, `l1_band.py` — liquidation engine replica against mainnet spoke params.
+- `harness-lp-footprint/` — test-harness additions (drop into `tests/test-harness/tests/` and `src/`, register the
+  modules) that measure liquidation footprint/CPU/memory for accounts holding Aquarius-LP collateral legs; run
+  `cargo test -p test-harness --features testing --test lp_liq_footprint -- --nocapture --test-threads=1`.

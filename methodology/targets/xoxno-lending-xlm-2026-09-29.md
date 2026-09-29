@@ -65,9 +65,17 @@ rounding model). ~70 hypotheses generated across all surface classes; artifacts 
 - A-3 Fixed USD sanity bands equal to factor bounds on accruing/FX-denominated RWA (USTRY top 1.1556, CETES ±8 %
   around a MXN NAV) will be crossed by drift, not by an adversary; fail-closed until a timelocked reconfiguration.
   Advisory (M "unable to operate" at best, self-resolving by governance in minutes).
-- A-4 Resource budget: an account at the position limit holding LP legs needs ~10 cross-contract calls per LP
-  plus nested legs per valuation; the repo's own benches and the testnet frontier cover plain legs only and the
-  stress script disclaims LP costs. Measurement pending (harness agent) — see addendum below.
+- A-4 Resource budget: MEASURED, not confirmed → DROP. Harness measurement (files in
+  `arsenal/alternate-implementations/xoxno-soroban-integer-models/harness-lp-footprint/`) of a 5-LP-collateral /
+  4-debt account (cp + stable LPs, Scaled and Ref nested legs, 4 dual-source debts) with controller, aggregator,
+  pool and NFT metered as release WASM: 185 footprint entries / 40 writes / 78.7M CPU / 5.3 MB; corrected for
+  WASM providers, pools and share tokens ≈ 182–199 entries / ~105–120M CPU / ~15–17 MB. Mainnet limits per the
+  SDK's hard-coded snapshot (soroban-sdk 28 `InvocationResourceLimits::mainnet()`, 2026-07-10, verified in
+  source): 400 ledger entries, 200 disk reads, 200 writes, 400M instructions, 40 MiB → margin ≥ 2x on every
+  axis; a plain 5C+5D account is nearly as heavy (186 entries / 73M). An LP leg costs only ~+3.4 entries and
+  ~+2.5–7M CPU over a plain leg because one aggregator session caches every nested key and bulk-reads RedStone.
+  The repo's `footprint_test.rs` / `budget_breakdown.rs` assert stale limits (100/50/100M) — a doc/test nit for
+  the team, not a bug. Flip only if the network lowers limits or POSITION_LIMIT_MAX rises above ~15.
 
 ## Design observations (non-payable, worth a private note to the team)
 - D-1 R-23 payoff jump at C = D is larger on spoke 1 than the memo's 500-bps figures (blended base 699 bps:
@@ -85,8 +93,8 @@ rounding model). ~70 hypotheses generated across all surface classes; artifacts 
 NO-GO on the named SC surface as of v1.0.1, with kill-list (this file + notes). Rationale: theft/insolvency
 classes died on executed guards or executed numeric nulls at every sink; the only live items are availability
 dependencies that are (a) documented by the target, (b) conditional on external state, and (c) bounded by a
-one-minute governance timelock. Flip conditions: A-4 measurement shows a max-position LP account exceeds mainnet
-tx limits (→ re-open as un-liquidatable-account, High/Critical by insolvency); a Reflector DEX methodology source
+one-minute governance timelock. Flip conditions: network resource limits lowered or the position limit raised well above 5 (A-4 margin
+≥2x today); a Reflector DEX methodology source
 proves cheap movability (→ A-2 becomes reachable); a new deployed commit touching liquidation/oracle; a <3-decimal
 listing or a token listed in two hubs appearing on mainnet (form-null rows 7 and 11 re-arm).
 Time spent: ~2.5 h wall, 5 agents. Remaining EV on this program: low; watch list only.

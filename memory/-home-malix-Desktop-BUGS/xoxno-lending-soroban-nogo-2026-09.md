@@ -1,6 +1,6 @@
 ---
 name: xoxno-lending-soroban-nogo-2026-09
-description: "XOXNO Lending (Immunefi ~$50k, Stellar Soroban, TVL ~$720k) — v1.0.1 named SC surface = executed NO-GO with kill-list (~70 hypotheses, 5 agents, exact-integer models); live items are documented availability dependencies bounded by a 1-minute governance timelock; watch P-16 (LP-leg tx-budget) and Reflector DEX factor"
+description: "XOXNO Lending (Immunefi ~$50k, Stellar Soroban, TVL ~$720k) — v1.0.1 named SC surface = executed NO-GO with kill-list (~70 hypotheses, 5 agents, exact-integer models); live items are documented availability dependencies bounded by a 1-minute governance timelock; P-16 LP-leg tx-budget measured and dropped (≥2x margin); watch Reflector DEX factor + new deployed commits"
 metadata:
   node_type: memory
   type: project
@@ -26,9 +26,10 @@ never stored (live `owner_of`), every cash credit = measured delta around its ow
 liquidation/cleanup of that account — documented DoS.1, recoverable by owner `set_oracle` behind a 12-ledger
 (~1 min) timelock; (2) Reflector Stellar-DEX factor keys (USTRY, CETES, AQUA + 4 LPs) fail on ≥5–10 % leg
 disagreement and the DEX feed's manipulation resistance is undocumented (external premise OPEN → NOT READY);
-(3) fixed sanity bands on accruing/FX RWA will be crossed by drift (advisory); (4) **P-16**: tx budget of a
-max-position account with LP legs is unmeasured by the team (benches accept budget panics; stress.sh disclaims
-LP costs) — measurement addendum in the dossier.
+(3) fixed sanity bands on accruing/FX RWA will be crossed by drift (advisory); (4) P-16 tx budget of a max-position
+account with LP legs: MEASURED in the harness (WASM-metered), ~185–199 entries / ~105–120M CPU / ~17 MB vs
+mainnet 400 / 400M / 40 MiB (SDK 28 snapshot 2026-07-10) → fits with ≥2x margin → dropped; the team's own
+benches assert stale 100/50/100M limits.
 
 **Lessons:** (a) the Soroban host is a first-class guard source — read env-host source before generating
 reentrancy/auth/TTL hypotheses, it kills whole classes in minutes; (b) on an LLM-audited + Certora'd fresh
