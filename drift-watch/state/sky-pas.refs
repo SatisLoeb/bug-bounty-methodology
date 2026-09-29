@@ -1,4 +1,4 @@
-grove-labs/grove-spells HEAD 97bbdf8d89e824e93a28ecaf9cf0628ebc640d12
+grove-labs/grove-spells HEAD 6f7af084cbc86acb6104c7263118773a752e5b2b
 grove-labs/grove-spells refs/pull/1/head cc067e973461b546b128327d629078cd2f0dd8c4
 grove-labs/grove-spells refs/pull/10/head d67ea2f464c49d4b1b19f07cb98a90381c4b638d
 grove-labs/grove-spells refs/pull/11/head 1a862d78c4433603540beedb3ff4d034cdc7469d
@@ -74,8 +74,8 @@ grove-labs/grove-spells refs/pull/78/head a905a1d84b03315f70afd6e4e3d343a68e5e15
 grove-labs/grove-spells refs/pull/79/head aa2c9c81e16d9a6c617f5aabc697ebeca752de48
 grove-labs/grove-spells refs/pull/8/head 7ad4248a640f01e69fa62b0fdf3e02e57db63ab9
 grove-labs/grove-spells refs/pull/80/head d084e4346d4a2d387bd9b152e2d8f502b30dcebe
-grove-labs/grove-spells refs/pull/81/head 4b5e1b404533e63d54835fbcb5a70b1102167756
-grove-labs/grove-spells refs/pull/82/head 613a6d2209b17d72a669ed79bacb30a2a8285272
+grove-labs/grove-spells refs/pull/81/head 041e6b5786e7385c5ec748e9bc78e6e06adab044
+grove-labs/grove-spells refs/pull/82/head e3f5c31ee9cf41bc56d660bed84d1f4f802f471f
 grove-labs/grove-spells refs/pull/83/head 62d4a44d76abad3628e8d7c421a33ed2f80cc478
 grove-labs/grove-spells refs/pull/9/head 416e429d84d14b8d84ee4e045435768253ad1c6d
 osero-io/osero-spells HEAD a2d21436cd02ac04f9c374e506debbd5df78205d
@@ -566,11 +566,11 @@ sky-ecosystem/spells-mainnet refs/pull/568/head 2826b60783cae75a9b0d889cd3613219
 sky-ecosystem/spells-mainnet refs/pull/569/head 47222989ae30ecc4512b95139d9888411cf7c753
 sky-ecosystem/spells-mainnet refs/pull/57/head 717f4d253085fd25cdc2758754dcda05554b3058
 sky-ecosystem/spells-mainnet refs/pull/570/head 570e9c44d230a2b2cd0ecad3f50d8caffb5c1a85
-sky-ecosystem/spells-mainnet refs/pull/571/head ed67ddb3444d15dd5cb7eeee8fe9babac6c100cc
+sky-ecosystem/spells-mainnet refs/pull/571/head 69f1f70ec001be9a21cc68dc11d007c19dac14df
 sky-ecosystem/spells-mainnet refs/pull/572/head 996f5cc611c548ae15cc5e3d12f69181466bb70b
 sky-ecosystem/spells-mainnet refs/pull/573/head a1acf04c98eed542ca715ae81a48e7241ee7511a
 sky-ecosystem/spells-mainnet refs/pull/574/head b06b98ed0022573d21453a9bbd1ca1d4aea8c9f4
-sky-ecosystem/spells-mainnet refs/pull/575/head 75f056fb047e77d89343613d22cae314f17386f6
+sky-ecosystem/spells-mainnet refs/pull/575/head 9be6313900922aec1ce5d2f36e7dd734d32d3393
 sky-ecosystem/spells-mainnet refs/pull/58/head 7c85ab1d0d4abfc9503572e12ab0efe7eb0be43a
 sky-ecosystem/spells-mainnet refs/pull/59/head ebf00554721cba8a739186a9cba5878a0fb74f73
 sky-ecosystem/spells-mainnet refs/pull/6/head c0601579ae0a497d8975a04baa423c09a230b6f0

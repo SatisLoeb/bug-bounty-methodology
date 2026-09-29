@@ -73,11 +73,22 @@ while IFS=$'\t' read -r id remotes mode globs regex dossier; do
     git -C "$dir" remote remove origin 2>/dev/null; git -C "$dir" remote add origin "https://github.com/${remote}"
     if git -C "$dir" fetch -q --depth 2 origin "$sha" 2>/dev/null; then
       # shellcheck disable=SC2086
-      hits="$(git -C "$dir" grep -nIE "$regex" "$sha" -- $spec 2>/dev/null | grep -viE '\.t\.sol:|/(test|tests|archive|mocks?)/' | head -25 || true)"
+      hits="$(git -C "$dir" grep -nIE "$regex" "$sha" -- $spec 2>/dev/null | grep -viE '\.t\.sol:|/(test|tests|archive|mocks?)/' | sed "s/^$sha://" | sort || true)"
+      # Anti-faux-positif de rebase : ne garder que les hits ABSENTS du HEAD du repo (contenu hérité d'un merge = déjà connu)
+      if [[ -n "$hits" && "$ref" != "HEAD" && ! "$ref" =~ ^refs/heads/ ]]; then
+        head_sha="$(awk -v r="$remote" '$1==r && $2=="HEAD"{print $3}' "$new" | head -1)"
+        if [[ -n "$head_sha" ]] && git -C "$dir" fetch -q --depth 2 origin "$head_sha" 2>/dev/null; then
+          # shellcheck disable=SC2086
+          head_hits="$(git -C "$dir" grep -nIE "$regex" "$head_sha" -- $spec 2>/dev/null | grep -viE '\.t\.sol:|/(test|tests|archive|mocks?)/' | sed "s/^$head_sha://" | sort || true)"
+          inherited=$(comm -12 <(echo "$hits") <(echo "$head_hits") | grep -c . || true)
+          hits="$(comm -23 <(echo "$hits") <(echo "$head_hits") | grep . || true)"
+          (( inherited > 0 )) && echo "    ($inherited hits hérités du HEAD, filtrés)"
+        fi
+      fi
       if [[ -n "$hits" ]]; then
-        echo "--- TRIGGER-HITS $remote $ref ($sha) ---"; echo "$hits"
+        echo "--- TRIGGER-HITS $remote $ref ($sha) ---"; echo "$hits" | head -25
       else
-        echo "--- $remote $ref (${sha:0:9}) : aucun trigger hors tests/archives ---"
+        echo "--- $remote $ref (${sha:0:9}) : aucun trigger nouveau hors tests/archives ---"
       fi
     else
       echo "--- $remote $ref (${sha:0:9}) : fetch impossible (ref supprimée ?) ---"
