@@ -1,6 +1,6 @@
 ---
 name: chainlink-immunefi-ccip-v2-2026-09-29
-description: "Chainlink (Immunefi $3M) — CCIP v2.0.0 EVM (mainnet 2026-09-28, 1 day old) day-1 breadth-null across 5-agent fanout (CCV forgery core, codecs, pools+LockBox, source/fee, MCMS gov) all clean with guards+differentials; Aptos = receivability WALL (only beta tag); live SOLO leads = Sui MCMS mcms_registry callback-consumption + Sui CCIP drift-anchored"
+description: "Chainlink (Immunefi $3M) — CCIP v2.0.0 EVM (mainnet 2026-09-28, 1 day old) day-1 breadth-null across 5-agent fanout (CCV forgery core, codecs, pools+LockBox, source/fee, MCMS gov) all clean with guards+differentials; Aptos = receivability WALL (only beta tag); Sui MCMS mcms_registry callback-consumption traced SOLO and CLOSED (12 hypotheses, structural hot-potato + per-batch sequence + uniform consumer discipline at tag); remaining leads = Sui CCIP drift-anchored + deployed-config reads (parked, egress-blocked)"
 metadata:
   node_type: memory
   type: project
@@ -35,11 +35,20 @@ changed — a bug in drifted lines faces "not in a release"). Sui MCMS (contract
 program reads "release" strictly.
 
 **Live SOLO leads (breadth done, now trace the seam solo — [[feedback-agent-fanout-recreates-audit-blindspot]]):**
-- P0: Sui `contracts/mcms/mcms/sources/mcms_registry.move` (494 L, in scope, identical at release) — the
-  ExecutingCallbackParams hot-potato execution-order / callback-consumption logic; can params be partially
-  consumed, duplicated, or reordered across target modules? The one deep spot the fanout did not exhaust.
+- P0 (DONE, CLOSED): Sui `contracts/mcms/mcms/sources/mcms_registry.move` traced solo — 12 hypotheses (S-1..S-12
+  in the dossier) all killed: no-ability hot potato (no dup / no partial consumption, atomic with the DONE mark),
+  `enforce_execution_order` strict per-batch sequence, DONE ids never re-schedulable + tx-digest bypasser salt (no
+  duplicate completed_batches key), witness bound to package via PublisherWrapper, cross-module confusion dead
+  twice (zero function-name collisions per package + `validate_obj_addrs`/`assert_is_consumed` in all 13 consumers,
+  verified at the tag). Nothing payable; the only non-structural guard is consumer discipline (flip condition).
 - P1: Sui CCIP drifted modules only where vulnerable lines exist at the sui-v1.0.0 tag.
 - P1: whether real per-role MCMS signer sets overlap (needs on-chain deployed config; RPC blocked in-container).
+
+**Lesson from the solo trace:** the seam the fanout could not exhaust turned out to be closed by the TYPE SYSTEM
+(hot potato) plus one runtime table — the registry's only soft spot is delegated to consumers (function-name +
+object-address binding), so the right check was an exhaustive consumer census (126 call sites), not more reading of
+the registry. Generalize: when a governance dispatcher hands out `&mut Cap` against opaque params, audit the
+CONSUMERS' parsing discipline as a census, per package, for name collisions and unbound data.
 
 **Lessons:** (a) a day-1 fanout on a freshly-launched bridge gives breadth (no class bug) but NOT depth — the
 finding, if any, is in the one seam the fanout flagged un-exhausted, traced solo; resist logging the breadth-null
