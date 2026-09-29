@@ -1,3 +1,4 @@
+- [Chainlink (Immunefi $3M) — CCIP v2 day-1 breadth-null](chainlink-immunefi-ccip-v2-2026-09-29.md) — 5-agent fanout clean w/ guards; Aptos=receivability WALL; SOLO leads = Sui MCMS mcms_registry callback-consumption + Sui CCIP drift
 - [XOXNO Lending (Immunefi ~$50k, Soroban) — executed NO-GO w/ kill-list](xoxno-lending-soroban-nogo-2026-09.md) — v1.0.1 named SC surface null (host guards + integer models); LP-leg tx budget measured (fits ≥2x); watch Reflector DEX factor + new commits
 - [Intuition (Immunefi $100k) — C/D are C4 dups](intuition-immunefi-c-d-are-c4-dups.md) — prior "confirmed HIGH" both published C4 [05]/[07]=OOS; live path = C4-uncovered surfaces (Critical dig)
 - [Corpus match → pull the discovery_how](feedback-corpus-match-pull-the-discovery-how.md) — on any corpus match, grab the reproducible METHOD not just the pattern label
