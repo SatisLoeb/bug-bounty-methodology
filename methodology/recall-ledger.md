@@ -44,6 +44,7 @@ I generated and killed*, and cross-checks them against public findings on those 
 | Lombard EVM+Solana ([[project-lombard-finance-audit]]) | 2026-09-17 | P1 bridge↔Bascule → supply-neutral/OOS; P4 epoch-freeze → retryable; P7 cross-lang decode → round-trip-hash canonicalizes; A1 deployed drift → defense-in-depth, consortium-gated | new Mailbox handler / impl upgrade (fresh-surface-watch) |
 | Coinbase venue ([[coinbase-venue-exhausted]]) | 2026-09-17 | 6 targets, 0 findings: spend-permissions P2 (cross-chain replay→Solady live-rebuild, batch-uniq→documented, nonce→2^64); recovery-signer/echo/eip7702/commerce/flywheel all fortress | a NEW Coinbase-deployed contract |
 | Strata ([[strata-immunefi-resource-only-critical-pays]]) | 2026-09 | deployed periphery → clean; AccountingLib+RoundingGuard → not deployed ($0) | Critical anchored to deployed bytecode / AccountingLib deploys |
+| XOXNO Lending ([[xoxno-lending-soroban-nogo-2026-09]]) | 2026-09-29 | restamp/LP-callback/reentry/batch-dup/credit-split/rounding/shared-custody/caps/split-liq/under-delivery/post-fix-siblings/authority/TTL/oracle-composition → executed guards or integer-model nulls (dossier `methodology/targets/xoxno-lending-xlm-2026-09-29.md`); availability items documented + 1-min governance bound | P-16 LP-leg tx-budget measurement exceeds mainnet limits; Reflector DEX factor proven cheaply movable; new deployed liquidation/oracle commit; <3-dec or dual-hub listing on mainnet |
 
 ## Recall Corpses (grows when I am proven wrong — the anti-prudence section)
 
