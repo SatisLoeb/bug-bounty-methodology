@@ -1,5 +1,6 @@
+import os
 import sys, random
-sys.path.insert(0, "/tmp/claude-0/-home-user-bug-bounty-methodology/a09c59a6-45db-598f-89a5-0514fcb3e43a/scratchpad/xoxno")
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from liq_model import *
 
 # ---- dirty mainnet-like markets (spoke 1 "Blue Chip", plus 9/18-dec RWAs from spokes 8/4) ----

@@ -1,3 +1,4 @@
+import os
 """Exact-integer replica of the XOXNO liquidation pipeline (controller + pool rounding).
 Mirrors: risk/totals.rs, liquidation/curve.rs, liquidation/math.rs, liquidation/apply.rs,
 pool ops/withdraw.rs + ops/repay.rs, common/rates/scaling.rs, common/math/fp.rs.
@@ -249,7 +250,7 @@ def execute(legs, debts, offers, curve, mode="transfer", deliver=lambda name, pu
                 C2=C2, D2=D2, HF2=HF2, legs2=legs2, debts2=debts2, cleanup=cleanup)
 
 # ---------------- mainnet parameters ----------------
-SPOKES = json.load(open("/tmp/claude-0/-home-user-bug-bounty-methodology/a09c59a6-45db-598f-89a5-0514fcb3e43a/scratchpad/xoxno/rs-lending-xlm/configs/mainnet/spokes.json"))
+SPOKES = json.load(open(os.environ.get("XOXNO_REPO", ".") + "/configs/mainnet/spokes.json"))
 def listing(spoke, asset):
     a = SPOKES[str(spoke)]["assets"][asset]
     return a["liquidation_threshold"], a["liquidation_bonus"], a["liquidation_fees"]
