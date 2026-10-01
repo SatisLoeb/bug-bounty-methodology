@@ -80,9 +80,12 @@ while IFS=$'\t' read -r id remotes mode globs regex dossier; do
         if [[ -n "$head_sha" ]] && git -C "$dir" fetch -q --depth 2 origin "$head_sha" 2>/dev/null; then
           # shellcheck disable=SC2086
           head_hits="$(git -C "$dir" grep -nIE "$regex" "$head_sha" -- $spec 2>/dev/null | grep -viE '\.t\.sol:|/(test|tests|archive|mocks?)/' | sed "s/^$head_sha://" | sort || true)"
-          inherited=$(comm -12 <(echo "$hits") <(echo "$head_hits") | grep -c . || true)
-          hits="$(comm -23 <(echo "$hits") <(echo "$head_hits") | grep . || true)"
-          (( inherited > 0 )) && echo "    ($inherited hits hérités du HEAD, filtrés)"
+          # Comparaison par chemin:contenu SANS numéro de ligne (robuste aux reformatages qui décalent les lignes)
+          before=$(echo "$hits" | grep -c . || true)
+          hits="$(awk 'NR==FNR{n=$0; sub(/:[0-9]+:/,":",n); h[n]=1; next} {n=$0; sub(/:[0-9]+:/,":",n); if(!(n in h)) print}' \
+                    <(echo "$head_hits") <(echo "$hits") | grep . || true)"
+          after=$(echo "$hits" | grep -c . || true)
+          (( before > after )) && echo "    ($((before-after)) hits hérités du HEAD (ligne ou position), filtrés)"
         fi
       fi
       if [[ -n "$hits" ]]; then
