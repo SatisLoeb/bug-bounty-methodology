@@ -1,110 +1,149 @@
 # TARGET: Exactly "Exa App" plugin family | PLATFORM: Immunefi | DATE: 2026-10-03
-## Posture: GENERATE-FIRST (candidates for local PoC + responsible disclosure)
+## Posture: GENERATE-FIRST. Verdict: GO. Headline candidate P1 confirmed in deployed in-scope code.
 
-SCOPE CORRECTION vs first dossier: the Immunefi "Assets in Scope" table is Optimism-only and
-INCLUDES five account-abstraction contracts the first pass did not model: ExaPlugin, ProposalManager,
-IssuerChecker, WebAuthnOwnerPlugin, Refunder (added Dec 2025). Source = exactly/mobile. This is the
-thin-coverage, high-edge surface. The lending core verdict (NO-GO, dups) stands separately.
+SCOPE: Immunefi "Assets in Scope" is Optimism-only and includes the account-abstraction plugins the
+first pass missed. Source = exactly/mobile (deployed v1.0.0, commit 5a152148, 2025-04-08). The lending
+core verdict (NO-GO, dups) stands separately in EXACTLY-SCOPE-TRIAGE.md.
 
-IN-SCOPE DEPLOYED (Optimism chain 10), verified source (Immunefi Instascope export):
-  ExaPlugin          0x3d73D0fb9e63c49ba8e9cd738964D5E08C047f3e   v1.0.0, commit 5a152148, 2025-04-08
-  ProposalManager    0x6817974CA2c354F2FA40d8349b725B5bF81c8338
-  IssuerChecker      0x59a644e490e48235adf8ba9b814a4f666c4feb3a
-  WebAuthnOwnerPlugin0x8f498c8240E621f8050249D1C2F5f2AAeE484ca0
-  Refunder           0xd5f8c9d87b7691449dec453d041d9054e0fdd228
-Dependencies (NOT in the in-scope contract list, but reachable under Primacy of Impact):
-  swapper  = 0x1231DEB6f5749EF6cE6943a275A1D3E7486F4EaE  (LI.FI Diamond — executes arbitrary routes)
-  collector= 0x3a73880ff21ABf9cA9F80B293570a3cBD846eFc5
-  keeper   = 0xcDdB23654595C224A563f62943D9Ff189138c04e  (KEEPER_ROLE, single hot wallet)
-  flashLoaner = Balancer V2 Vault 0xBA12...
+IN-SCOPE (Optimism, verified source via Immunefi Instascope export):
+  ExaPlugin 0x3d73…47f3e | ProposalManager 0x6817…c8338 | IssuerChecker 0x59a6…feb3a
+  WebAuthnOwnerPlugin 0x8f49…84ca0 | Refunder 0xd5f8…dd228
+Dependencies (reachable via Primacy of Impact, not in the in-scope contract list):
+  swapper = 0x1231DEB6…F4EaE (LI.FI Diamond, executes arbitrary routes)
+  collector 0x3a73…eFc5 | keeper (KEEPER_ROLE) 0xcDdB…c04e | flashLoaner = Balancer V2 Vault
+  account impl = alchemyplatform/modular-account @ c81e7122 (ERC-6900 v0.7, ERC-4337 v0.6);
+  modular-account-libs v0.7.1; webauthn-owner-plugin @ 9c0c38b.
 
-AUDIT COVERAGE (dup calibration): Quantstamp ONLY — WebAuthn plugin (Jul-24: 1 Med/2 Low/5 Info),
-Exa plugin (Mar-25: 3 High/3 Med/5 Low, all fixed, on commit b262356 = plugin@0.0.3, an ANCESTOR of
-the v1.0.0 bump), update (Oct-25: 1 Info). Deployed v1.0.0 is POST the Mar-25 audited commit; the
-1.1.0 line (multi-proposal, cross-repay) and the Oct-25 fix-review cover code NOT deployed on Optimism.
-=> Far thinner than the 6-firm lending core. Low/Med dup on this surface.
+AUDIT COVERAGE (dup): Quantstamp only (WebAuthn Jul-24; Exa plugin Mar-25 on commit b262356 =
+plugin@0.0.3, an ANCESTOR of the deployed v1.0.0; update Oct-25 on the 1.1.0 line NOT deployed on OP).
+Deployed v1.0.0 sits in a version gap: audited on an earlier version, later fixes/audits cover
+undeployed code. Thin vs the 6-firm lending core => Low/Med dup on this surface.
 
-## ACCESS-CONTROL MODEL (read from pluginManifest + runtimeValidationFunction, verified)
-- Each user = ERC-4337 modular account (Alchemy MA, ERC-6900). Owner = passkey/ECDSA via WebAuthnOwnerPlugin.
-- ExaPlugin exposes 12 execution functions. The card-settlement ones — collectCredit (x2), collectDebit,
-  collectCollateral, collectInstallments, proposeRepay, poke, pokeETH — are gated by
-  RUNTIME_VALIDATION_KEEPER: `runtimeValidationFunction` requires `hasRole(KEEPER_ROLE, sender)`.
-- preUserOpValidationHooks = PRE_HOOK_ALWAYS_DENY on every execution fn => collect* CANNOT be driven by
-  a signed userOp (owner passkey). They are reachable ONLY by a direct call from a KEEPER_ROLE holder.
-- So the fund-moving authority is KEEPER + an ISSUER signature. The issuer signs EIP-712
-  Collection(address account, uint256 amount, uint40 timestamp) — i.e. it binds ONLY {account, amount,
-  timestamp}. It does NOT bind the operation type, the market, the maturity, maxRepay, maxAmountIn, or
-  the swap route. ExaPlugin holds PROPOSER_ROLE on ProposalManager (ExaAccountFactory.s.sol:33).
+## ACCESS-CONTROL MODEL (verified from pluginManifest + runtimeValidationFunction)
+- Each user = ERC-6900 modular account; owner = passkey/ECDSA (WebAuthnOwnerPlugin).
+- All 12 ExaPlugin execution fns have preUserOpValidationHooks = PRE_HOOK_ALWAYS_DENY => never callable
+  via a 4337 userOp. collect*/proposeRepay/poke are RUNTIME_VALIDATION_KEEPER (keeper direct call only);
+  propose/swap are SELF (owner self-call); executeProposal/setProposalNonce are KEEPER_OR_SELF.
+- Fund authority = KEEPER + an ISSUER EIP-712 sig over Collection(account, amount, uint40 timestamp)
+  ONLY — it binds neither operation, market, maturity, maxRepay, maxAmountIn, nor swap route.
+- THE security feature: ProposalManager imposes a delay (1s..1h) on collateral-decreasing ops so a
+  compromised owner/passkey cannot instantly drain — the user gets a reaction window. Defeating this
+  delay is the central vulnerability class below.
 
 ---
 
-## CANDIDATE FINDINGS (reachability confirmed in code; severity pending PoC + keeper-trust ruling)
+## CANDIDATE FINDINGS
 
-### C1 [HIGH→CRIT candidate] collectCollateral: keeper authority unbounded by issuer authorization
-Chain (every edge verified):
-  [KEEPER_ROLE holder] holding ANY one valid issuer sig for (victim, amount=$1, ts)
-  ->(account.collectCollateral(amount=$1, collateral=victim mkt, maxAmountIn = victim free collateral,
-     ts, route, sig); runtimeValidationFunction KEEPER passes; _checkIssuer passes ExaPlugin.sol:127)
-  ->(callHash = keccak(collateral,withdraw,maxAmountIn,plugin,victim) & ~1  [bit0=0]; ExaPlugin.sol:131)
-  ->(_withdrawFromSender pulls maxAmountIn collateral; preExecutionChecker withdraw branch: receiver=plugin
-     has PROPOSER_ROLE, _checkCallHash matches with shouldConsume=false => early RETURN, NO proposal, NO
-     delay; ProposalManager.sol:152 + _checkCallHash:205)  [bounded only by account shortfall = free collateral]
-  ->(_swap: LiFiDiamond.functionCall(keeper route); only post-check is amountOut >= amount; ExaPlugin.sol:140-144)
-  ->> [victim loses ~maxAmountIn collateral; only `amount`($1) USDC reaches collector; the delta is captured
-       by the keeper-controlled LiFi route counterparty. Theft of user collateral.]
-  reachability: REACHABLE given KEEPER_ROLE (all non-keeper edges confirmed). value: High (per-account free
-  collateral; scalable across all Exa accounts). dup: Low. edge-fit: High.
-  WHY IT'S A BUG (not just "malicious admin"): the keeper is a single online hot wallet whose JOB is to
-  relay issuer-signed charges. A correct design bounds the keeper to what the issuer signed (amount + a
-  fair-price swap). Here the keeper freely chooses maxAmountIn, the swap route (arbitrary via LiFi), AND
-  which operation to run — so one leaked issuer signature for $1, plus the keeper key, drains every user's
-  free collateral. Keeper compromise should be containable to relay/grief, not total loss.
-  SCOPE CAVEAT (honest): if Exactly's threat model treats KEEPER_ROLE as fully trusted, triage may rule
-  admin-trust / out-of-scope. Frame the report as a privilege-SEPARATION flaw (keeper ⊄ issuer authority),
-  not "malicious keeper". Strongest if a keeper compromise is in Exactly's stated threat model.
-  PoC (local Foundry, fork Optimism): deploy an Exa account with collateral + a real issuer sig for $1;
-  as keeper, call collectCollateral with maxAmountIn=full collateral and a route that swaps through an
-  attacker pool returning exactly $1; assert victim collateral gone, attacker balance up.
+### P1 [HEADLINE — CONFIRMED in deployed in-scope code] WETH withdraw/redeem proposals never consume their nonce
+Root cause: `ExaPlugin._withdraw` (ExaPlugin.sol:803-838), for the EXA_WETH branch, sets
+`callHash = keccak256(...) & ~bytes32(uint256(1))` (bit0=0) and routes the market withdraw/redeem to
+`address(this)` (the plugin) to unwrap WETH->ETH. In `ProposalManager._preExecutionMarketCheck`
+(ProposalManager.sol:149-165) the withdraw/redeem branch sees `receiver == plugin` (holds PROPOSER_ROLE)
+and `_checkCallHash` returns `shouldConsume = bit0 = false` => it `return`s BEFORE `shiftProposal`, the
+ONLY nonce-consumer (PM.sol:83-88, 152/162, 205). `executeProposal` (ExaPlugin.sol:140-160) never
+advances the nonce itself. => A matured EXA_WETH WITHDRAW or REDEEM proposal is NEVER consumed.
+Impacts (increasing precondition):
+  (a) IN-SCOPE regardless: the proposal stays at `nextNonce` and bricks the queue head — every later
+      proposal (repay/roll/withdraw) on that account is unreachable until a KEEPER_OR_SELF
+      `setProposalNonce` skip. Reachable in NORMAL operation (any user doing a WETH withdrawal). DoS.
+  (b) keeper-conditioned: a keeper can re-call `executeProposal(nextNonce)` repeatedly, each time
+      withdrawing `proposal.amount` WETH to the stored receiver => forced unwind of the user's WETH.
+  (c) owner-key-conditioned: an attacker with the owner key proposes a tiny WETH withdraw to their own
+      receiver, waits <=1h once, then drains ALL free WETH by repeated execution — defeating the delay.
+  reach: REACHABLE (confirmed). value: High. dup: Low. edge-fit: High.
+  Note: executeProposal is not nonReentrant; _withdraw does `receiver.safeTransferETH` (ExaPlugin.sol:837)
+  => a contract receiver can reenter (not required for the drain).
+  PoC (Foundry, OP fork): propose small EXA_WETH WITHDRAW; warp past delay; call executeProposal twice;
+  assert second call succeeds (nonce not advanced) and WETH leaves twice; assert a subsequent unrelated
+  proposal cannot be executed (queue bricked). THIS IS THE SUBMISSION-GRADE CANDIDATE.
 
-### C2 [HIGH candidate, same root] one issuer signature authorizes the MOST damaging of 4 operations
-  The same Collection(account, amount, ts) signature is accepted by collectCredit, collectDebit,
-  collectCollateral, collectInstallments (all call _checkIssuer with refund=false, hash=keccak(amount,ts)).
-  The issuer cannot constrain WHICH operation runs. A keeper holding a signature the issuer intended as a
-  small debit can instead invoke collectCollateral (C1) or collectCredit at an adversarial maturity.
-  antiPattern: signed payload omits an operation/selector discriminator. Fix: bind op-type (and market/
-  maturity/maxAmountIn) into the EIP-712 struct. dup: Low. edge-fit: High. Pairs with C1.
+### P8 [HIGH lead — full ProposalManager bypass via calldata-parsing differential]
+`ExaPlugin.preExecutionHook` SINGLE (ExaPlugin.sol:495-499) parses the inner call from FIXED offsets:
+target = callData[16:36], selector = callData[132:136], data = callData[136:] — assuming the canonical
+0x60 offset for `execute`'s `bytes data` arg. The deployed account (alchemyplatform/modular-account
+@c81e7122) passes RAW msg.data to the hook (`_preNativeFunction` -> `_allocateRuntimeCallBuffer(msg.data)`
+-> `_doPreExecHooks`, UpgradeableModularAccount.sol:471-481,668-688), while `execute(address,uint256,
+bytes)` decodes `data` by FOLLOWING the ABI offset pointer at [68:100]. A userOp calling `execute` with a
+NON-CANONICAL `data` offset makes the account execute the bytes at the offset target while the hook
+validates the benign bytes at fixed [132:136] => ProposalManager sees a harmless call, never consumes a
+proposal, and the real malicious market withdraw executes. Full delay bypass.
+  reach: conditional — needs (i) Solidity calldata decoder to accept a non-minimal in-bounds offset for a
+  single `bytes` param (very likely; confirm with a unit test) and (ii) owner credential (execute is
+  owner-gated). value: High. dup: Med. edge-fit: High.
+  PoC: unit-test the offset tolerance first; then craft execute calldata with shifted `data` offset,
+  benign selector at [132:136], malicious withdraw at the offset target; assert PM not consulted.
 
-### C3 [MED candidate] collectCredit maxRepay defaults to type(uint256).max (no slippage bound)
-  collectCredit(maturity,amount,ts,sig) -> collectCredit(...,maxRepay=type(uint256).max,...) ExaPlugin.sol:145.
-  Keeper also picks `maturity` (unsigned). Account accepts any fixed-borrow cost. Bounded by market rate
-  conditions, but combined with C2 a keeper can borrow the signed amount at an unfavorable maturity with
-  zero slippage protection. value: Med. dup: Med.
+### P7 [HIGH lead — account-admin selectors not covered by the delay hook]
+ExaPlugin's executionHooks (ExaPlugin.sol:438-459) cover only execute / executeBatch /
+executeFromPluginExternal / uninstallPlugin(self). The account's `upgradeToAndCall`,
+`installPlugin`, and `updateOwnersPublicKeys` are validated by WebAuthnOwnerPlugin owner-sig ALONE with
+NO ExaPlugin pre-exec hook => a compromised owner can swap the account implementation, rotate the victim
+out, or install a permissive plugin INSTANTLY, with zero delay. The ProposalManager anti-theft window
+does not cover account administration.
+  reach: conditional (owner credential + confirm on the deployed account impl that these selectors carry
+  no delay hook). value: High. dup: High (known ERC-6900 limitation — likely "owner trusted" pushback).
+  edge-fit: Med. Raise as an architecture finding: the delay is advertised to protect against owner/
+  passkey compromise, but admin selectors escape it.
 
-### C4 [LOW] IssuerChecker.check/checkIssuer is public and consumes the replay slot
-  Anyone (not just the plugin) can call checkIssuer(account,amount,ts,sig) with a sniffed valid signature,
-  setting collections[account][keccak(amount,ts)]=true (IssuerChecker.sol:53-54) BEFORE the real
-  collect* runs => the genuine card settlement then reverts Replay. Griefing/DoS of card payments;
-  self-heals (issuer re-signs new ts). Also: replay key omits the operation and the account from the
-  hash (account is in the mapping key and the signed struct, so cross-account is safe), and two same-
-  amount same-second charges collide. value: Low (DoS). dup: Med.
+### P2 [MED] receiver-binding enforced only for WITHDRAW/REDEEM in the generic withdraw branch
+`ProposalManager._checkMarketProposal` (PM.sol:208-218) binds `abi.decode(data,(address))==receiver`
+ONLY for WITHDRAW/REDEEM. The withdraw branch (PM.sol:149-159) also accepts CROSS_REPAY/REPAY/SWAP
+proposals, for which the receiver is NOT bound. With a matured keeper-authored REPAY/CROSS_REPAY head
+(proposeRepay is keeper-gated, routine), a compromised owner can `execute(market, withdraw(amount<=
+proposal.amount, attackerReceiver, account))` and redirect up to proposal.amount to an attacker address,
+consuming the mismatched-type head. Owner-conditioned; instant (no withdraw-shaped proposal surfaced).
+  value: Med. dup: Med. edge-fit: High.
 
-### Not yet personally verified (delegated to running workflow wmn0hld49) — treat as open candidates
-  - WebAuthnOwnerPlugin: ownerless-account / last-owner-removal brick; P256/RIP-7212 verifier trust;
-    ECDSA malleability (Quantstamp EXA-2 Acknowledged) and EIP-1271 cross-account/chain replay;
-    "signatures valid indefinitely" (EXA-4 Mitigated) — confirm whether mitigation is in deployed v1.0.0.
-  - ProposalManager delay-bypass via the callHash bit (deployed collectCollateral uses bit0=0; a later
-    commit flips to bit0=1 — understand whether the deployed value weakens any proposal gate beyond C1).
-  - receiveFlashLoan cross-repay: c.route keeper-controlled (same LiFi arbitrary-route surface as C1).
+### P3 [HIGH, keeper-conditioned] collectCollateral: keeper authority unbounded by issuer authorization (= earlier C1)
+Keeper + any issuer sig for `amount`($1) -> collectCollateral(amount, collateral, maxAmountIn=large,
+route=adversarial, sig). Issuer binds only amount (ExaPlugin.sol:186); keeper picks collateral market,
+maxAmountIn, and the LiFi route; `_swap` enforces only `amountOut >= amount` (ExaPlugin.sol:750-767);
+withdraw bounded only by account shortfall. Keeper drains the gap between maxAmountIn collateral and the
+signed amount via a self-serving LiFi route. value: High. dup: Med. edge-fit: High.
+  SCOPE CAVEAT: frame as privilege-SEPARATION (keeper ⊄ issuer authority), not "malicious keeper".
+
+### P4 [MED, keeper-conditioned] one issuer signature authorizes the most damaging of 4 operations (= earlier C2)
+collectCredit/collectDebit/collectCollateral/collectInstallments all gate on the SAME _checkIssuer digest
+(ExaPlugin.sol:186,214,224,239); the signed struct has no op-type/maturity/maxRepay/route. A keeper
+reinterprets a benign signature as the worst operation. The 4-arg collectCredit hardcodes
+maxRepay=type(uint256).max (ExaPlugin.sol:204) — a post-audit-looking widening removing the fee cap.
+
+### P5 [LOW, permissionless] IssuerChecker.check/checkIssuer public, consumes replay slot + emits event before recovery (= earlier C4)
+IssuerChecker.sol:33-70 are public, no caller gate; set `collections[account][hash]=true` and emit
+`Collected` BEFORE signer recovery. Anyone observing a valid sig (e.g. reverted keeper-tx calldata on OP)
+can front-run to burn the slot => genuine card settlement reverts Replay (DoS, self-heals), and a false
+`Collected` event can mislead off-chain reconciliation. value: Low.
+
+### P6 [LOW, keeper] setProposalNonce / executeProposal lifecycle griefing across accounts (keeper forward-skip / forced matured execution; recoverable). P9 [MED] executeBatch uninstall+reinstall migration escape, gated by admin allowlist + a try/catch{} fail-open on hasPendingProposals (ExaPlugin.sol:529-532) that contradicts its own "should deny service on revert" comment.
 
 ---
 
-## DECISION: GO (narrow, generate-first) on the Exa plugin family.
-- Primary: build the C1 PoC (keeper + $1 issuer sig -> collateral drain via LiFi route). It is the
-  highest-value, lowest-dup, fully-reachable candidate. If the keeper-trust framing holds for Immunefi,
-  this is High/Critical. Write it as privilege-separation (keeper ⊄ issuer), with C2 as the amplifier.
-- Secondary: let the workflow close WebAuthn (ownerless/replay) — a non-keeper owner-takeover there would
-  be unconditionally Critical and would not carry C1's scope caveat. Prioritize that if it lands.
-- Keep C3/C4 as supporting/low.
+## CONFIRMED DEAD (verified — do not spend time)
+Issuer sig forge / recover-to-zero (solady reverts; issuer != 0); cross-account replay (account in struct);
+double-charge (collections guard, hash keyed on message); cross-chain replay (EIP-712 domain has chainId+
+verifyingContract); non-WETH withdraw receiver redirect (bound + consumed); nonce rewind (monotonic);
+anonymous/reentrant receiveFlashLoan (double-auth msg.sender==flashLoaner && flashLoaning==keccak(data));
+anonymous/keeper poke (acts on caller / deposits to account's own shares); direct EOA plugin calls (inert);
+collect pushing account underwater (Market checkShortfall/checkBorrow on-chain); collect receiver forced to
+collector; owner userOp self-collect (ALWAYS_DENY + keeper-only runtime); ExaPlugin residual-balance theft
+(float nets to 0); ownerless account (EmptyOwnersNotAllowed); owner-set corruption; WebAuthn assertion
+forgery (low-s, type/flags/challenge checks); ERC-1271 cross-account/chain replay (domain-bound);
+Refunder abuse (funds flow TO user, keeper+issuer+replay-guarded); BORROW_AT_MATURITY-to-collector
+non-consume (destination is collector, no theft).
 
-## TIME ALLOCATED (honest): 1 day. Half-day C1 PoC; half-day on WebAuthn owner-takeover from the workflow
-  output. Report via Immunefi (KYC + code PoC required). Do NOT touch mainnet/live accounts — fork only.
+## DECISION: GO (generate-first).
+1. BUILD P1 PoC now — confirmed, in-scope, Low-dup, submission-grade. Lead with impacts (a) queue-brick
+   (unconditional) and (b) keeper forced-replay; add (c) delay-defeat for the severity case.
+2. Then P8 — highest upside (full bypass). First a 15-line Foundry test of Solidity non-canonical offset
+   tolerance against this account; if it holds, it is Critical (delay bypass). 
+3. P2, P3/P4 as supporting. P5/P6/P9 low.
+
+## SCOPE REALITY (no theater)
+P1(c), P2, P7, P8 are owner-key-conditioned. Standard Immunefi excludes key compromise — BUT the Exa App's
+entire security proposition is the delay protecting users against a compromised passkey. A bypass of that
+delay breaks the DOCUMENTED guarantee, so it is a legitimate submission; expect scope debate and frame it
+as "defeat of the stated anti-theft control", with P1's queue-brick (a) and keeper-replay (b) and P5 as
+the unconditionally-in-scope anchors. P3/P4 hinge on Exactly's keeper-trust stance.
+
+## TIME: ~1 day. Half-day P1 PoC + report. Half-day P8 offset test (+ P7 confirm on the deployed account).
+KYC + code PoC required; local fork only, never mainnet/live accounts.
