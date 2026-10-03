@@ -1,5 +1,16 @@
 # TARGET: Exactly "Exa App" plugin family | PLATFORM: Immunefi | DATE: 2026-10-03
-## Posture: GENERATE-FIRST. Verdict: GO. Headline candidate P1 confirmed in deployed in-scope code.
+## Posture: GENERATE-FIRST. Verdict: GO. Headline = P8 (mechanism PoC'd, NOT self-fixed).
+
+UPDATE after PoC phase (honest):
+- P1 (WETH proposal non-consumption) is REAL in deployed v1.0.0 but is ALREADY FIXED in the public
+  repo by commit 1a27efd "consume weth withdraw proposal" (the WETH callHash bit `& ~1` -> `| 1`).
+  The fix is NOT deployed on Optimism (live contract still vulnerable), but a triager comparing
+  deployed-vs-repo will very likely rule it KNOWN / self-reported => low submission viability. Do not
+  lead with it.
+- P8 (calldata-parsing differential) is CONFIRMED: the core primitive is PoC'd on solc 0.8.26 + a JS
+  EVM (poc/exactly-p8/). It is present in BOTH deployed v1.0.0 AND repo HEAD (NOT self-fixed). This is
+  now the headline.
+- Survives at HEAD (not self-fixed), hence viable: P8, P7, P2, P3, P4. Self-fixed: P1.
 
 SCOPE: Immunefi "Assets in Scope" is Optimism-only and includes the account-abstraction plugins the
 first pass missed. Source = exactly/mobile (deployed v1.0.0, commit 5a152148, 2025-04-08). The lending
@@ -34,7 +45,10 @@ undeployed code. Thin vs the 6-firm lending core => Low/Med dup on this surface.
 
 ## CANDIDATE FINDINGS
 
-### P1 [HEADLINE — CONFIRMED in deployed in-scope code] WETH withdraw/redeem proposals never consume their nonce
+### P1 [REAL in deployed, but SELF-FIXED in public repo => low viability] WETH withdraw/redeem proposals never consume their nonce
+STATUS: fixed by commit 1a27efd "consume weth withdraw proposal" (bit0 `& ~1` -> `| 1`), in the repo/
+1.1.0 line but NOT deployed on Optimism. Live v1.0.0 is vulnerable, yet the public fix makes this
+known/self-reported => expect a known-issue rejection. Keep only as a secondary/defense-in-depth note.
 Root cause: `ExaPlugin._withdraw` (ExaPlugin.sol:803-838), for the EXA_WETH branch, sets
 `callHash = keccak256(...) & ~bytes32(uint256(1))` (bit0=0) and routes the market withdraw/redeem to
 `address(this)` (the plugin) to unwrap WETH->ETH. In `ProposalManager._preExecutionMarketCheck`
@@ -57,7 +71,13 @@ Impacts (increasing precondition):
   assert second call succeeds (nonce not advanced) and WETH leaves twice; assert a subsequent unrelated
   proposal cannot be executed (queue bricked). THIS IS THE SUBMISSION-GRADE CANDIDATE.
 
-### P8 [HIGH lead — full ProposalManager bypass via calldata-parsing differential]
+### P8 [HEADLINE — CONFIRMED mechanism, full ProposalManager bypass, NOT self-fixed]
+STATUS: core primitive PoC'd (poc/exactly-p8/): solc 0.8.26 follows a non-canonical ABI offset for a
+`bytes` param while a fixed-offset reader does not — observed hook=benign / body=evil divergence.
+End-to-end chain confirmed by source: account passes raw msg.data to the hook
+(UpgradeableModularAccount._preNativeFunction -> _allocateRuntimeCallBuffer(msg.data)); _exec does
+target.call(decoded data) (AccountExecutor._exec); ProposalManager._preExecutionMarketCheck returns
+(allows) for an unrecognized selector. Present in deployed v1.0.0 AND HEAD.
 `ExaPlugin.preExecutionHook` SINGLE (ExaPlugin.sol:495-499) parses the inner call from FIXED offsets:
 target = callData[16:36], selector = callData[132:136], data = callData[136:] — assuming the canonical
 0x60 offset for `execute`'s `bytes data` arg. The deployed account (alchemyplatform/modular-account
@@ -131,12 +151,13 @@ forgery (low-s, type/flags/challenge checks); ERC-1271 cross-account/chain repla
 Refunder abuse (funds flow TO user, keeper+issuer+replay-guarded); BORROW_AT_MATURITY-to-collector
 non-consume (destination is collector, no theft).
 
-## DECISION: GO (generate-first).
-1. BUILD P1 PoC now — confirmed, in-scope, Low-dup, submission-grade. Lead with impacts (a) queue-brick
-   (unconditional) and (b) keeper forced-replay; add (c) delay-defeat for the severity case.
-2. Then P8 — highest upside (full bypass). First a 15-line Foundry test of Solidity non-canonical offset
-   tolerance against this account; if it holds, it is Critical (delay bypass). 
-3. P2, P3/P4 as supporting. P5/P6/P9 low.
+## DECISION: GO (generate-first). Order revised after PoC phase.
+1. P8 is the headline: mechanism PoC'd, not self-fixed, full delay bypass. NEXT: end-to-end fork PoC
+   (real account+ExaPlugin+Market, crafted execute userOp with non-canonical `data` offset, show a
+   delay-free withdraw to an attacker receiver). Blocked here only by toolchain (foundry.paradigm.xyz
+   egress-denied); the decisive parser-divergence step is already proven in poc/exactly-p8/.
+2. P2 (receiver-binding gap) and P3/P4 (keeper authority) as the next viable candidates — all survive HEAD.
+3. P1 demoted to a secondary note (self-fixed). P5/P6/P9 low.
 
 ## SCOPE REALITY (no theater)
 P1(c), P2, P7, P8 are owner-key-conditioned. Standard Immunefi excludes key compromise — BUT the Exa App's
